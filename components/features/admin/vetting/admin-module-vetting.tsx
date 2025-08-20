@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react"
 import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -518,7 +519,7 @@ export function AdminModuleSubmissions() {
                       <CardContent>
                         <p className="text-sm text-muted-foreground mb-3">{selectedModule.shortDescription}</p>
                         <div className="prose prose-sm max-w-none dark:prose-invert max-h-48 overflow-y-auto">
-                          <ReactMarkdown>{selectedModule.description.length > 500 ? selectedModule.description.substring(0, 500) + '...' : selectedModule.description}</ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedModule.description.length > 500 ? selectedModule.description.substring(0, 500) + '...' : selectedModule.description}</ReactMarkdown>
                         </div>
                       </CardContent>
                     </Card>

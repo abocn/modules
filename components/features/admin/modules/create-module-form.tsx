@@ -34,44 +34,99 @@ const formSchema = z.object({
   description: z.string().min(30, "Description must be at least 30 characters").max(8000, "Description must be less than 8000 characters"),
   author: z.string().min(2, "Author name must be at least 2 characters").max(60, "Author name must be less than 60 characters"),
   category: z.enum(CATEGORIES),
-  iconUrl: z.string().refine(
-    (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  ).optional().or(z.literal("")),
+  iconUrl: z.string()
+    .max(300, "Icon URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^(\/|https?:\/\/).+/.test(val),
+      { message: "Please enter a valid icon URL or path" }
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
   license: z.string().optional(),
   customLicense: z.string().optional(),
   isOpenSource: z.boolean().default(false),
   sourceUrl: z.string().optional(),
-  communityUrl: z.string().refine(
-    (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  ).optional().or(z.literal("")),
-  githubRepo: z.string().refine(
-    (val) => !val || val === "" || /^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\.git)?(?:\/.*)?$/.test(val) || /^[^\/]+\/[^\/]+$/.test(val),
-    { message: "Must be a valid GitHub repository URL or owner/repo format" }
-  ).optional().or(z.literal("")),
-  features: z.array(z.string().min(1, "Feature cannot be empty")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
+  communityUrl: z.string()
+    .max(300, "URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^https?:\/\/.+/.test(val),
+      { message: "Please enter a valid URL" }
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  githubRepo: z.string()
+    .max(300, "GitHub repository must be at most 300 characters")
+    .refine(
+      (val) => !val || /^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\.git)?(?:\/.*)?$/.test(val) || /^[^\/]+\/[^\/]+$/.test(val),
+      { message: "Please enter a valid GitHub repository URL or owner/repo format" }
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  features: z.array(z.string().min(1, "Feature cannot be empty").max(150, "Feature must be at most 150 characters")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
   androidVersions: z.array(z.string()).min(1, "Select at least one Android version"),
   rootMethods: z.array(z.enum(["Magisk", "KernelSU", "KernelSU-Next"])).min(1, "Select at least one root method"),
   images: z.array(z.string().refine(
     (val) => /^https?:\/\/.+/.test(val),
     { message: "Must be a valid URL" }
   )).max(10, "Maximum 10 images allowed").optional(),
-  manualReleaseVersion: z.string().optional(),
-  manualReleaseUrl: z.string().optional(),
-  manualReleaseChangelog: z.string().optional(),
+  manualReleaseVersion: z.string()
+    .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/, "Version must follow semantic versioning (e.g., 1.0.0, 2.1.3-beta)")
+    .optional(),
+  manualReleaseUrl: z.string()
+    .max(300, "Download URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^https?:\/\/.+/.test(val),
+      { message: "Please enter a valid download URL" }
+    )
+    .optional(),
+  manualReleaseChangelog: z.string()
+    .max(5000, "Changelog must be at most 5000 characters")
+    .optional(),
+  isFeatured: z.boolean().default(false),
+  isRecommended: z.boolean().default(false),
 }).refine(
   (data) => {
     if (data.isOpenSource) {
-      return data.license && data.license.length > 0 && data.sourceUrl && data.sourceUrl.length > 0
-    } else {
-      return data.manualReleaseVersion && data.manualReleaseVersion.length > 0 &&
-             data.manualReleaseUrl && data.manualReleaseUrl.length > 0
+      return data.license && data.license.length > 0
     }
+    return true
   },
   {
-    message: "Open source modules require a license and source URL. Non-open source modules require release information.",
-    path: ["isOpenSource"],
+    message: "License is required for open source modules",
+    path: ["license"],
+  }
+).refine(
+  (data) => {
+    if (data.isOpenSource) {
+      return data.sourceUrl && data.sourceUrl.length > 0
+    }
+    return true
+  },
+  {
+    message: "Source URL is required for open source modules",
+    path: ["sourceUrl"],
+  }
+).refine(
+  (data) => {
+    if (!data.isOpenSource) {
+      return data.manualReleaseVersion && data.manualReleaseVersion.length > 0
+    }
+    return true
+  },
+  {
+    message: "Version is required for non-open source modules",
+    path: ["manualReleaseVersion"],
+  }
+).refine(
+  (data) => {
+    if (!data.isOpenSource) {
+      return data.manualReleaseUrl && data.manualReleaseUrl.length > 0
+    }
+    return true
+  },
+  {
+    message: "Download URL is required for non-open source modules",
+    path: ["manualReleaseUrl"],
   }
 ).refine(
   (data) => {
@@ -336,6 +391,8 @@ export function CreateModuleForm() {
         },
         isPublished: false,
         status: "pending",
+        isFeatured: data.isFeatured || false,
+        isRecommended: data.isRecommended || false,
       }
 
       const response = await fetch("/api/admin/modules", {
@@ -981,6 +1038,49 @@ export function CreateModuleForm() {
                 </Alert>
               </div>
             )}
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Admin Settings</h3>
+              <Separator />
+
+              <div className="flex items-center space-x-6">
+                <FormField
+                  control={form.control}
+                  name="isFeatured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Featured</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isRecommended"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Recommended</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             {submitError && (
               <Alert variant="destructive">

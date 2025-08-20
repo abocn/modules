@@ -143,7 +143,6 @@ export function ModuleCard({ module, onClick }: ModuleCardProps) {
             method === "Magisk" ? (
               <Badge variant="outline" className="text-xs h-5 px-1.5" key={method}>
                 <SiMagisk />
-                Magisk
               </Badge>
             ) : method === "KernelSU" ? (
               <Badge variant="outline" className="text-xs h-5 px-1.5" key={method}>
@@ -154,12 +153,10 @@ export function ModuleCard({ module, onClick }: ModuleCardProps) {
                   <rect x="100" y="100" width="100" height="100" fill="#000000"/>\
                   <rect x="0" y="0" width="200" height="200" fill="none" stroke="#000000" strokeWidth="12"/>
                 </svg>
-                KernelSU
               </Badge>
             ) : method === "KernelSU-Next" ? (
               <Badge variant="outline" className="text-xs h-5 px-1.5" key={method}>
                 <BsYinYang />
-                KernelSU-Next
               </Badge>
             ) : null
           ))}

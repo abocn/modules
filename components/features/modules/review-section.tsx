@@ -14,6 +14,7 @@ import { useSession } from "@/lib/auth-client"
 import { SigninDialog } from "@/components/shared/signin-dialog"
 import { MarkdownEditor } from "@/components/shared/markdown-editor"
 import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 interface ReviewSectionProps {
@@ -403,7 +404,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                     <div className="min-h-[200px] p-3 border rounded-md bg-background">
                       {newReview.comment ? (
                         <div className="text-sm [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                          <ReactMarkdown>{newReview.comment}</ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{newReview.comment}</ReactMarkdown>
                         </div>
                       ) : (
                         <p className="text-muted-foreground italic text-sm">Nothing to preview yet...</p>
@@ -524,7 +525,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                     </div>
                     {rating.comment && (
                       <div className="text-sm sm:text-base text-muted-foreground mb-3 break-words [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                        <ReactMarkdown>{rating.comment}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{rating.comment}</ReactMarkdown>
                       </div>
                     )}
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm">
@@ -595,7 +596,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                 <div className="min-h-[120px] p-3 border rounded-md bg-background">
                                   {replyText[rating.id] ? (
                                     <div className="text-sm [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-muted [&_blockquote]:pl-2 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                                      <ReactMarkdown>{replyText[rating.id]}</ReactMarkdown>
+                                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{replyText[rating.id]}</ReactMarkdown>
                                     </div>
                                   ) : (
                                     <p className="text-muted-foreground italic text-sm">Nothing to preview yet...</p>
@@ -705,7 +706,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                   </span>
                                 </div>
                                 <div className="text-xs sm:text-sm text-muted-foreground mb-2 break-words [&_h1]:text-sm [&_h1]:font-bold [&_h1]:mb-1 [&_h1]:mt-2 [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:mb-1 [&_h2]:mt-1 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-1 [&_p]:mb-1 [&_ul]:list-disc [&_ul]:ml-3 [&_ul]:mb-1 [&_ol]:list-decimal [&_ol]:ml-3 [&_ol]:mb-1 [&_li]:mb-0.5 [&_blockquote]:border-l-2 [&_blockquote]:border-muted [&_blockquote]:pl-2 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                                  <ReactMarkdown>{reply.comment}</ReactMarkdown>
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.comment}</ReactMarkdown>
                                 </div>
                                 <button
                                   onClick={() => handleReplyHelpfulClick(reply.id)}

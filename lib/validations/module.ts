@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const MAX_NAME = 80
 export const MAX_SHORT = 140
-export const MAX_FEATURE = 60
+export const MAX_FEATURE = 150
 export const MAX_FEATURES = 25
 export const MAX_DESCRIPTION = 8000
 export const MAX_IMAGES = 10
@@ -113,6 +113,7 @@ export const moduleSubmissionSchema = z.object({
       message: 'Please enter a valid URL'
     })
     .optional()
+    .nullable()
     .or(z.literal('').transform(() => undefined)),
 
   communityUrl: z.string()
@@ -122,6 +123,7 @@ export const moduleSubmissionSchema = z.object({
       message: 'Please enter a valid URL'
     })
     .optional()
+    .nullable()
     .or(z.literal('').transform(() => undefined)),
 
   githubRepo: z.string()
@@ -159,6 +161,7 @@ export const moduleSubmissionSchema = z.object({
       message: 'Please enter a valid icon URL or path'
     })
     .optional()
+    .nullable()
     .or(z.literal('').transform(() => undefined)),
 
 
@@ -172,6 +175,7 @@ export const moduleSubmissionSchema = z.object({
   )
     .max(MAX_IMAGES, `Maximum ${MAX_IMAGES} images allowed`)
     .optional()
+    .nullable()
 })
   .refine(data => {
     if (data.isOpenSource) {

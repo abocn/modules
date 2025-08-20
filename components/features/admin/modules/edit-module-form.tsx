@@ -17,12 +17,13 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { CharacterCounter } from "@/components/ui/character-counter"
-import { ExternalLink, Plus, X, AlertTriangle, Check, Info } from "lucide-react"
+import { ExternalLink, Plus, X, AlertTriangle, Info } from "lucide-react"
 import { toast } from "sonner"
 import type { DbModule } from "@/types/module"
 import { MODULE_CATEGORIES } from "@/lib/constants/categories"
 import { MarkdownEditor } from "@/components/shared/markdown-editor"
 import { CATEGORIES, ANDROID_VERSIONS } from "@/lib/validations/module"
+import { WarningsManager, type Warning } from "./warnings-manager"
 
 /**
  * @constant formSchema
@@ -35,40 +36,73 @@ const formSchema = z.object({
   description: z.string().min(30, "Description must be at least 30 characters").max(8000, "Description must be less than 8000 characters"),
   author: z.string().min(2, "Author name must be at least 2 characters").max(60, "Author name must be less than 60 characters"),
   category: z.enum(CATEGORIES),
-  iconUrl: z.string().refine(
-    (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  ).optional().or(z.literal("")),
+  iconUrl: z.string()
+    .max(300, "Icon URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^(\/|https?:\/\/).+/.test(val),
+      { message: "Please enter a valid icon URL or path" }
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
   license: z.string().optional(),
   customLicense: z.string().optional(),
   isOpenSource: z.boolean().default(false),
   sourceUrl: z.string().optional(),
-  communityUrl: z.string().refine(
-    (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  ).optional().or(z.literal("")),
-  features: z.array(z.string().min(1, "Feature cannot be empty")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
+  communityUrl: z.string()
+    .max(300, "URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^https?:\/\/.+/.test(val),
+      { message: "Please enter a valid URL" }
+    )
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  features: z.array(z.string().min(1, "Feature cannot be empty").max(150, "Feature must be at most 150 characters")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
   androidVersions: z.array(z.string()).min(1, "Select at least one Android version"),
   rootMethods: z.array(z.enum(["Magisk", "KernelSU", "KernelSU-Next"])).min(1, "Select at least one root method"),
   images: z.array(z.string().refine(
     (val) => /^https?:\/\/.+/.test(val),
     { message: "Must be a valid URL" }
   )).max(10, "Maximum 10 images allowed").optional(),
-  manualReleaseVersion: z.string().optional(),
-  manualReleaseUrl: z.string().optional(),
-  manualReleaseChangelog: z.string().optional(),
+  manualReleaseVersion: z.string()
+    .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/, "Version must follow semantic versioning (e.g., 1.0.0, 2.1.3-beta)")
+    .optional(),
+  manualReleaseUrl: z.string()
+    .max(300, "Download URL must be at most 300 characters")
+    .refine(
+      (val) => !val || /^https?:\/\/.+/.test(val),
+      { message: "Please enter a valid download URL" }
+    )
+    .optional(),
+  manualReleaseChangelog: z.string()
+    .max(5000, "Changelog must be at most 5000 characters")
+    .optional(),
   isFeatured: z.boolean().default(false),
   isRecommended: z.boolean().default(false),
+  warnings: z.array(z.object({
+    type: z.enum(["malware", "closed-source", "stolen-code"]),
+    message: z.string().min(1, "Warning message is required")
+  })).optional(),
 }).refine(
   (data) => {
     if (data.isOpenSource) {
-      return data.license && data.license.length > 0 && data.sourceUrl && data.sourceUrl.length > 0
+      return data.license && data.license.length > 0
     }
     return true
   },
   {
-    message: "Open source modules require a license and source URL.",
-    path: ["isOpenSource"],
+    message: "License is required for open source modules",
+    path: ["license"],
+  }
+).refine(
+  (data) => {
+    if (data.isOpenSource) {
+      return data.sourceUrl && data.sourceUrl.length > 0
+    }
+    return true
+  },
+  {
+    message: "Source URL is required for open source modules",
+    path: ["sourceUrl"],
   }
 ).refine(
   (data) => {
@@ -124,7 +158,6 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [newFeature, setNewFeature] = useState("")
   const [newImage, setNewImage] = useState("")
 
@@ -163,6 +196,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
       images: module.images || [],
       isFeatured: module.isFeatured || false,
       isRecommended: module.isRecommended || false,
+      warnings: (module.warnings as Warning[]) || [],
     },
   })
 
@@ -240,8 +274,8 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         isOpenSource: data.isOpenSource,
         sourceUrl: data.sourceUrl || null,
         communityUrl: data.communityUrl || null,
-        icon: data.iconUrl || null,
-        images: data.images || null,
+        icon: data.iconUrl ? data.iconUrl : null,
+        images: data.images && data.images.length > 0 ? data.images : null,
         features: data.features,
         compatibility: {
           androidVersions: data.androidVersions,
@@ -249,6 +283,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         },
         isFeatured: data.isFeatured,
         isRecommended: data.isRecommended,
+        warnings: data.warnings || [],
       }
 
       const response = await fetch(`/api/admin/modules/${module.id}/edit`, {
@@ -279,39 +314,16 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         throw new Error(error.error || error.message || 'Failed to update module')
       }
 
-      setSubmitSuccess(true)
       toast.success(`Module "${data.name}" updated successfully`)
 
-      setTimeout(() => {
-        router.push('/admin/modules')
-        router.refresh()
-      }, 1000)
+      router.push('/admin/modules')
+      router.refresh()
     } catch (error) {
       console.error('Error updating module:', error)
       setSubmitError(error instanceof Error ? error.message : 'Failed to update module')
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (submitSuccess) {
-    return (
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Check className="h-5 w-5 text-green-500" />
-            Module Updated Successfully!
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertDescription>
-              Module has been updated successfully. Redirecting to modules list...
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
@@ -850,6 +862,24 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     )}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="warnings"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <WarningsManager
+                          warnings={field.value as Warning[]}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {submitError && (

@@ -13,6 +13,7 @@ import { ExternalLink, MessageCircle, Star, Code, AlertTriangle, User, Smartphon
 import { SiMagisk } from "react-icons/si"
 import { BsYinYang } from "react-icons/bs"
 import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { MODULE_CATEGORIES } from "@/lib/constants/categories"
 import { ModuleStructuredData } from "@/components/shared/structured-data"
 import { ReleasesSection } from "@/components/features/modules/releases-section"
@@ -301,8 +302,8 @@ export default async function ModulePage({ params, searchParams }: ModulePagePro
                   <CardTitle>About this module</CardTitle>
                 </CardHeader>
                 <CardContent className="w-full max-w-full">
-                  <div className="text-muted-foreground w-full max-w-full overflow-hidden break-words text-sm sm:text-base leading-relaxed [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_p]:mb-3 [&_p]:break-words [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_li]:break-words [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:break-words [&_code]:bg-muted [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_code]:break-all [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-sm [&_pre]:max-w-full [&_a]:text-primary [&_a]:underline [&_a]:break-words [&_strong]:font-semibold [&_strong]:break-words [&_em]:italic [&_em]:break-words">
-                    <ReactMarkdown>{displayModuleData.description}</ReactMarkdown>
+                  <div className="text-muted-foreground w-full max-w-full overflow-hidden break-words text-sm sm:text-base leading-relaxed [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3 [&_p]:mb-3 [&_p]:break-words [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-3 [&_li]:mb-1 [&_li]:break-words [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:break-words [&_code]:bg-muted [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_code]:text-sm [&_code]:break-all [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-sm [&_pre]:max-w-full [&_a]:text-primary [&_a]:underline [&_a]:break-words [&_strong]:font-semibold [&_strong]:break-words [&_em]:italic [&_em]:break-words [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4 [&_thead]:border-b-2 [&_thead]:border-muted [&_th]:text-left [&_th]:p-2 [&_th]:font-semibold [&_td]:p-2 [&_td]:border-b [&_td]:border-muted [&_tr:last-child_td]:border-b-0">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayModuleData.description}</ReactMarkdown>
                   </div>
                 </CardContent>
               </Card>

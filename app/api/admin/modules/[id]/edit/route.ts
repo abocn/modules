@@ -68,6 +68,10 @@ export async function PATCH(
     const editModuleSchema = moduleSubmissionSchema.partial().extend({
       isFeatured: z.boolean().optional(),
       isRecommended: z.boolean().optional(),
+      warnings: z.array(z.object({
+        type: z.enum(["malware", "closed-source", "stolen-code"]),
+        message: z.string().min(1, "Warning message is required")
+      })).optional(),
     })
 
     const parsed = editModuleSchema.safeParse(body)
@@ -120,6 +124,7 @@ export async function PATCH(
     if (validatedData.images !== undefined) updateData.images = validatedData.images
     if (validatedData.isFeatured !== undefined) updateData.isFeatured = validatedData.isFeatured
     if (validatedData.isRecommended !== undefined) updateData.isRecommended = validatedData.isRecommended
+    if (validatedData.warnings !== undefined) updateData.warnings = validatedData.warnings
 
     const [updatedModule] = await db
       .update(modules)

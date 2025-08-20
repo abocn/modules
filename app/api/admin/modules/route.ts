@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
 import { modules, releases, ratings, adminActions } from "@/db/schema"
 import { user as userTable } from "@/db/schema"
@@ -259,6 +259,8 @@ export async function POST(request: NextRequest) {
       manualReleaseVersion: z.string().optional(),
       manualReleaseUrl: z.string().optional(),
       manualReleaseChangelog: z.string().optional(),
+      isFeatured: z.boolean().optional(),
+      isRecommended: z.boolean().optional(),
     })
 
     const parsed = createModuleSchema.safeParse(body)
@@ -268,10 +270,13 @@ export async function POST(request: NextRequest) {
         message: issue.message
       }))
       console.error('[Create Module Validation Error]:', errors)
-      return createErrorResponse(
-        'Validation failed. Please check your input.',
-        400,
-        { 'X-Validation-Errors': JSON.stringify(errors) }
+      return NextResponse.json(
+        {
+          error: 'Validation failed. Please check your input.',
+          errors,
+          message: errors[0]?.message || 'Validation failed. Please check your input.'
+        },
+        { status: 400 }
       )
     }
 
@@ -299,8 +304,8 @@ export async function POST(request: NextRequest) {
         features: moduleData.features,
         sourceUrl: moduleData.sourceUrl || null,
         communityUrl: moduleData.communityUrl || null,
-        isFeatured: false,
-        isRecommended: false,
+        isFeatured: body.isFeatured || false,
+        isRecommended: body.isRecommended || false,
         isPublished: true,
         status: 'approved',
         createdAt: now,
