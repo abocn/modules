@@ -100,38 +100,46 @@ export const moduleSubmissionSchema = z.object({
 
   customLicense: z.string()
     .trim()
-    .max(MAX_CUSTOM_LICENSE, `Custom license must be at most ${MAX_CUSTOM_LICENSE} characters`)
     .optional()
-    .or(z.literal('').transform(() => undefined)),
+    .transform((val) => val === '' ? undefined : val)
+    .refine((val) => !val || val.length <= MAX_CUSTOM_LICENSE, {
+      message: `Custom license must be at most ${MAX_CUSTOM_LICENSE} characters`
+    }),
 
   isOpenSource: z.boolean(),
 
   sourceUrl: z.string()
     .trim()
-    .max(MAX_URL, `URL must be at most ${MAX_URL} characters`)
+    .optional()
+    .transform((val) => val === '' ? undefined : val)
     .refine((val) => !val || /^https?:\/\/.+/.test(val), {
       message: 'Please enter a valid URL'
     })
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+    .refine((val) => !val || val.length <= MAX_URL, {
+      message: `URL must be at most ${MAX_URL} characters`
+    }),
 
   communityUrl: z.string()
     .trim()
-    .max(MAX_URL, `URL must be at most ${MAX_URL} characters`)
+    .optional()
+    .transform((val) => val === '' ? undefined : val)
     .refine((val) => !val || /^https?:\/\/.+/.test(val), {
       message: 'Please enter a valid URL'
     })
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+    .refine((val) => !val || val.length <= MAX_URL, {
+      message: `URL must be at most ${MAX_URL} characters`
+    }),
 
   githubRepo: z.string()
     .trim()
-    .max(MAX_URL, `GitHub repository must be at most ${MAX_URL} characters`)
+    .optional()
+    .transform((val) => val === '' ? undefined : val)
     .refine((val) => !val || /^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\.git)?(?:\/.*)?$/.test(val) || /^[^\/]+\/[^\/]+$/.test(val), {
       message: 'Please enter a valid GitHub repository URL or owner/repo format'
     })
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+    .refine((val) => !val || val.length <= MAX_URL, {
+      message: `GitHub repository must be at most ${MAX_URL} characters`
+    }),
 
   features: z.array(
     z.string()
@@ -154,12 +162,14 @@ export const moduleSubmissionSchema = z.object({
 
   icon: z.string()
     .trim()
-    .max(MAX_URL, `Icon URL must be at most ${MAX_URL} characters`)
+    .optional()
+    .transform((val) => val === '' ? undefined : val)
     .refine((val) => !val || /^(\/|https?:\/\/).+/.test(val), {
       message: 'Please enter a valid icon URL or path'
     })
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
+    .refine((val) => !val || val.length <= MAX_URL, {
+      message: `Icon URL must be at most ${MAX_URL} characters`
+    }),
 
 
   images: z.array(
