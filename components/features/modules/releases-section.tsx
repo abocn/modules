@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeft, ChevronRight, Download as DownloadIcon, Package, Info, FileDown } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 import type { Module } from "@/types/module"
 import { useDownloadTracking } from "@/hooks/use-modules"
 
@@ -180,7 +182,12 @@ export function ReleasesSection({ module }: ReleasesSectionProps) {
                             <DialogTitle>Release {release.version} - Changelog</DialogTitle>
                           </DialogHeader>
                           <div className="text-sm overflow-hidden break-words [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-3 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_p]:break-words [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_li]:mb-1 [&_li]:break-words [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:break-words [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_code]:break-all [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-sm [&_pre]:break-all [&_a]:text-primary [&_a]:underline [&_a]:break-words [&_strong]:font-semibold [&_strong]:break-words [&_em]:italic [&_em]:break-words">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{release.changelog}</ReactMarkdown>
+                            <ReactMarkdown 
+                              remarkPlugins={[remarkGfm]}
+                              rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                            >
+                              {release.changelog}
+                            </ReactMarkdown>
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -245,7 +252,12 @@ export function ReleasesSection({ module }: ReleasesSectionProps) {
 
                 {release.changelog && (
                   <div className="text-sm text-muted-foreground [&_p]:mb-1 [&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_strong]:font-semibold">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{truncateText(release.changelog)}</ReactMarkdown>
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                    >
+                      {truncateText(release.changelog)}
+                    </ReactMarkdown>
                     {release.changelog.length > 150 && (
                       <span className="text-xs text-muted-foreground/70"> (truncated)</span>
                     )}
