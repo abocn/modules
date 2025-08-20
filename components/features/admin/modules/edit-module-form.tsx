@@ -266,9 +266,29 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
     try {
       const processedLicense = data.license === "Custom" && data.customLicense 
         ? `Custom: ${data.customLicense.trim()}`
-        : data.license
+        : data.license || ""
 
-      const updatePayload: Record<string, any> = {
+      const updatePayload: {
+        name: string
+        description: string
+        shortDescription: string
+        author: string
+        category: string
+        license: string
+        isOpenSource: boolean
+        features: string[]
+        compatibility: {
+          androidVersions: string[]
+          rootMethods: ("Magisk" | "KernelSU" | "KernelSU-Next")[]
+        }
+        isFeatured: boolean
+        isRecommended: boolean
+        warnings: { type: "malware" | "closed-source" | "stolen-code"; message: string }[]
+        sourceUrl?: string
+        communityUrl?: string
+        icon?: string
+        images?: string[]
+      } = {
         name: data.name,
         description: data.description,
         shortDescription: data.shortDescription,
