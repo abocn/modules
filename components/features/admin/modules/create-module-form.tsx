@@ -70,7 +70,11 @@ const formSchema = z.object({
     { message: "Must be a valid URL" }
   )).max(10, "Maximum 10 images allowed").optional(),
   manualReleaseVersion: z.string()
-    .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/, "Version must follow semantic versioning (e.g., 1.0.0, 2.1.3-beta)")
+    .transform(val => val?.trim())
+    .refine(
+      (val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val),
+      { message: "Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)" }
+    )
     .optional(),
   manualReleaseUrl: z.string()
     .max(300, "Download URL must be at most 300 characters")

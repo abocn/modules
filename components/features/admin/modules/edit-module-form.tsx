@@ -64,7 +64,11 @@ const formSchema = z.object({
     { message: "Must be a valid URL" }
   )).max(10, "Maximum 10 images allowed").optional(),
   manualReleaseVersion: z.string()
-    .regex(/^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/, "Version must follow semantic versioning (e.g., 1.0.0, 2.1.3-beta)")
+    .transform(val => val?.trim())
+    .refine(
+      (val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val),
+      { message: "Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)" }
+    )
     .optional(),
   manualReleaseUrl: z.string()
     .max(300, "Download URL must be at most 300 characters")
@@ -264,7 +268,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         ? `Custom: ${data.customLicense.trim()}`
         : data.license
 
-      const updatePayload = {
+      const updatePayload: Record<string, any> = {
         name: data.name,
         description: data.description,
         shortDescription: data.shortDescription,
@@ -272,10 +276,6 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         category: data.category,
         license: processedLicense,
         isOpenSource: data.isOpenSource,
-        sourceUrl: data.sourceUrl || null,
-        communityUrl: data.communityUrl || null,
-        icon: data.iconUrl ? data.iconUrl : null,
-        images: data.images && data.images.length > 0 ? data.images : null,
         features: data.features,
         compatibility: {
           androidVersions: data.androidVersions,
@@ -284,6 +284,19 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         isFeatured: data.isFeatured,
         isRecommended: data.isRecommended,
         warnings: data.warnings || [],
+      }
+
+      if (data.sourceUrl) {
+        updatePayload.sourceUrl = data.sourceUrl
+      }
+      if (data.communityUrl) {
+        updatePayload.communityUrl = data.communityUrl
+      }
+      if (data.iconUrl) {
+        updatePayload.icon = data.iconUrl
+      }
+      if (data.images && data.images.length > 0) {
+        updatePayload.images = data.images
       }
 
       const response = await fetch(`/api/admin/modules/${module.id}/edit`, {
