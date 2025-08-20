@@ -1,0 +1,14 @@
+Dockerfile
+.dockerignore
+node_modules
+docker-compose.yml
+README.md
+.next
+.git
+.gitignore
+.env*
+!.env.example
+.vscode
+.DS_Store
+valkey-data
+db-data

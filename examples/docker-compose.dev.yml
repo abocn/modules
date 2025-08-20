@@ -1,0 +1,33 @@
+services:
+  modules:
+    container_name: modules
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    env_file: .env
+    depends_on:
+      - postgres
+      - valkey
+  postgres:
+    container_name: modules-postgres
+    image: postgres:17-bookworm
+    restart: always
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres # the default user will be "postgres"
+      POSTGRES_DB: modules
+  valkey:
+    container_name: modules-valkey
+    image: valkey/valkey:alpine
+    restart: always
+    volumes:
+      - ./valkey-data:/data
+    ports:
+      - 6379:6379
+    command: valkey-server --save 60 1 --loglevel warning
