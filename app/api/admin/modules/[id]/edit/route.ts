@@ -7,6 +7,7 @@ import { isUserAdmin } from '@/lib/admin-utils'
 import { logModuleEdit, compareModuleData } from '@/lib/audit-utils'
 import { moduleSubmissionSchema } from '@/lib/validations/module'
 import { getModuleGithubSync, createModuleGithubSync } from '@/lib/db-utils'
+import { cache, CACHE_KEYS } from '@/lib/cache'
 import * as z from 'zod'
 
 function extractGithubRepo(sourceUrl: string | null): string | null {
@@ -131,6 +132,11 @@ export async function PATCH(
       .set(updateData)
       .where(eq(modules.id, id))
       .returning()
+
+    if (updatedModule.isPublished) {
+      await cache.del(CACHE_KEYS.SITEMAP)
+      console.log('[Sitemap Cache] Invalidated due to module edit')
+    }
 
     const existingModuleData = existingModule[0]
     const sourceUrlChanged = 'sourceUrl' in updateData && updateData.sourceUrl !== existingModuleData.sourceUrl

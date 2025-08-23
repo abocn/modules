@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth"
 import { isUserAdmin } from "@/lib/admin-utils"
 import { getModuleGithubSync, createModuleGithubSync } from "@/lib/db-utils"
 import { jobExecutionService } from "@/lib/job-execution-service"
+import { cache, CACHE_KEYS } from "@/lib/cache"
 
 function extractGithubRepo(sourceUrl: string | null): string | null {
   if (!sourceUrl) return null
@@ -105,6 +106,9 @@ export async function PATCH(
         updatedAt: new Date()
       })
       .where(eq(modules.id, moduleId))
+
+    await cache.del(CACHE_KEYS.SITEMAP)
+    console.log('[Sitemap Cache] Invalidated due to module status change')
 
     const moduleData = currentModule[0]
     const githubRepo = extractGithubRepo(moduleData.sourceUrl)

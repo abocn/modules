@@ -5,6 +5,7 @@ import { modules } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { isUserAdmin } from '@/lib/admin-utils'
 import { logModuleDeletion, logModuleEdit, compareModuleData } from '@/lib/audit-utils'
+import { cache, CACHE_KEYS } from '@/lib/cache'
 
 /**
  * Delete a module (admin)
@@ -65,6 +66,11 @@ export async function DELETE(
 
     // will cascade to ratings and releases
     await db.delete(modules).where(eq(modules.id, id))
+
+    if (existingModule[0].isPublished) {
+      await cache.del(CACHE_KEYS.SITEMAP)
+      console.log('[Sitemap Cache] Invalidated due to module deletion')
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

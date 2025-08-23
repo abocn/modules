@@ -245,8 +245,27 @@ export const moduleSubmissionWithReleaseSchema = z.object({
 
 export type ModuleSubmissionWithRelease = z.infer<typeof moduleSubmissionWithReleaseSchema>
 
-export const clientModuleSchema = moduleSubmissionSchema.extend({
+export const clientModuleSchema = z.object({
+  ...moduleSubmissionSchema.shape,
   captchaToken: z.string().optional()
 })
+  .refine(data => {
+    if (data.isOpenSource) {
+      return data.sourceUrl && data.sourceUrl.length > 0
+    }
+    return true
+  }, {
+    message: 'Source URL is required for open source modules',
+    path: ['sourceUrl']
+  })
+  .refine(data => {
+    if (data.license === 'Custom') {
+      return data.customLicense && data.customLicense.length > 0
+    }
+    return true
+  }, {
+    message: 'Custom license is required when "Custom" is selected',
+    path: ['customLicense']
+  })
 
 export type ClientModuleSubmission = z.infer<typeof clientModuleSchema>
