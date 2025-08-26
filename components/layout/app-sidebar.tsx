@@ -48,6 +48,7 @@ import { useAdminAuth } from "@/hooks/use-admin-auth"
 import { MODULE_CATEGORIES } from "@/lib/constants/categories"
 import { SigninDialog } from "@/components/shared/signin-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
+import Link from "next/link"
 
 interface AppSidebarProps {
   selectedCategory: string
@@ -124,11 +125,13 @@ const AppSidebarComponent = function AppSidebar({ selectedCategory, onCategorySe
     <Sidebar className="border-r">
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <h1 className="text-3xl font-bold flex items-center">
-            <span>m</span>
-            <Package className="w-6 h-6" />
-            <span>dules</span>
-          </h1>
+          <Link href="/">
+            <h1 className="text-3xl font-bold flex items-center">
+              <span>m</span>
+              <Package className="w-6 h-6" />
+              <span>dules</span>
+            </h1>
+          </Link>
         </div>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
