@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * against common web vulnerabilities.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function middleware(_request: NextRequest) {
+export function proxy(_request: NextRequest) {
   const response = NextResponse.next()
 
   const isDevelopment = process.env.NODE_ENV === 'development'
