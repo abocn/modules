@@ -123,7 +123,7 @@ export const requestPasswordReset = async ({
   email: string
   redirectTo?: string
 }) => {
-  return await authClient.forgetPassword({
+  return await authClient.requestPasswordReset({
     email,
     redirectTo
   })
