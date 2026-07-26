@@ -15,7 +15,7 @@ jobs:
 
       - name: Log in to Forgejo Container Registry
         run: |
-          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login git-registry.p0ntus.com -u "${{ github.actor }}" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login git-registry.p0ntus.com -u "${{ github.actor }}" --password-stdin
 
       - name: Build Docker image
         run: |
