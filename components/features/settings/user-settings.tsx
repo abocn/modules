@@ -197,10 +197,10 @@ export function UserSettings() {
   }
 
   return (
-    <div className="container max-w-4xl pb-8">
+    <div className="container max-w-4xl">
       <Card className="overflow-hidden">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-8">
+        <CardHeader>
+          <div className="flex items-center gap-4">
             <ProfilePictureUpload currentImage={session.user.image} userName={session.user.name} />
             <div className="flex-1">
               <CardTitle className="text-xl">Account Information</CardTitle>
