@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
-import { user, modules, ratings } from '@/db/schema'
-import { sql, eq, and, desc } from 'drizzle-orm'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
-import { applyRateLimit } from '@/lib/rate-limit-enhanced'
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { user, modules, ratings } from '@/db/schema';
+import { sql, eq, and, desc } from 'drizzle-orm';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
 
 /**
  * Get authenticated user profile
@@ -85,52 +85,48 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware
  * }
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
-  const { user: currentUser, error } = await getAuthenticatedUser(request)
+  const { user: currentUser, error } = await getAuthenticatedUser(request);
 
   if (error || !currentUser) {
-    return NextResponse.json({ error: error || 'Authentication required' }, { status: 401 })
+    return NextResponse.json({ error: error || 'Authentication required' }, { status: 401 });
   }
 
-  if (currentUser?.authMethod === "api-key") {
+  if (currentUser?.authMethod === 'api-key') {
     try {
-      requireScope(currentUser, "read")
+      requireScope(currentUser, 'read');
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Insufficient permissions" },
-        { status: 403 }
-      )
+        { error: err instanceof Error ? err.message : 'Insufficient permissions' },
+        { status: 403 },
+      );
     }
   }
 
   try {
-    const { id } = await params
+    const { id } = await params;
 
     if (currentUser.id !== id) {
-      return NextResponse.json({ error: 'Access denied: You can only view your own profile' }, { status: 403 })
+      return NextResponse.json(
+        { error: 'Access denied: You can only view your own profile' },
+        { status: 403 },
+      );
     }
 
-    const { searchParams } = new URL(request.url)
-    const includeModules = searchParams.get('includeModules') !== 'false' // default true
-    const includeActivity = searchParams.get('includeActivity') !== 'false' // default true
-    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50)
+    const { searchParams } = new URL(request.url);
+    const includeModules = searchParams.get('includeModules') !== 'false'; // default true
+    const includeActivity = searchParams.get('includeActivity') !== 'false'; // default true
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 50);
 
     const userProfile = await db
       .select({
@@ -142,14 +138,14 @@ export async function GET(
       })
       .from(user)
       .where(eq(user.id, id))
-      .limit(1)
+      .limit(1);
 
     if (userProfile.length === 0) {
-      return createErrorResponse('User not found', 404)
+      return createErrorResponse('User not found', 404);
     }
 
-    const profile = userProfile[0]
-    const isOwnProfile = currentUser?.id === id
+    const profile = userProfile[0];
+    const isOwnProfile = currentUser?.id === id;
 
     const userStats = await db
       .select({
@@ -172,7 +168,7 @@ export async function GET(
       .leftJoin(modules, eq(modules.submittedBy, user.id))
       .leftJoin(ratings, eq(ratings.userId, user.id))
       .where(eq(user.id, id))
-      .groupBy(user.id, user.createdAt)
+      .groupBy(user.id, user.createdAt);
 
     const stats = userStats[0] || {
       totalModules: 0,
@@ -182,9 +178,9 @@ export async function GET(
       totalRatings: 0,
       avgRating: 0,
       joinedDate: profile.createdAt,
-    }
+    };
 
-    let userModules = null
+    let userModules = null;
     if (includeModules) {
       const modulesQuery = db
         .select({
@@ -220,19 +216,14 @@ export async function GET(
           `,
         })
         .from(modules)
-        .where(
-          and(
-            eq(modules.submittedBy, id),
-            eq(modules.isPublished, true)
-          )
-        )
+        .where(and(eq(modules.submittedBy, id), eq(modules.isPublished, true)))
         .orderBy(desc(modules.lastUpdated))
-        .limit(limit)
+        .limit(limit);
 
-      userModules = await modulesQuery
+      userModules = await modulesQuery;
     }
 
-    let recentActivity = null
+    let recentActivity = null;
     if (includeActivity) {
       const recentRatings = await db
         .select({
@@ -248,15 +239,15 @@ export async function GET(
         .from(ratings)
         .where(eq(ratings.userId, id))
         .orderBy(desc(ratings.createdAt))
-        .limit(Math.floor(limit / 2))
+        .limit(Math.floor(limit / 2));
 
       const recentModuleActivity: Array<{
-        type: string
-        moduleId: string
-        moduleName: string
-        action: string
-        createdAt: Date
-      }> = []
+        type: string;
+        moduleId: string;
+        moduleName: string;
+        action: string;
+        createdAt: Date;
+      }> = [];
 
       if (isOwnProfile) {
         const moduleActivity = await db
@@ -275,17 +266,17 @@ export async function GET(
           .from(modules)
           .where(eq(modules.submittedBy, id))
           .orderBy(desc(modules.updatedAt))
-          .limit(Math.floor(limit / 2))
+          .limit(Math.floor(limit / 2));
 
-        recentModuleActivity.push(...moduleActivity)
+        recentModuleActivity.push(...moduleActivity);
       }
 
       recentActivity = [...recentRatings, ...recentModuleActivity]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, limit)
+        .slice(0, limit);
     }
 
-    const achievements = []
+    const achievements = [];
 
     if (Number(stats.publishedModules) >= 1) {
       achievements.push({
@@ -293,7 +284,7 @@ export async function GET(
         name: 'Module Author',
         description: 'Published your first module',
         unlockedAt: new Date(stats.joinedDate).toISOString(),
-      })
+      });
     }
 
     if (Number(stats.featuredModules) >= 1) {
@@ -302,7 +293,7 @@ export async function GET(
         name: 'Featured Creator',
         description: 'Had a module featured',
         unlockedAt: new Date(stats.joinedDate).toISOString(),
-      })
+      });
     }
 
     if (Number(stats.totalDownloads) >= 1000) {
@@ -311,7 +302,7 @@ export async function GET(
         name: 'Popular Developer',
         description: 'Reached 1000+ total downloads',
         unlockedAt: new Date(stats.joinedDate).toISOString(),
-      })
+      });
     }
 
     if (Number(stats.totalRatings) >= 10) {
@@ -320,7 +311,7 @@ export async function GET(
         name: 'Active Reviewer',
         description: 'Left 10+ module reviews',
         unlockedAt: new Date(stats.joinedDate).toISOString(),
-      })
+      });
     }
 
     if (Number(stats.avgRating) >= 4.5 && Number(stats.totalRatings) >= 5) {
@@ -329,7 +320,7 @@ export async function GET(
         name: 'Quality Reviewer',
         description: 'Maintain high-quality reviews',
         unlockedAt: new Date(stats.joinedDate).toISOString(),
-      })
+      });
     }
 
     const profileData = {
@@ -349,58 +340,59 @@ export async function GET(
         totalRatings: Number(stats.totalRatings),
         avgRatingGiven: Number(stats.avgRating),
       },
-      modules: userModules?.map(mod => ({
-        id: mod.id,
-        name: mod.name,
-        shortDescription: mod.shortDescription,
-        category: mod.category,
-        icon: mod.icon,
-        isFeatured: mod.isFeatured,
-        isRecommended: mod.isRecommended,
-        lastUpdated: mod.lastUpdated,
-        createdAt: mod.createdAt,
-        totalDownloads: Number(mod.totalDownloads),
-        avgRating: Number(mod.avgRating),
-        reviewCount: Number(mod.reviewCount),
-      })) || null,
-      recentActivity: recentActivity?.map(activity => {
-        const baseActivity = {
-          type: activity.type,
-          moduleId: activity.moduleId,
-          moduleName: activity.moduleName,
-          createdAt: activity.createdAt,
-        }
+      modules:
+        userModules?.map((mod) => ({
+          id: mod.id,
+          name: mod.name,
+          shortDescription: mod.shortDescription,
+          category: mod.category,
+          icon: mod.icon,
+          isFeatured: mod.isFeatured,
+          isRecommended: mod.isRecommended,
+          lastUpdated: mod.lastUpdated,
+          createdAt: mod.createdAt,
+          totalDownloads: Number(mod.totalDownloads),
+          avgRating: Number(mod.avgRating),
+          reviewCount: Number(mod.reviewCount),
+        })) || null,
+      recentActivity:
+        recentActivity?.map((activity) => {
+          const baseActivity = {
+            type: activity.type,
+            moduleId: activity.moduleId,
+            moduleName: activity.moduleName,
+            createdAt: activity.createdAt,
+          };
 
-        if (activity.type === 'rating' && 'rating' in activity) {
-          return {
-            ...baseActivity,
-            rating: activity.rating,
-            comment: activity.comment,
+          if (activity.type === 'rating' && 'rating' in activity) {
+            return {
+              ...baseActivity,
+              rating: activity.rating,
+              comment: activity.comment,
+            };
           }
-        }
 
-        if (activity.type === 'module_update' && 'action' in activity) {
-          return {
-            ...baseActivity,
-            action: activity.action,
+          if (activity.type === 'module_update' && 'action' in activity) {
+            return {
+              ...baseActivity,
+              action: activity.action,
+            };
           }
-        }
 
-        return baseActivity
-      }) || null,
+          return baseActivity;
+        }) || null,
       achievements,
       meta: {
         generatedAt: new Date().toISOString(),
         includeModules,
         includeActivity,
         limit,
-      }
-    }
+      },
+    };
 
-    return createSuccessResponse(profileData)
-
+    return createSuccessResponse(profileData);
   } catch (error) {
-    console.error('[! /api/user/profile/[id]] Error fetching user profile:', error)
-    return createErrorResponse('Failed to fetch user profile', 500)
+    console.error('[! /api/user/profile/[id]] Error fetching user profile:', error);
+    return createErrorResponse('Failed to fetch user profile', 500);
   }
 }

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant xs (@media (min-width: 475px));
@@ -121,7 +121,8 @@
   body {
     @apply bg-background text-foreground;
   }
-  html, body {
+  html,
+  body {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: none;

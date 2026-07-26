@@ -1,5 +1,5 @@
-import { FlashlightCard, FlashlightCardContent } from "@/components/ui/flashlight-card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { FlashlightCard, FlashlightCardContent } from '@/components/ui/flashlight-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function ModuleCardSkeleton() {
   return (
@@ -46,5 +46,5 @@ export function ModuleCardSkeleton() {
         </div>
       </FlashlightCardContent>
     </FlashlightCard>
-  )
+  );
 }

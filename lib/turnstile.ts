@@ -1,15 +1,15 @@
 interface TurnstileValidationResponse {
-  success: boolean
-  "error-codes"?: string[]
-  challenge_ts?: string
-  hostname?: string
-  action?: string
-  cdata?: string
+  success: boolean;
+  'error-codes'?: string[];
+  challenge_ts?: string;
+  hostname?: string;
+  action?: string;
+  cdata?: string;
 }
 
 interface TurnstileValidationOptions {
-  remoteip?: string
-  idempotency_key?: string
+  remoteip?: string;
+  idempotency_key?: string;
 }
 
 /**
@@ -20,91 +20,91 @@ interface TurnstileValidationOptions {
  */
 export async function validateTurnstileToken(
   token: string,
-  options?: TurnstileValidationOptions
+  options?: TurnstileValidationOptions,
 ): Promise<{ success: boolean; error?: string; data?: TurnstileValidationResponse }> {
-  const secretKey = process.env.TURNSTILE_SECRET_KEY
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
   if (!secretKey) {
-    console.error('[Turnstile] Secret key not configured')
+    console.error('[Turnstile] Secret key not configured');
     return {
       success: false,
-      error: 'Turnstile validation is not properly configured'
-    }
+      error: 'Turnstile validation is not properly configured',
+    };
   }
 
   if (!token || typeof token !== 'string' || token.trim() === '') {
     return {
       success: false,
-      error: 'Invalid or missing Turnstile token'
-    }
+      error: 'Invalid or missing Turnstile token',
+    };
   }
 
   try {
-    const formData = new FormData()
-    formData.append('secret', secretKey)
-    formData.append('response', token.trim())
+    const formData = new FormData();
+    formData.append('secret', secretKey);
+    formData.append('response', token.trim());
 
     if (options?.remoteip) {
-      formData.append('remoteip', options.remoteip)
+      formData.append('remoteip', options.remoteip);
     }
 
     if (options?.idempotency_key) {
-      formData.append('idempotency_key', options.idempotency_key)
+      formData.append('idempotency_key', options.idempotency_key);
     }
 
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       body: formData,
-      signal: AbortSignal.timeout(10000)
-    })
+      signal: AbortSignal.timeout(10000),
+    });
 
     if (!response.ok) {
-      throw new Error(`Turnstile API responded with status ${response.status}`)
+      throw new Error(`Turnstile API responded with status ${response.status}`);
     }
 
-    const data: TurnstileValidationResponse = await response.json()
+    const data: TurnstileValidationResponse = await response.json();
 
     console.log('[Turnstile] Validation response:', {
       success: data.success,
       hostname: data.hostname,
       action: data.action,
-      errorCodes: data["error-codes"]
-    })
+      errorCodes: data['error-codes'],
+    });
 
     if (data.success) {
       return {
         success: true,
-        data
-      }
+        data,
+      };
     } else {
-      console.warn('[Turnstile] Validation failed:', data)
+      console.warn('[Turnstile] Validation failed:', data);
 
-      const errorMessage = data["error-codes"]?.length
-        ? `Captcha verification failed: ${data["error-codes"].join(', ')}`
-        : 'Captcha verification failed. Please try again.'
+      const errorMessage = data['error-codes']?.length
+        ? `Captcha verification failed: ${data['error-codes'].join(', ')}`
+        : 'Captcha verification failed. Please try again.';
 
       return {
         success: false,
         error: errorMessage,
-        data
-      }
+        data,
+      };
     }
   } catch (error) {
-    console.error('[Turnstile] Validation error:', error)
+    console.error('[Turnstile] Validation error:', error);
 
     if (error instanceof Error) {
       if (error.name === 'AbortError' || error.message.includes('timeout')) {
         return {
           success: false,
-          error: 'Captcha verification timed out. Please try again.'
-        }
+          error: 'Captcha verification timed out. Please try again.',
+        };
       }
     }
 
     return {
       success: false,
-      error: 'Failed to verify captcha. Please try again.'
-    }
+      error: 'Failed to verify captcha. Please try again.',
+    };
   }
 }
 
@@ -116,35 +116,35 @@ export async function validateTurnstileToken(
  */
 export async function validateTurnstileFromRequest(
   request: Request,
-  getClientIP?: (request: Request) => string | undefined
+  getClientIP?: (request: Request) => string | undefined,
 ): Promise<{ success: boolean; error?: string; token?: string }> {
   try {
-    const body = await request.json()
-    const token = body.turnstileToken || body['cf-turnstile-response']
+    const body = await request.json();
+    const token = body.turnstileToken || body['cf-turnstile-response'];
 
     if (!token) {
       return {
         success: false,
-        error: 'Captcha verification is required'
-      }
+        error: 'Captcha verification is required',
+      };
     }
 
-    const clientIP = getClientIP?.(request)
+    const clientIP = getClientIP?.(request);
     const result = await validateTurnstileToken(token, {
-      remoteip: clientIP
-    })
+      remoteip: clientIP,
+    });
 
     return {
       success: result.success,
       error: result.error,
-      token
-    }
+      token,
+    };
   } catch (error) {
-    console.error('[Turnstile] Request validation error:', error)
+    console.error('[Turnstile] Request validation error:', error);
     return {
       success: false,
-      error: 'Invalid request format'
-    }
+      error: 'Invalid request format',
+    };
   }
 }
 
@@ -154,29 +154,29 @@ export async function validateTurnstileFromRequest(
  * @returns Client IP address or undefined
  */
 export function getClientIP(request: Request): string | undefined {
-  const headers = request.headers
+  const headers = request.headers;
 
-  const forwardedFor = headers.get('x-forwarded-for')
+  const forwardedFor = headers.get('x-forwarded-for');
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
+    return forwardedFor.split(',')[0].trim();
   }
 
-  const realIP = headers.get('x-real-ip')
+  const realIP = headers.get('x-real-ip');
   if (realIP) {
-    return realIP.trim()
+    return realIP.trim();
   }
 
-  const clientIP = headers.get('x-client-ip')
+  const clientIP = headers.get('x-client-ip');
   if (clientIP) {
-    return clientIP.trim()
+    return clientIP.trim();
   }
 
-  const forwardedHost = headers.get('x-forwarded-host')
+  const forwardedHost = headers.get('x-forwarded-host');
   if (forwardedHost?.includes('localhost') || forwardedHost?.includes('127.0.0.1')) {
-    return '127.0.0.1'
+    return '127.0.0.1';
   }
 
-  return undefined
+  return undefined;
 }
 
 /**
@@ -184,7 +184,7 @@ export function getClientIP(request: Request): string | undefined {
  * @returns boolean indicating if Turnstile is configured
  */
 export function isTurnstileConfigured(): boolean {
-  return !!(process.env.TURNSTILE_SECRET_KEY && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+  return !!(process.env.TURNSTILE_SECRET_KEY && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 }
 
 /**
@@ -192,5 +192,5 @@ export function isTurnstileConfigured(): boolean {
  * @returns The site key or undefined if not configured
  */
 export function getTurnstileSiteKey(): string | undefined {
-  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 }

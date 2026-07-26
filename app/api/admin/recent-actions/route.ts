@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db"
-import { adminActions, user } from "@/db/schema"
-import { desc, eq } from "drizzle-orm"
-import { auth } from "@/lib/auth"
-import { isUserAdmin } from "@/lib/admin-utils"
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { adminActions, user } from '@/db/schema';
+import { desc, eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * Get recent admin actions
@@ -21,19 +21,19 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
-    })
+    });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     if (!(await isUserAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '5')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '5');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     const recentActions = await db
       .select({
@@ -49,14 +49,11 @@ export async function GET(request: NextRequest) {
       .leftJoin(user, eq(adminActions.adminId, user.id))
       .orderBy(desc(adminActions.createdAt))
       .limit(limit)
-      .offset(offset)
+      .offset(offset);
 
-    return NextResponse.json({ actions: recentActions })
+    return NextResponse.json({ actions: recentActions });
   } catch (error) {
-    console.error("[! /api/admin/recent-actions] Error fetching recent admin actions:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    console.error('[! /api/admin/recent-actions] Error fetching recent admin actions:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

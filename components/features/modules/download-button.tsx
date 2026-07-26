@@ -1,110 +1,119 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Download, ChevronDown, FileDown } from "lucide-react"
-import type { Module, Release } from "@/types/module"
-import { useDownloadTracking } from "@/hooks/use-modules"
+} from '@/components/ui/dropdown-menu';
+import { Download, ChevronDown, FileDown } from 'lucide-react';
+import type { Module, Release } from '@/types/module';
+import { useDownloadTracking } from '@/hooks/use-modules';
 
 interface DownloadButtonProps {
-  module: Module
+  module: Module;
 }
 
 export function DownloadButton({ module }: DownloadButtonProps) {
-  const { trackDownload } = useDownloadTracking()
-  const [isTracking, setIsTracking] = useState(false)
+  const { trackDownload } = useDownloadTracking();
+  const [isTracking, setIsTracking] = useState(false);
 
   const compareVersions = (a: string, b: string) => {
-    const cleanA = a.replace(/^v/, '').toLowerCase()
-    const cleanB = b.replace(/^v/, '').toLowerCase()
-    const partsA = cleanA.split(/[.-]/)
-    const partsB = cleanB.split(/[.-]/)
-    const isNumeric = (str: string) => /^\d+$/.test(str)
-    const maxLength = Math.max(partsA.length, partsB.length)
+    const cleanA = a.replace(/^v/, '').toLowerCase();
+    const cleanB = b.replace(/^v/, '').toLowerCase();
+    const partsA = cleanA.split(/[.-]/);
+    const partsB = cleanB.split(/[.-]/);
+    const isNumeric = (str: string) => /^\d+$/.test(str);
+    const maxLength = Math.max(partsA.length, partsB.length);
 
     for (let i = 0; i < maxLength; i++) {
-      const partA = partsA[i] || '0'
-      const partB = partsB[i] || '0'
+      const partA = partsA[i] || '0';
+      const partB = partsB[i] || '0';
 
       if (isNumeric(partA) && isNumeric(partB)) {
-        const numA = parseInt(partA, 10)
-        const numB = parseInt(partB, 10)
+        const numA = parseInt(partA, 10);
+        const numB = parseInt(partB, 10);
         if (numA !== numB) {
-          return numA - numB
+          return numA - numB;
         }
       } else {
-        const preReleaseOrder = { alpha: 1, beta: 2, rc: 3 }
-        const orderA = preReleaseOrder[partA as keyof typeof preReleaseOrder] || (isNumeric(partA) ? parseInt(partA, 10) + 1000 : 999)
-        const orderB = preReleaseOrder[partB as keyof typeof preReleaseOrder] || (isNumeric(partB) ? parseInt(partB, 10) + 1000 : 999)
+        const preReleaseOrder = { alpha: 1, beta: 2, rc: 3 };
+        const orderA =
+          preReleaseOrder[partA as keyof typeof preReleaseOrder] ||
+          (isNumeric(partA) ? parseInt(partA, 10) + 1000 : 999);
+        const orderB =
+          preReleaseOrder[partB as keyof typeof preReleaseOrder] ||
+          (isNumeric(partB) ? parseInt(partB, 10) + 1000 : 999);
 
         if (orderA !== orderB) {
-          return orderA - orderB
+          return orderA - orderB;
         }
 
         if (partA !== partB) {
-          return partA.localeCompare(partB)
+          return partA.localeCompare(partB);
         }
       }
     }
 
-    return 0
-  }
+    return 0;
+  };
 
   const getLatestRelease = () => {
     if (!module.releases || module.releases.length === 0) {
-      return module.latestRelease
+      return module.latestRelease;
     }
 
-    const sortedReleases = [...module.releases].sort((a, b) => -compareVersions(a.version, b.version))
-    return sortedReleases[0] || module.latestRelease
-  }
+    const sortedReleases = [...module.releases].sort(
+      (a, b) => -compareVersions(a.version, b.version),
+    );
+    return sortedReleases[0] || module.latestRelease;
+  };
 
   const getBestDownloadUrl = (release: Release | null | undefined) => {
-    if (!release) return null
+    if (!release) return null;
 
     if (!release.assets || release.assets.length === 0) {
-      return release.downloadUrl
+      return release.downloadUrl;
     }
 
     const releaseFile = release.assets.find((asset) =>
-      asset.name.toLowerCase().includes('release')
-    )
+      asset.name.toLowerCase().includes('release'),
+    );
 
     if (releaseFile) {
-      return releaseFile.downloadUrl
+      return releaseFile.downloadUrl;
     }
 
-    return release.assets[0]?.downloadUrl || release.downloadUrl
-  }
+    return release.assets[0]?.downloadUrl || release.downloadUrl;
+  };
 
   const handleDownload = async (downloadUrl: string, releaseId?: number) => {
-    if (!downloadUrl) return
+    if (!downloadUrl) return;
 
-    setIsTracking(true)
+    setIsTracking(true);
     try {
-      await trackDownload(module.id, releaseId)
-      window.open(downloadUrl, '_blank')
+      await trackDownload(module.id, releaseId);
+      window.open(downloadUrl, '_blank');
     } catch (error) {
-      console.error('Failed to track download:', error)
-      window.open(downloadUrl, '_blank')
+      console.error('Failed to track download:', error);
+      window.open(downloadUrl, '_blank');
     } finally {
-      setIsTracking(false)
+      setIsTracking(false);
     }
-  }
+  };
 
-  const handleAssetDownload = (asset: { downloadUrl: string; name: string; size: string }, releaseId: number) => {
-    handleDownload(asset.downloadUrl, releaseId)
-  }
+  const handleAssetDownload = (
+    asset: { downloadUrl: string; name: string; size: string },
+    releaseId: number,
+  ) => {
+    handleDownload(asset.downloadUrl, releaseId);
+  };
 
-  const latestRelease = getLatestRelease()
-  const bestDownloadUrl = getBestDownloadUrl(latestRelease)
-  const hasMultipleFiles = latestRelease?.assets && latestRelease.assets.length > 1
+  const latestRelease = getLatestRelease();
+  const bestDownloadUrl = getBestDownloadUrl(latestRelease);
+  const hasMultipleFiles = latestRelease?.assets && latestRelease.assets.length > 1;
 
   if (!hasMultipleFiles) {
     return (
@@ -115,9 +124,11 @@ export function DownloadButton({ module }: DownloadButtonProps) {
         disabled={!bestDownloadUrl || isTracking}
       >
         <Download className="w-4 h-4" />
-        {isTracking ? 'Preparing...' : `Download Latest (${latestRelease?.version || module.version})`}
+        {isTracking
+          ? 'Preparing...'
+          : `Download Latest (${latestRelease?.version || module.version})`}
       </Button>
-    )
+    );
   }
 
   return (
@@ -129,7 +140,9 @@ export function DownloadButton({ module }: DownloadButtonProps) {
         disabled={!bestDownloadUrl || isTracking}
       >
         <Download className="w-4 h-4" />
-        {isTracking ? 'Preparing...' : `Download Latest (${latestRelease?.version || module.version})`}
+        {isTracking
+          ? 'Preparing...'
+          : `Download Latest (${latestRelease?.version || module.version})`}
       </Button>
 
       <DropdownMenu>
@@ -178,5 +191,5 @@ export function DownloadButton({ module }: DownloadButtonProps) {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

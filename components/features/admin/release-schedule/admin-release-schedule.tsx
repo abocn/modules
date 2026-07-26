@@ -1,49 +1,49 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
-import { Settings, Calendar, Play, Pause, RefreshCw } from "lucide-react"
-import { GlobalScheduleSettings } from "./global-schedule-settings"
-import { ModuleSyncManagement } from "./module-sync-management"
-import { SyncStatusMonitor } from "./sync-status-monitor"
-import { useReleaseSchedule } from "@/hooks/use-release-schedule"
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { Settings, Calendar, Play, Pause, RefreshCw } from 'lucide-react';
+import { GlobalScheduleSettings } from './global-schedule-settings';
+import { ModuleSyncManagement } from './module-sync-management';
+import { SyncStatusMonitor } from './sync-status-monitor';
+import { useReleaseSchedule } from '@/hooks/use-release-schedule';
 
 export function AdminReleaseSchedule() {
-  const { schedule, isLoading, updateSchedule, runManualSync, refetch } = useReleaseSchedule()
-  const [isManualRunning, setIsManualRunning] = useState(false)
+  const { schedule, isLoading, updateSchedule, runManualSync, refetch } = useReleaseSchedule();
+  const [isManualRunning, setIsManualRunning] = useState(false);
 
   const toggleSchedule = async () => {
-    if (!schedule) return
+    if (!schedule) return;
 
     try {
-      await updateSchedule({ enabled: !schedule.enabled })
-      toast.success(`Release schedule ${schedule.enabled ? 'disabled' : 'enabled'}`)
+      await updateSchedule({ enabled: !schedule.enabled });
+      toast.success(`Release schedule ${schedule.enabled ? 'disabled' : 'enabled'}`);
     } catch {
-      toast.error('Failed to update schedule')
+      toast.error('Failed to update schedule');
     }
-  }
+  };
 
   const handleManualSync = async () => {
-    setIsManualRunning(true)
+    setIsManualRunning(true);
     try {
-      const result = await runManualSync()
+      const result = await runManualSync();
       toast.success(`Manual sync started successfully! Job ID: ${result.job?.id || 'Unknown'}`, {
-        description: 'Check the Jobs page to monitor progress'
-      })
-      refetch()
+        description: 'Check the Jobs page to monitor progress',
+      });
+      refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to start manual sync'
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start manual sync';
       toast.error('Failed to start manual sync', {
-        description: errorMessage
-      })
+        description: errorMessage,
+      });
     } finally {
-      setIsManualRunning(false)
+      setIsManualRunning(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -54,7 +54,7 @@ export function AdminReleaseSchedule() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -67,8 +67,8 @@ export function AdminReleaseSchedule() {
           </h1>
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {schedule && (
-              <Badge variant={schedule.enabled ? "default" : "secondary"}>
-                {schedule.enabled ? "Active" : "Inactive"}
+              <Badge variant={schedule.enabled ? 'default' : 'secondary'}>
+                {schedule.enabled ? 'Active' : 'Inactive'}
               </Badge>
             )}
           </div>
@@ -85,7 +85,7 @@ export function AdminReleaseSchedule() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={toggleSchedule}
-                variant={schedule?.enabled ? "destructive" : "default"}
+                variant={schedule?.enabled ? 'destructive' : 'default'}
                 className="flex items-center gap-2 text-sm md:text-base"
                 size="sm"
               >
@@ -119,13 +119,15 @@ export function AdminReleaseSchedule() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
                   <div>
                     <p className="font-medium">Status</p>
-                    <p className={schedule.enabled ? "text-green-600" : "text-gray-500"}>
-                      {schedule.enabled ? "Running" : "Stopped"}
+                    <p className={schedule.enabled ? 'text-green-600' : 'text-gray-500'}>
+                      {schedule.enabled ? 'Running' : 'Stopped'}
                     </p>
                   </div>
                   <div>
                     <p className="font-medium">Interval</p>
-                    <p>{schedule.intervalHours} hour{schedule.intervalHours !== 1 ? 's' : ''}</p>
+                    <p>
+                      {schedule.intervalHours} hour{schedule.intervalHours !== 1 ? 's' : ''}
+                    </p>
                   </div>
                   <div>
                     <p className="font-medium">Batch Size</p>
@@ -149,10 +151,7 @@ export function AdminReleaseSchedule() {
           </TabsList>
 
           <TabsContent value="settings">
-            <GlobalScheduleSettings
-              schedule={schedule}
-              onUpdate={updateSchedule}
-            />
+            <GlobalScheduleSettings schedule={schedule} onUpdate={updateSchedule} />
           </TabsContent>
 
           <TabsContent value="modules">
@@ -165,5 +164,5 @@ export function AdminReleaseSchedule() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

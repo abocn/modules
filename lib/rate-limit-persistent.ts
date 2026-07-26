@@ -1,18 +1,18 @@
-import { NextRequest } from 'next/server'
-import { db } from '../db'
-import { sql } from 'drizzle-orm'
+import { NextRequest } from 'next/server';
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
 
 /**
  * Rate limit configuration interface
  * @interface RateLimitConfig
  */
 interface RateLimitConfig {
-  request: NextRequest
-  identifier?: string
-  limit: number
-  window: number
-  skipSuccessfulRequests?: boolean
-  skipFailedRequests?: boolean
+  request: NextRequest;
+  identifier?: string;
+  limit: number;
+  window: number;
+  skipSuccessfulRequests?: boolean;
+  skipFailedRequests?: boolean;
 }
 
 /**
@@ -20,17 +20,17 @@ interface RateLimitConfig {
  * @interface RateLimitResult
  */
 interface RateLimitResult {
-  success: boolean
-  count?: number
-  remaining?: number
-  reset?: number
-  retryAfter?: number
+  success: boolean;
+  count?: number;
+  remaining?: number;
+  reset?: number;
+  retryAfter?: number;
 }
 
 /**
  * In-memory fallback store for rate limiting
  */
-const memoryStore = new Map<string, { count: number; reset: number }>()
+const memoryStore = new Map<string, { count: number; reset: number }>();
 
 /**
  * Get rate limit identifier from request
@@ -39,21 +39,21 @@ const memoryStore = new Map<string, { count: number; reset: number }>()
  * @returns A unique identifier for rate limiting
  */
 function getRateLimitIdentifier(request: NextRequest): string {
-  const authHeader = request.headers.get('authorization')
+  const authHeader = request.headers.get('authorization');
   if (authHeader?.startsWith('Bearer mk_')) {
-    return `api_key:${authHeader.substring(7, 15)}`
+    return `api_key:${authHeader.substring(7, 15)}`;
   }
 
-  const userIdHeader = request.headers.get('x-user-id')
+  const userIdHeader = request.headers.get('x-user-id');
   if (userIdHeader) {
-    return `user:${userIdHeader}`
+    return `user:${userIdHeader}`;
   }
 
-  const ip = getClientIP(request)
-  const userAgent = request.headers.get('user-agent') || ''
-  const userAgentHash = hashString(userAgent)
+  const ip = getClientIP(request);
+  const userAgent = request.headers.get('user-agent') || '';
+  const userAgentHash = hashString(userAgent);
 
-  return `ip:${ip}:${userAgentHash}`
+  return `ip:${ip}:${userAgentHash}`;
 }
 
 /**
@@ -63,22 +63,22 @@ function getRateLimitIdentifier(request: NextRequest): string {
  * @returns The client IP address
  */
 function getClientIP(request: NextRequest): string {
-  const forwardedFor = request.headers.get('x-forwarded-for')
+  const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
+    return forwardedFor.split(',')[0].trim();
   }
 
-  const realIP = request.headers.get('x-real-ip')
+  const realIP = request.headers.get('x-real-ip');
   if (realIP) {
-    return realIP
+    return realIP;
   }
 
-  const cfConnectingIP = request.headers.get('cf-connecting-ip')
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
   if (cfConnectingIP) {
-    return cfConnectingIP
+    return cfConnectingIP;
   }
 
-  return 'unknown'
+  return 'unknown';
 }
 
 /**
@@ -88,13 +88,13 @@ function getClientIP(request: NextRequest): string {
  * @returns A hashed string
  */
 function hashString(str: string): string {
-  let hash = 0
+  let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
   }
-  return Math.abs(hash).toString(36)
+  return Math.abs(hash).toString(36);
 }
 
 /**
@@ -107,17 +107,12 @@ function hashString(str: string): string {
  * @returns Rate limit result
  */
 export async function rateLimit(config: RateLimitConfig): Promise<RateLimitResult> {
-  const {
-    request,
-    identifier,
-    limit,
-    window
-  } = config
+  const { request, identifier, limit, window } = config;
 
-  const rateLimitId = identifier || getRateLimitIdentifier(request)
-  const now = Date.now()
-  const windowStart = now - window
-  const nextReset = now + window
+  const rateLimitId = identifier || getRateLimitIdentifier(request);
+  const now = Date.now();
+  const windowStart = now - window;
+  const nextReset = now + window;
 
   try {
     await db.execute(sql`
@@ -128,23 +123,23 @@ export async function rateLimit(config: RateLimitConfig): Promise<RateLimitResul
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `)
+    `);
 
     await db.execute(sql`
       DELETE FROM rate_limits WHERE reset_at < ${windowStart}
-    `)
+    `);
 
     const existingLimit = await db.execute<{
-      count: number
-      reset_at: number
+      count: number;
+      reset_at: number;
     }>(sql`
       SELECT count, reset_at
       FROM rate_limits
       WHERE identifier = ${rateLimitId} AND reset_at > ${now}
-    `)
+    `);
 
     if (existingLimit.rows.length > 0) {
-      const current = existingLimit.rows[0]
+      const current = existingLimit.rows[0];
 
       if (current.count >= limit) {
         return {
@@ -152,63 +147,63 @@ export async function rateLimit(config: RateLimitConfig): Promise<RateLimitResul
           count: current.count,
           remaining: 0,
           reset: current.reset_at,
-          retryAfter: Math.ceil((current.reset_at - now) / 1000)
-        }
+          retryAfter: Math.ceil((current.reset_at - now) / 1000),
+        };
       }
 
       await db.execute(sql`
         UPDATE rate_limits
         SET count = count + 1, updated_at = CURRENT_TIMESTAMP
         WHERE identifier = ${rateLimitId}
-      `)
+      `);
 
       return {
         success: true,
         count: current.count + 1,
         remaining: limit - current.count - 1,
-        reset: current.reset_at
-      }
+        reset: current.reset_at,
+      };
     } else {
       await db.execute(sql`
         INSERT INTO rate_limits (identifier, count, reset_at)
         VALUES (${rateLimitId}, 1, ${nextReset})
         ON CONFLICT (identifier) DO UPDATE
         SET count = 1, reset_at = ${nextReset}, updated_at = CURRENT_TIMESTAMP
-      `)
+      `);
 
       return {
         success: true,
         count: 1,
         remaining: limit - 1,
-        reset: nextReset
-      }
+        reset: nextReset,
+      };
     }
   } catch (error) {
-    console.error('[Rate Limit] Database error, falling back to memory:', error)
+    console.error('[Rate Limit] Database error, falling back to memory:', error);
 
     for (const [key, data] of memoryStore.entries()) {
       if (data.reset < now) {
-        memoryStore.delete(key)
+        memoryStore.delete(key);
       }
     }
 
-    const current = memoryStore.get(rateLimitId)
+    const current = memoryStore.get(rateLimitId);
 
     if (!current || current.reset < now) {
       memoryStore.set(rateLimitId, {
         count: 1,
-        reset: nextReset
-      })
+        reset: nextReset,
+      });
 
       return {
         success: true,
         count: 1,
         remaining: limit - 1,
-        reset: nextReset
-      }
+        reset: nextReset,
+      };
     }
 
-    current.count++
+    current.count++;
 
     if (current.count > limit) {
       return {
@@ -216,16 +211,16 @@ export async function rateLimit(config: RateLimitConfig): Promise<RateLimitResul
         count: current.count,
         remaining: 0,
         reset: current.reset,
-        retryAfter: Math.ceil((current.reset - now) / 1000)
-      }
+        retryAfter: Math.ceil((current.reset - now) / 1000),
+      };
     }
 
     return {
       success: true,
       count: current.count,
       remaining: limit - current.count,
-      reset: current.reset
-    }
+      reset: current.reset,
+    };
   }
 }
 
@@ -264,8 +259,8 @@ export const RATE_LIMIT_CONFIGS = {
   SEARCH_OPERATIONS: {
     limit: 60,
     window: 60 * 1000,
-  }
-} as const
+  },
+} as const;
 
 /**
  * Apply rate limiting with predefined configuration
@@ -278,16 +273,16 @@ export const RATE_LIMIT_CONFIGS = {
 export async function applyRateLimit(
   request: NextRequest,
   configKey: keyof typeof RATE_LIMIT_CONFIGS,
-  customIdentifier?: string
+  customIdentifier?: string,
 ): Promise<RateLimitResult> {
-  const config = RATE_LIMIT_CONFIGS[configKey]
+  const config = RATE_LIMIT_CONFIGS[configKey];
 
   return rateLimit({
     request,
     identifier: customIdentifier,
     limit: config.limit,
     window: config.window,
-  })
+  });
 }
 
 /**
@@ -301,14 +296,14 @@ export async function cleanupRateLimits(): Promise<number> {
       DELETE FROM rate_limits
       WHERE reset_at < ${Date.now() - 3600000}
       RETURNING COUNT(*) as count
-    `)
+    `);
 
-    const count = result.rows[0]?.count || 0
-    console.log(`[Rate Limit] Cleaned up ${count} expired entries`)
-    return count
+    const count = result.rows[0]?.count || 0;
+    console.log(`[Rate Limit] Cleaned up ${count} expired entries`);
+    return count;
   } catch (error) {
-    console.error('[Rate Limit] Cleanup error:', error)
-    return 0
+    console.error('[Rate Limit] Cleanup error:', error);
+    return 0;
   }
 }
 
@@ -318,49 +313,49 @@ export async function cleanupRateLimits(): Promise<number> {
  * @returns Statistics about current rate limits
  */
 export async function getRateLimitStats(): Promise<{
-  totalEntries: number
-  activeEntries: number
-  expiredEntries: number
+  totalEntries: number;
+  activeEntries: number;
+  expiredEntries: number;
 }> {
   try {
-    const now = Date.now()
+    const now = Date.now();
     const result = await db.execute<{
-      total: number
-      active: number
-      expired: number
+      total: number;
+      active: number;
+      expired: number;
     }>(sql`
       SELECT
         COUNT(*) as total,
         COUNT(CASE WHEN reset_at >= ${now} THEN 1 END) as active,
         COUNT(CASE WHEN reset_at < ${now} THEN 1 END) as expired
       FROM rate_limits
-    `)
+    `);
 
-    const stats = result.rows[0]
+    const stats = result.rows[0];
     return {
       totalEntries: stats?.total || 0,
       activeEntries: stats?.active || 0,
-      expiredEntries: stats?.expired || 0
-    }
+      expiredEntries: stats?.expired || 0,
+    };
   } catch (error) {
-    console.error('[Rate Limit] Stats error:', error)
+    console.error('[Rate Limit] Stats error:', error);
 
-    const now = Date.now()
-    let active = 0
-    let expired = 0
+    const now = Date.now();
+    let active = 0;
+    let expired = 0;
 
     for (const [, data] of memoryStore.entries()) {
       if (data.reset >= now) {
-        active++
+        active++;
       } else {
-        expired++
+        expired++;
       }
     }
 
     return {
       totalEntries: memoryStore.size,
       activeEntries: active,
-      expiredEntries: expired
-    }
+      expiredEntries: expired,
+    };
   }
 }

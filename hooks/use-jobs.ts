@@ -1,38 +1,38 @@
-import useSWR from 'swr'
-import { useCallback } from 'react'
+import useSWR from 'swr';
+import { useCallback } from 'react';
 
 interface JobStats {
-  total: number
-  pending: number
-  running: number
-  completed: number
-  failed: number
+  total: number;
+  pending: number;
+  running: number;
+  completed: number;
+  failed: number;
 }
 
 interface Job {
-  id: number
-  type: string
-  name: string
-  description?: string
-  status: "pending" | "running" | "completed" | "failed" | "cancelled"
-  progress: number
-  startedBy: string
-  startedAt?: string
-  completedAt?: string
-  duration?: number
-  parameters?: Record<string, unknown>
+  id: number;
+  type: string;
+  name: string;
+  description?: string;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  progress: number;
+  startedBy: string;
+  startedAt?: string;
+  completedAt?: string;
+  duration?: number;
+  parameters?: Record<string, unknown>;
   results?: {
-    success: boolean
-    processedCount?: number
-    errorCount?: number
-    errors?: string[]
-    summary?: string
-  }
+    success: boolean;
+    processedCount?: number;
+    errorCount?: number;
+    errors?: string[];
+    summary?: string;
+  };
   logs?: {
-    timestamp: string
-    level: "info" | "warn" | "error"
-    message: string
-  }[]
+    timestamp: string;
+    level: 'info' | 'warn' | 'error';
+    message: string;
+  }[];
 }
 
 /**
@@ -53,14 +53,14 @@ interface Job {
  * console.log(`${stats?.running} jobs currently running`)
  */
 export function useJobStats() {
-  const { data, error, isLoading, mutate } = useSWR<{ stats: JobStats }>('/api/admin/jobs/stats')
+  const { data, error, isLoading, mutate } = useSWR<{ stats: JobStats }>('/api/admin/jobs/stats');
 
   return {
     stats: data?.stats,
     error,
     isLoading,
-    refetch: mutate
-  }
+    refetch: mutate,
+  };
 }
 
 /**
@@ -85,28 +85,28 @@ export function useJobStats() {
  * console.log(`Found ${jobs.length} running scrape jobs`)
  */
 export function useJobs(statusFilter: string = 'all', typeFilter: string = 'all') {
-  const params = new URLSearchParams()
-  if (statusFilter !== "all") params.append("status", statusFilter)
-  if (typeFilter !== "all") params.append("type", typeFilter)
+  const params = new URLSearchParams();
+  if (statusFilter !== 'all') params.append('status', statusFilter);
+  if (typeFilter !== 'all') params.append('type', typeFilter);
 
-  const queryString = params.toString()
-  const url = `/api/admin/jobs${queryString ? `?${queryString}` : ''}`
+  const queryString = params.toString();
+  const url = `/api/admin/jobs${queryString ? `?${queryString}` : ''}`;
 
   const { data, error, isLoading, mutate } = useSWR<{ jobs: Job[] }>(url, {
     refreshInterval: (data) => {
-      const hasActiveJobs = data?.jobs?.some(job => 
-        job.status === "running" || job.status === "pending"
-      )
-      return hasActiveJobs ? 2000 : 0
-    }
-  })
+      const hasActiveJobs = data?.jobs?.some(
+        (job) => job.status === 'running' || job.status === 'pending',
+      );
+      return hasActiveJobs ? 2000 : 0;
+    },
+  });
 
   return {
     jobs: data?.jobs || [],
     error,
     isLoading,
-    refetch: mutate
-  }
+    refetch: mutate,
+  };
 }
 
 /**
@@ -135,37 +135,40 @@ export function useJobs(statusFilter: string = 'all', typeFilter: string = 'all'
  * await retryJob(failedJobObject)
  */
 export function useJobActions() {
-  const startJob = useCallback(async (type: string, name: string, parameters?: Record<string, unknown>) => {
-    const response = await fetch('/api/admin/jobs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        type,
-        name,
-        parameters: parameters || {}
-      })
-    })
+  const startJob = useCallback(
+    async (type: string, name: string, parameters?: Record<string, unknown>) => {
+      const response = await fetch('/api/admin/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type,
+          name,
+          parameters: parameters || {},
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to start job')
-    }
+      if (!response.ok) {
+        throw new Error('Failed to start job');
+      }
 
-    return response.json()
-  }, [])
+      return response.json();
+    },
+    [],
+  );
 
   const cancelJob = useCallback(async (jobId: number) => {
     const response = await fetch(`/api/admin/jobs/${jobId}/cancel`, {
       method: 'POST',
-    })
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to cancel job')
+      throw new Error('Failed to cancel job');
     }
 
-    return response.json()
-  }, [])
+    return response.json();
+  }, []);
 
   const retryJob = useCallback(async (job: Job) => {
     const response = await fetch('/api/admin/jobs', {
@@ -176,20 +179,20 @@ export function useJobActions() {
       body: JSON.stringify({
         type: job.type,
         name: job.name,
-        parameters: job.parameters || {}
-      })
-    })
+        parameters: job.parameters || {},
+      }),
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to retry job')
+      throw new Error('Failed to retry job');
     }
 
-    return response.json()
-  }, [])
+    return response.json();
+  }, []);
 
   return {
     startJob,
     cancelJob,
-    retryJob
-  }
+    retryJob,
+  };
 }

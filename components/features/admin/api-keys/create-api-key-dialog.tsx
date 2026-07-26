@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useState } from "react"
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,113 +8,109 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { toast } from "sonner"
-import { format } from "date-fns"
-import { CalendarIcon, Copy, Plus, AlertCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { CalendarIcon, Copy, Plus, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CreateApiKeyDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onKeyCreated: () => void
-  users?: { id: string; name: string; email: string }[]
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onKeyCreated: () => void;
+  users?: { id: string; name: string; email: string }[];
 }
 
 export function CreateApiKeyDialog({
   open,
   onOpenChange,
   onKeyCreated,
-  users = []
+  users = [],
 }: CreateApiKeyDialogProps) {
-  const [loading, setLoading] = useState(false)
-  const [userId, setUserId] = useState("")
-  const [name, setName] = useState("")
-  const [scopes, setScopes] = useState<string[]>(["read"])
-  const [expiresAt, setExpiresAt] = useState<Date | undefined>()
-  const [createdKey, setCreatedKey] = useState<string | null>(null)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [name, setName] = useState('');
+  const [scopes, setScopes] = useState<string[]>(['read']);
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>();
+  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleCreate = async () => {
     if (!userId || !name) {
-      toast.error("Please select a user and enter a key name")
-      return
+      toast.error('Please select a user and enter a key name');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch("/api/admin/api-keys/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/admin/api-keys/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
           name,
           scopes,
           expiresAt: expiresAt?.toISOString(),
         }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create API key")
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create API key');
       }
 
-      const data = await response.json()
-      setCreatedKey(data.apiKey.key)
-      setShowSuccess(true)
-      toast.success("API key created successfully")
-      onKeyCreated()
+      const data = await response.json();
+      setCreatedKey(data.apiKey.key);
+      setShowSuccess(true);
+      toast.success('API key created successfully');
+      onKeyCreated();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create API key")
+      toast.error(error instanceof Error ? error.message : 'Failed to create API key');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copyToClipboard = async () => {
-    if (!createdKey) return
+    if (!createdKey) return;
     try {
-      await navigator.clipboard.writeText(createdKey)
-      toast.success("API key copied to clipboard")
+      await navigator.clipboard.writeText(createdKey);
+      toast.success('API key copied to clipboard');
     } catch {
-      toast.error("Failed to copy API key")
+      toast.error('Failed to copy API key');
     }
-  }
+  };
 
   const handleClose = () => {
-    setUserId("")
-    setName("")
-    setScopes(["read"])
-    setExpiresAt(undefined)
-    setCreatedKey(null)
-    setShowSuccess(false)
-    onOpenChange(false)
-  }
+    setUserId('');
+    setName('');
+    setScopes(['read']);
+    setExpiresAt(undefined);
+    setCreatedKey(null);
+    setShowSuccess(false);
+    onOpenChange(false);
+  };
 
   const handleScopeToggle = (scope: string, checked: boolean) => {
     if (checked) {
-      setScopes([...scopes, scope])
+      setScopes([...scopes, scope]);
     } else {
-      setScopes(scopes.filter(s => s !== scope))
+      setScopes(scopes.filter((s) => s !== scope));
     }
-  }
+  };
 
   if (showSuccess && createdKey) {
     return (
@@ -148,11 +144,7 @@ export function CreateApiKeyDialog({
                 <code className="flex-1 bg-muted p-3 rounded-md text-sm font-mono break-all">
                   {createdKey}
                 </code>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={copyToClipboard}
-                >
+                <Button variant="outline" size="icon" onClick={copyToClipboard}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>
@@ -164,7 +156,7 @@ export function CreateApiKeyDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -213,8 +205,8 @@ export function CreateApiKeyDialog({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="read"
-                  checked={scopes.includes("read")}
-                  onCheckedChange={(checked) => handleScopeToggle("read", !!checked)}
+                  checked={scopes.includes('read')}
+                  onCheckedChange={(checked) => handleScopeToggle('read', !!checked)}
                 />
                 <label
                   htmlFor="read"
@@ -226,8 +218,8 @@ export function CreateApiKeyDialog({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="write"
-                  checked={scopes.includes("write")}
-                  onCheckedChange={(checked) => handleScopeToggle("write", !!checked)}
+                  checked={scopes.includes('write')}
+                  onCheckedChange={(checked) => handleScopeToggle('write', !!checked)}
                 />
                 <label
                   htmlFor="write"
@@ -239,8 +231,8 @@ export function CreateApiKeyDialog({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="admin"
-                  checked={scopes.includes("admin")}
-                  onCheckedChange={(checked) => handleScopeToggle("admin", !!checked)}
+                  checked={scopes.includes('admin')}
+                  onCheckedChange={(checked) => handleScopeToggle('admin', !!checked)}
                 />
                 <label
                   htmlFor="admin"
@@ -259,12 +251,12 @@ export function CreateApiKeyDialog({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !expiresAt && "text-muted-foreground"
+                    'w-full justify-start text-left font-normal',
+                    !expiresAt && 'text-muted-foreground',
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {expiresAt ? format(expiresAt, "PPP") : "No expiration"}
+                  {expiresAt ? format(expiresAt, 'PPP') : 'No expiration'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -283,7 +275,10 @@ export function CreateApiKeyDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={loading || !userId || !name || scopes.length === 0}>
+          <Button
+            onClick={handleCreate}
+            disabled={loading || !userId || !name || scopes.length === 0}
+          >
             {loading ? (
               <>
                 <div className="w-4 h-4 animate-spin border-2 border-current border-t-transparent rounded-full mr-2" />
@@ -299,5 +294,5 @@ export function CreateApiKeyDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

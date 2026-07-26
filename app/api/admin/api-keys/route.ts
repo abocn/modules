@@ -1,8 +1,8 @@
-import { NextResponse, type NextRequest } from "next/server"
-import { db } from "@/db"
-import { apiKeys, user as userTable } from "@/db/schema"
-import { desc, sql, eq } from "drizzle-orm"
-import { withAuth } from "@/lib/api-wrapper"
+import { NextResponse, type NextRequest } from 'next/server';
+import { db } from '@/db';
+import { apiKeys, user as userTable } from '@/db/schema';
+import { desc, sql, eq } from 'drizzle-orm';
+import { withAuth } from '@/lib/api-wrapper';
 
 /**
  * List all API keys
@@ -62,7 +62,7 @@ const _wrappedGet = withAuth(
         })
         .from(apiKeys)
         .leftJoin(userTable, eq(apiKeys.userId, userTable.id))
-        .orderBy(desc(apiKeys.createdAt))
+        .orderBy(desc(apiKeys.createdAt));
 
       const stats = await db
         .select({
@@ -72,7 +72,7 @@ const _wrappedGet = withAuth(
           expiredKeys: sql<number>`count(*) filter (where ${apiKeys.expiresAt} < now() and ${apiKeys.revokedAt} is null)`,
           recentlyUsed: sql<number>`count(*) filter (where ${apiKeys.lastUsedAt} > now() - interval '7 days')`,
         })
-        .from(apiKeys)
+        .from(apiKeys);
 
       return NextResponse.json({
         keys: keysWithUsers,
@@ -82,19 +82,16 @@ const _wrappedGet = withAuth(
           revokedKeys: 0,
           expiredKeys: 0,
           recentlyUsed: 0,
-        }
-      })
+        },
+      });
     } catch (error) {
-      console.error("Failed to fetch API keys:", error)
-      return NextResponse.json(
-        { error: "Failed to fetch API keys" },
-        { status: 500 }
-      )
+      console.error('Failed to fetch API keys:', error);
+      return NextResponse.json({ error: 'Failed to fetch API keys' }, { status: 500 });
     }
   },
-  { requireAdmin: true }
-)
+  { requireAdmin: true },
+);
 
 export async function GET(request: NextRequest) {
-  return _wrappedGet(request, {})
+  return _wrappedGet(request, {});
 }

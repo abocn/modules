@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
-import { adminJobs } from '@/db/schema'
-import { desc, eq, and, gte } from 'drizzle-orm'
-import { auth } from '@/lib/auth'
-import { isUserAdmin } from '@/lib/admin-utils'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { adminJobs } from '@/db/schema';
+import { desc, eq, and, gte } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * Health check
@@ -37,42 +37,31 @@ import { isUserAdmin } from '@/lib/admin-utils'
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: request.headers
-    })
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     if (!(await isUserAdmin(session.user.id))) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const now = new Date()
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
 
     const recentJobs = await db
       .select()
       .from(adminJobs)
-      .where(
-        and(
-          gte(adminJobs.createdAt, oneHourAgo),
-          eq(adminJobs.startedBy, 'SYSTEM')
-        )
-      )
+      .where(and(gte(adminJobs.createdAt, oneHourAgo), eq(adminJobs.startedBy, 'SYSTEM')))
       .orderBy(desc(adminJobs.createdAt))
-      .limit(5)
+      .limit(5);
 
-    const schedulerActive = recentJobs.some(job =>
-      job.name === 'Automatic GitHub Scrape' ||
-      job.name === 'Automatic GitHub Config Sync'
-    )
+    const schedulerActive = recentJobs.some(
+      (job) =>
+        job.name === 'Automatic GitHub Scrape' || job.name === 'Automatic GitHub Config Sync',
+    );
 
     const health = {
       status: 'healthy',
@@ -81,22 +70,22 @@ export async function GET(request: NextRequest) {
         enabled: process.env.RELEASE_SCHEDULE_ENABLED === 'true',
         active: schedulerActive,
         syncInterval: parseInt(process.env.DEFAULT_SYNC_INTERVAL_HOURS || '6'),
-        recentSystemJobs: recentJobs.length
+        recentSystemJobs: recentJobs.length,
       },
-      database: 'connected'
-    }
+      database: 'connected',
+    };
 
-    return NextResponse.json(health)
+    return NextResponse.json(health);
   } catch (error) {
-    console.error('[! /api/health] Health check failed:', error)
+    console.error('[! /api/health] Health check failed:', error);
     return NextResponse.json(
       {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         error: error instanceof Error ? error.message : 'Unknown error',
-        database: 'disconnected'
+        database: 'disconnected',
       },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

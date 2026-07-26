@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { Skeleton } from "@/components/ui/skeleton"
-import { ModuleCardSkeleton } from "./module-card-skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
+import { ModuleCardSkeleton } from './module-card-skeleton';
 
 interface CategoryPageSkeletonProps {
-  title?: string
+  title?: string;
 }
 
 export function CategoryPageSkeleton({ title }: CategoryPageSkeletonProps) {
@@ -27,5 +27,5 @@ export function CategoryPageSkeleton({ title }: CategoryPageSkeletonProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

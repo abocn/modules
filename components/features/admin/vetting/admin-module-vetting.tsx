@@ -1,51 +1,72 @@
-"use client"
+'use client';
 
-import { useState, useCallback } from "react"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { useAdminModules, useAdminModulesList } from "@/hooks/use-admin"
-import { Search, Eye, Check, X, Clock, AlertTriangle, Package, ExternalLink, GitBranch, Users, Shield, Calendar, Star, FileCode, User } from "lucide-react"
-import { Filters, FilterField, FilterValues } from "@/components/features/admin/filters"
-import type { AdminModule } from "@/types/module"
+import { useState, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { useAdminModules, useAdminModulesList } from '@/hooks/use-admin';
+import {
+  Search,
+  Eye,
+  Check,
+  X,
+  Clock,
+  AlertTriangle,
+  Package,
+  ExternalLink,
+  GitBranch,
+  Users,
+  Shield,
+  Calendar,
+  Star,
+  FileCode,
+  User,
+} from 'lucide-react';
+import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
+import type { AdminModule } from '@/types/module';
 
-type ReviewAction = 'approve' | 'reject'
-type WarningType = "malware" | "closed-source" | "stolen-code"
+type ReviewAction = 'approve' | 'reject';
+type WarningType = 'malware' | 'closed-source' | 'stolen-code';
 
 export function AdminModuleSubmissions() {
-  const { modules, isLoading: loading, error, refetch } = useAdminModulesList(undefined, 100, 0)
-  const { updateModuleStatus, updateModuleWarnings, error: adminError, isLoading: adminLoading } = useAdminModules()
+  const { modules, isLoading: loading, error, refetch } = useAdminModulesList(undefined, 100, 0);
+  const {
+    updateModuleStatus,
+    updateModuleWarnings,
+    error: adminError,
+    isLoading: adminLoading,
+  } = useAdminModules();
 
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedModule, setSelectedModule] = useState<AdminModule | null>(null)
-  const [reviewNotes, setReviewNotes] = useState("")
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
-  const [currentTab, setCurrentTab] = useState("overview")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedModule, setSelectedModule] = useState<AdminModule | null>(null);
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState('overview');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
-    query: "",
-    category: "all",
-    hasWarnings: "all",
-    isOpenSource: "all",
+    query: '',
+    category: 'all',
+    hasWarnings: 'all',
+    isOpenSource: 'all',
     submittedDateFrom: undefined,
-    submittedDateTo: undefined
-  })
+    submittedDateTo: undefined,
+  });
 
   const filterFields: FilterField[] = [
     {
       type: 'text',
       key: 'query',
       label: 'Search Modules',
-      placeholder: 'Search by name or author...'
+      placeholder: 'Search by name or author...',
     },
     {
       type: 'select',
@@ -58,8 +79,8 @@ export function AdminModuleSubmissions() {
         { value: 'system', label: 'System' },
         { value: 'media', label: 'Media' },
         { value: 'development', label: 'Development' },
-        { value: 'gaming', label: 'Gaming' }
-      ]
+        { value: 'gaming', label: 'Gaming' },
+      ],
     },
     {
       type: 'select',
@@ -67,8 +88,8 @@ export function AdminModuleSubmissions() {
       label: 'Security Warnings',
       options: [
         { value: 'true', label: 'Has Warnings' },
-        { value: 'false', label: 'No Warnings' }
-      ]
+        { value: 'false', label: 'No Warnings' },
+      ],
     },
     {
       type: 'select',
@@ -76,152 +97,190 @@ export function AdminModuleSubmissions() {
       label: 'Open Source',
       options: [
         { value: 'true', label: 'Open Source' },
-        { value: 'false', label: 'Closed Source' }
-      ]
+        { value: 'false', label: 'Closed Source' },
+      ],
     },
     {
       type: 'date',
       key: 'submittedDateFrom',
-      label: 'Submitted From'
+      label: 'Submitted From',
     },
     {
       type: 'date',
       key: 'submittedDateTo',
-      label: 'Submitted To'
-    }
-  ]
+      label: 'Submitted To',
+    },
+  ];
 
   const resetAdvancedFilters = useCallback(() => {
     setAdvancedFilters({
-      query: "",
-      category: "all",
-      hasWarnings: "all",
-      isOpenSource: "all",
+      query: '',
+      category: 'all',
+      hasWarnings: 'all',
+      isOpenSource: 'all',
       submittedDateFrom: undefined,
-      submittedDateTo: undefined
-    })
-    setSearchQuery("")
-  }, [])
+      submittedDateTo: undefined,
+    });
+    setSearchQuery('');
+  }, []);
 
-  const pendingModules = modules?.filter(module => module.status === 'pending') || []
+  const pendingModules = modules?.filter((module) => module.status === 'pending') || [];
 
   const filteredModules = pendingModules.filter((module) => {
     const matchesSearch =
       module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      module.author.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = advancedFilters.category === "all" || module.category === advancedFilters.category
-    const hasAnyWarnings = module.warnings.length > 0 || !module.isOpenSource || !module.sourceUrl
-    const matchesWarnings = advancedFilters.hasWarnings === "all" ||
-      (advancedFilters.hasWarnings === "true" ? hasAnyWarnings : !hasAnyWarnings)
-    const matchesOpenSource = advancedFilters.isOpenSource === "all" ||
-      (advancedFilters.isOpenSource === "true" ? module.isOpenSource : !module.isOpenSource)
-    const moduleDate = new Date(module.createdAt)
-    const matchesDateFrom = !advancedFilters.submittedDateFrom || 
-      (typeof advancedFilters.submittedDateFrom === 'string' && moduleDate >= new Date(advancedFilters.submittedDateFrom))
-    const matchesDateTo = !advancedFilters.submittedDateTo || 
-      (typeof advancedFilters.submittedDateTo === 'string' && moduleDate <= new Date(advancedFilters.submittedDateTo))
+      module.author.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      advancedFilters.category === 'all' || module.category === advancedFilters.category;
+    const hasAnyWarnings = module.warnings.length > 0 || !module.isOpenSource || !module.sourceUrl;
+    const matchesWarnings =
+      advancedFilters.hasWarnings === 'all' ||
+      (advancedFilters.hasWarnings === 'true' ? hasAnyWarnings : !hasAnyWarnings);
+    const matchesOpenSource =
+      advancedFilters.isOpenSource === 'all' ||
+      (advancedFilters.isOpenSource === 'true' ? module.isOpenSource : !module.isOpenSource);
+    const moduleDate = new Date(module.createdAt);
+    const matchesDateFrom =
+      !advancedFilters.submittedDateFrom ||
+      (typeof advancedFilters.submittedDateFrom === 'string' &&
+        moduleDate >= new Date(advancedFilters.submittedDateFrom));
+    const matchesDateTo =
+      !advancedFilters.submittedDateTo ||
+      (typeof advancedFilters.submittedDateTo === 'string' &&
+        moduleDate <= new Date(advancedFilters.submittedDateTo));
 
-    return matchesSearch && matchesCategory && matchesWarnings && matchesOpenSource && matchesDateFrom && matchesDateTo
-  })
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesWarnings &&
+      matchesOpenSource &&
+      matchesDateFrom &&
+      matchesDateTo
+    );
+  });
 
-  const handleReviewAction = useCallback(async (action: ReviewAction, moduleId: string) => {
-    if (!selectedModule) return
+  const handleReviewAction = useCallback(
+    async (action: ReviewAction, moduleId: string) => {
+      if (!selectedModule) return;
 
-    if (action === 'reject' && !reviewNotes.trim()) {
-      alert("Please provide rejection notes explaining why the module was rejected.")
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      const isPublished = action === 'approve'
-      const success = await updateModuleStatus(moduleId, isPublished, reviewNotes.trim() || undefined)
-
-      if (success) {
-        setIsReviewDialogOpen(false)
-        setReviewNotes("")
-        setSelectedModule(null)
-        await refetch?.()
-      } else {
-        alert(adminError || `Failed to ${action} module. Please try again.`)
+      if (action === 'reject' && !reviewNotes.trim()) {
+        alert('Please provide rejection notes explaining why the module was rejected.');
+        return;
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : `An error occurred while ${action === 'approve' ? 'approving' : 'rejecting'} the module.`
-      alert(message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }, [selectedModule, reviewNotes, updateModuleStatus, refetch, adminError])
 
-  const handleApproveModule = useCallback((moduleId: string) => {
-    handleReviewAction('approve', moduleId)
-  }, [handleReviewAction])
+      setIsSubmitting(true);
 
-  const handleRejectModule = useCallback((moduleId: string) => {
-    handleReviewAction('reject', moduleId)
-  }, [handleReviewAction])
+      try {
+        const isPublished = action === 'approve';
+        const success = await updateModuleStatus(
+          moduleId,
+          isPublished,
+          reviewNotes.trim() || undefined,
+        );
+
+        if (success) {
+          setIsReviewDialogOpen(false);
+          setReviewNotes('');
+          setSelectedModule(null);
+          await refetch?.();
+        } else {
+          alert(adminError || `Failed to ${action} module. Please try again.`);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : `An error occurred while ${action === 'approve' ? 'approving' : 'rejecting'} the module.`;
+        alert(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [selectedModule, reviewNotes, updateModuleStatus, refetch, adminError],
+  );
+
+  const handleApproveModule = useCallback(
+    (moduleId: string) => {
+      handleReviewAction('approve', moduleId);
+    },
+    [handleReviewAction],
+  );
+
+  const handleRejectModule = useCallback(
+    (moduleId: string) => {
+      handleReviewAction('reject', moduleId);
+    },
+    [handleReviewAction],
+  );
 
   const openReviewDialog = useCallback((module: AdminModule) => {
-    setSelectedModule(module)
-    setIsReviewDialogOpen(true)
-    setReviewNotes("")
-    setCurrentTab("overview")
-  }, [])
+    setSelectedModule(module);
+    setIsReviewDialogOpen(true);
+    setReviewNotes('');
+    setCurrentTab('overview');
+  }, []);
 
-  const addSecurityWarning = useCallback(async (type: WarningType, message: string) => {
-    if (!selectedModule || !message.trim()) return
+  const addSecurityWarning = useCallback(
+    async (type: WarningType, message: string) => {
+      if (!selectedModule || !message.trim()) return;
 
-    const newWarning = { type, message: message.trim() }
-    const updatedWarnings = [...selectedModule.warnings, newWarning]
+      const newWarning = { type, message: message.trim() };
+      const updatedWarnings = [...selectedModule.warnings, newWarning];
 
-    try {
-      const success = await updateModuleWarnings(selectedModule.id, updatedWarnings)
-      if (success) {
-        setSelectedModule({
-          ...selectedModule,
-          warnings: updatedWarnings
-        })
-        await refetch?.()
-      } else {
-        alert(adminError || "Could not add security warning. Please try again.")
+      try {
+        const success = await updateModuleWarnings(selectedModule.id, updatedWarnings);
+        if (success) {
+          setSelectedModule({
+            ...selectedModule,
+            warnings: updatedWarnings,
+          });
+          await refetch?.();
+        } else {
+          alert(adminError || 'Could not add security warning. Please try again.');
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'An error occurred while adding the warning.';
+        alert(message);
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "An error occurred while adding the warning."
-      alert(message)
-    }
-  }, [selectedModule, updateModuleWarnings, refetch, adminError])
+    },
+    [selectedModule, updateModuleWarnings, refetch, adminError],
+  );
 
-  const removeSecurityWarning = useCallback(async (index: number) => {
-    if (!selectedModule || index < 0 || index >= selectedModule.warnings.length) return
+  const removeSecurityWarning = useCallback(
+    async (index: number) => {
+      if (!selectedModule || index < 0 || index >= selectedModule.warnings.length) return;
 
-    const updatedWarnings = selectedModule.warnings.filter((_, i) => i !== index)
+      const updatedWarnings = selectedModule.warnings.filter((_, i) => i !== index);
 
-    try {
-      const success = await updateModuleWarnings(selectedModule.id, updatedWarnings)
-      if (success) {
-        setSelectedModule({
-          ...selectedModule,
-          warnings: updatedWarnings
-        })
-        await refetch?.()
-      } else {
-        alert(adminError || "Could not remove security warning. Please try again.")
+      try {
+        const success = await updateModuleWarnings(selectedModule.id, updatedWarnings);
+        if (success) {
+          setSelectedModule({
+            ...selectedModule,
+            warnings: updatedWarnings,
+          });
+          await refetch?.();
+        } else {
+          alert(adminError || 'Could not remove security warning. Please try again.');
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'An error occurred while removing the warning.';
+        alert(message);
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "An error occurred while removing the warning."
-      alert(message)
-    }
-  }, [selectedModule, updateModuleWarnings, refetch, adminError])
+    },
+    [selectedModule, updateModuleWarnings, refetch, adminError],
+  );
 
   const moduleStats = {
     pending: pendingModules.length,
-    withWarnings: pendingModules.filter((m) =>
-      m.warnings.length > 0 || !m.isOpenSource || !m.sourceUrl
+    withWarnings: pendingModules.filter(
+      (m) => m.warnings.length > 0 || !m.isOpenSource || !m.sourceUrl,
     ).length,
     openSource: pendingModules.filter((m) => m.isOpenSource).length,
     featured: pendingModules.filter((m) => m.isFeatured).length,
-  }
+  };
 
   if (loading) {
     return (
@@ -231,7 +290,7 @@ export function AdminModuleSubmissions() {
           <p className="text-muted-foreground">Loading modules...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -244,7 +303,7 @@ export function AdminModuleSubmissions() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -252,9 +311,7 @@ export function AdminModuleSubmissions() {
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {adminError && (
           <div className="bg-destructive/15 border border-destructive/20 rounded-lg p-4">
-            <p className="text-destructive text-sm">
-              Admin operation failed: {adminError}
-            </p>
+            <p className="text-destructive text-sm">Admin operation failed: {adminError}</p>
           </div>
         )}
 
@@ -339,76 +396,95 @@ export function AdminModuleSubmissions() {
             </Card>
           ) : (
             filteredModules.map((module) => {
-              const hasSecurityIssues = module.warnings.length > 0 || !module.isOpenSource || !module.sourceUrl
+              const hasSecurityIssues =
+                module.warnings.length > 0 || !module.isOpenSource || !module.sourceUrl;
               return (
-              <Card key={module.id} className={hasSecurityIssues ? '' : 'border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800'}>
-                <CardContent className="p-4 sm:px-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-                    {module.icon && (
-                      <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={module.icon}
-                          alt={module.name}
-                          className="w-12 h-12 rounded-lg border flex-shrink-0 object-cover"
-                        />
-                      </>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="text-base sm:text-lg font-semibold break-words">{module.name}</h3>
-                        <Badge variant="outline">Pending</Badge>
-                        {(module.warnings.length > 0 || !module.isOpenSource || !module.sourceUrl) && (
-                          <Badge variant="destructive">
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            {module.warnings.length > 0 ? `${module.warnings.length} Warning${module.warnings.length > 1 ? 's' : ''}` : 'Needs Review'}
-                          </Badge>
-                        )}
-                        {module.isOpenSource && (
-                          <Badge className="bg-green-500 text-white">Open Source</Badge>
-                        )}
-                        {module.isFeatured && (
-                          <Badge className="bg-yellow-500 text-white">Featured</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm sm:text-base text-muted-foreground mb-2">by {module.author}</p>
-                      <p className="text-sm mb-3 line-clamp-2 sm:line-clamp-none">{module.shortDescription}</p>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Package className="w-3 h-3" />
-                          {module.category}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileCode className="w-3 h-3" />
-                          {module.license}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {new Date(module.createdAt).toLocaleDateString()}
-                        </span>
-                        {module.submittedByUsername && (
+                <Card
+                  key={module.id}
+                  className={
+                    hasSecurityIssues
+                      ? ''
+                      : 'border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800'
+                  }
+                >
+                  <CardContent className="p-4 sm:px-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                      {module.icon && (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={module.icon}
+                            alt={module.name}
+                            className="w-12 h-12 rounded-lg border flex-shrink-0 object-cover"
+                          />
+                        </>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                          <h3 className="text-base sm:text-lg font-semibold break-words">
+                            {module.name}
+                          </h3>
+                          <Badge variant="outline">Pending</Badge>
+                          {(module.warnings.length > 0 ||
+                            !module.isOpenSource ||
+                            !module.sourceUrl) && (
+                            <Badge variant="destructive">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              {module.warnings.length > 0
+                                ? `${module.warnings.length} Warning${module.warnings.length > 1 ? 's' : ''}`
+                                : 'Needs Review'}
+                            </Badge>
+                          )}
+                          {module.isOpenSource && (
+                            <Badge className="bg-green-500 text-white">Open Source</Badge>
+                          )}
+                          {module.isFeatured && (
+                            <Badge className="bg-yellow-500 text-white">Featured</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                          by {module.author}
+                        </p>
+                        <p className="text-sm mb-3 line-clamp-2 sm:line-clamp-none">
+                          {module.shortDescription}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <User className="w-3 h-3" />
-                            {module.submittedByUsername}
+                            <Package className="w-3 h-3" />
+                            {module.category}
                           </span>
-                        )}
+                          <span className="flex items-center gap-1">
+                            <FileCode className="w-3 h-3" />
+                            {module.license}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(module.createdAt).toLocaleDateString()}
+                          </span>
+                          {module.submittedByUsername && (
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {module.submittedByUsername}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 sm:ml-auto">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReviewDialog(module)}
+                          className="w-full sm:w-auto"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Review
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 sm:ml-auto">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openReviewDialog(module)}
-                        className="w-full sm:w-auto"
-                      >
-                        <Eye className="w-4 h-4" />
-                        Review
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )})
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
@@ -430,13 +506,27 @@ export function AdminModuleSubmissions() {
               </DialogTitle>
             </DialogHeader>
             {selectedModule && (
-              <Tabs value={currentTab} onValueChange={setCurrentTab} className="flex flex-col flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6">
+              <Tabs
+                value={currentTab}
+                onValueChange={setCurrentTab}
+                className="flex flex-col flex-1 overflow-hidden px-4 sm:px-6 pb-4 sm:pb-6"
+              >
                 <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-1 mb-3 sm:mb-4">
-                  <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-                  <TabsTrigger value="details" className="text-xs sm:text-sm sm:inline-flex hidden">Details</TabsTrigger>
-                  <TabsTrigger value="media" className="text-xs sm:text-sm sm:inline-flex hidden">Media</TabsTrigger>
-                  <TabsTrigger value="security" className="text-xs sm:text-sm">Security</TabsTrigger>
-                  <TabsTrigger value="review" className="text-xs sm:text-sm">Review</TabsTrigger>
+                  <TabsTrigger value="overview" className="text-xs sm:text-sm">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="details" className="text-xs sm:text-sm sm:inline-flex hidden">
+                    Details
+                  </TabsTrigger>
+                  <TabsTrigger value="media" className="text-xs sm:text-sm sm:inline-flex hidden">
+                    Media
+                  </TabsTrigger>
+                  <TabsTrigger value="security" className="text-xs sm:text-sm">
+                    Security
+                  </TabsTrigger>
+                  <TabsTrigger value="review" className="text-xs sm:text-sm">
+                    Review
+                  </TabsTrigger>
                 </TabsList>
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
@@ -492,11 +582,13 @@ export function AdminModuleSubmissions() {
                           <div>
                             <p className="text-sm text-muted-foreground mb-2">Android Versions</p>
                             <div className="flex flex-wrap gap-1">
-                              {selectedModule.compatibility.androidVersions.map((version: string) => (
-                                <Badge key={version} variant="outline" className="text-xs">
-                                  {version}
-                                </Badge>
-                              ))}
+                              {selectedModule.compatibility.androidVersions.map(
+                                (version: string) => (
+                                  <Badge key={version} variant="outline" className="text-xs">
+                                    {version}
+                                  </Badge>
+                                ),
+                              )}
                             </div>
                           </div>
                           <Separator />
@@ -519,13 +611,17 @@ export function AdminModuleSubmissions() {
                         <CardTitle className="text-base">Description</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">{selectedModule.shortDescription}</p>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {selectedModule.shortDescription}
+                        </p>
                         <div className="prose prose-sm max-w-none dark:prose-invert max-h-48 overflow-y-auto">
-                          <ReactMarkdown 
+                          <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw, rehypeSanitize]}
                           >
-                            {selectedModule.description.length > 500 ? selectedModule.description.substring(0, 500) + '...' : selectedModule.description}
+                            {selectedModule.description.length > 500
+                              ? selectedModule.description.substring(0, 500) + '...'
+                              : selectedModule.description}
                           </ReactMarkdown>
                         </div>
                       </CardContent>
@@ -709,9 +805,15 @@ export function AdminModuleSubmissions() {
                   </TabsContent>
 
                   <TabsContent value="security" className="space-y-4 sm:space-y-6">
-                    <Card className={selectedModule.warnings.length > 0 ? "border-red-200" : "border-green-200"}>
+                    <Card
+                      className={
+                        selectedModule.warnings.length > 0 ? 'border-red-200' : 'border-green-200'
+                      }
+                    >
                       <CardHeader>
-                        <CardTitle className={`text-base flex items-center gap-2 ${selectedModule.warnings.length > 0 ? "text-red-600" : "text-green-600"}`}>
+                        <CardTitle
+                          className={`text-base flex items-center gap-2 ${selectedModule.warnings.length > 0 ? 'text-red-600' : 'text-green-600'}`}
+                        >
                           {selectedModule.warnings.length > 0 ? (
                             <AlertTriangle className="w-4 h-4" />
                           ) : (
@@ -723,13 +825,18 @@ export function AdminModuleSubmissions() {
                       <CardContent className="space-y-3">
                         {selectedModule.warnings.length > 0 ? (
                           selectedModule.warnings.map((warning, index: number) => (
-                            <div key={index} className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4">
+                            <div
+                              key={index}
+                              className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3 sm:p-4"
+                            >
                               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                                 <div className="flex items-start gap-3 flex-1">
                                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium text-red-800 dark:text-red-300 mb-1 text-sm sm:text-base">
-                                      {warning.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                      {warning.type
+                                        .replace('-', ' ')
+                                        .replace(/\b\w/g, (l) => l.toUpperCase())}
                                     </p>
                                     <p className="text-red-700 dark:text-red-400 text-xs sm:text-sm break-words">
                                       {warning.message}
@@ -768,11 +875,16 @@ export function AdminModuleSubmissions() {
                         </CardHeader>
                         <CardContent className="space-y-3">
                           {selectedModule.reviewNotes.map((note, index: number) => (
-                            <div key={index} className={`border rounded-lg p-4 ${
-                              note.type === 'approved' ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' :
-                              note.type === 'rejected' ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800' :
-                              'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800'
-                            }`}>
+                            <div
+                              key={index}
+                              className={`border rounded-lg p-4 ${
+                                note.type === 'approved'
+                                  ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800'
+                                  : note.type === 'rejected'
+                                    ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                                    : 'bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800'
+                              }`}
+                            >
                               <div className="flex items-start gap-3">
                                 {note.type === 'approved' ? (
                                   <Check className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
@@ -782,20 +894,33 @@ export function AdminModuleSubmissions() {
                                   <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                                 )}
                                 <div className="flex-1">
-                                  <p className={`font-medium mb-1 ${
-                                    note.type === 'approved' ? 'text-green-800 dark:text-green-300' :
-                                    note.type === 'rejected' ? 'text-red-800 dark:text-red-300' :
-                                    'text-yellow-800 dark:text-yellow-300'
-                                  }`}>
-                                    {note.type === 'approved' ? 'Approved' : note.type === 'rejected' ? 'Rejected' : 'Changes Requested'}
+                                  <p
+                                    className={`font-medium mb-1 ${
+                                      note.type === 'approved'
+                                        ? 'text-green-800 dark:text-green-300'
+                                        : note.type === 'rejected'
+                                          ? 'text-red-800 dark:text-red-300'
+                                          : 'text-yellow-800 dark:text-yellow-300'
+                                    }`}
+                                  >
+                                    {note.type === 'approved'
+                                      ? 'Approved'
+                                      : note.type === 'rejected'
+                                        ? 'Rejected'
+                                        : 'Changes Requested'}
                                     {note.reviewedBy && ` by ${note.reviewedBy}`}
-                                    {note.reviewedAt && ` on ${new Date(note.reviewedAt).toLocaleDateString()}`}
+                                    {note.reviewedAt &&
+                                      ` on ${new Date(note.reviewedAt).toLocaleDateString()}`}
                                   </p>
-                                  <p className={`text-sm ${
-                                    note.type === 'approved' ? 'text-green-700 dark:text-green-400' :
-                                    note.type === 'rejected' ? 'text-red-700 dark:text-red-400' :
-                                    'text-yellow-700 dark:text-yellow-400'
-                                  }`}>
+                                  <p
+                                    className={`text-sm ${
+                                      note.type === 'approved'
+                                        ? 'text-green-700 dark:text-green-400'
+                                        : note.type === 'rejected'
+                                          ? 'text-red-700 dark:text-red-400'
+                                          : 'text-yellow-700 dark:text-yellow-400'
+                                    }`}
+                                  >
                                     {note.message}
                                   </p>
                                 </div>
@@ -821,17 +946,27 @@ export function AdminModuleSubmissions() {
                               )}
                               <span className="text-sm">Open source code available for review</span>
                             </div>
-                            {!selectedModule.isOpenSource && !selectedModule.warnings.some(w => w.type === "closed-source" && w.message.includes("not open source")) && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs ml-8 sm:ml-0"
-                                onClick={() => addSecurityWarning("closed-source", "Module is not open source - source code needs to be made available for security review.")}
-                                disabled={adminLoading}
-                              >
-                                Add to Issues
-                              </Button>
-                            )}
+                            {!selectedModule.isOpenSource &&
+                              !selectedModule.warnings.some(
+                                (w) =>
+                                  w.type === 'closed-source' &&
+                                  w.message.includes('not open source'),
+                              ) && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs ml-8 sm:ml-0"
+                                  onClick={() =>
+                                    addSecurityWarning(
+                                      'closed-source',
+                                      'Module is not open source - source code needs to be made available for security review.',
+                                    )
+                                  }
+                                  disabled={adminLoading}
+                                >
+                                  Add to Issues
+                                </Button>
+                              )}
                           </div>
 
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -843,22 +978,31 @@ export function AdminModuleSubmissions() {
                               )}
                               <span className="text-sm">Source repository provided</span>
                             </div>
-                            {!selectedModule.sourceUrl && !selectedModule.warnings.some(w => w.type === "closed-source" && w.message.includes("No source repository URL")) && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs ml-8 sm:ml-0"
-                                onClick={() => addSecurityWarning("closed-source", "No source repository URL provided - please provide a link to the source code.")}
-                                disabled={adminLoading}
-                              >
-                                Add to Issues
-                              </Button>
-                            )}
+                            {!selectedModule.sourceUrl &&
+                              !selectedModule.warnings.some(
+                                (w) =>
+                                  w.type === 'closed-source' &&
+                                  w.message.includes('No source repository URL'),
+                              ) && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs ml-8 sm:ml-0"
+                                  onClick={() =>
+                                    addSecurityWarning(
+                                      'closed-source',
+                                      'No source repository URL provided - please provide a link to the source code.',
+                                    )
+                                  }
+                                  disabled={adminLoading}
+                                >
+                                  Add to Issues
+                                </Button>
+                              )}
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-
                   </TabsContent>
 
                   <TabsContent value="review" className="space-y-6">
@@ -883,7 +1027,9 @@ export function AdminModuleSubmissions() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setReviewNotes(reviewNotes + "\n\nModule approved for publication.")}
+                              onClick={() =>
+                                setReviewNotes(reviewNotes + '\n\nModule approved for publication.')
+                              }
                               className="w-full sm:w-auto text-xs sm:text-sm"
                             >
                               Add Approval Note
@@ -891,7 +1037,12 @@ export function AdminModuleSubmissions() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setReviewNotes(reviewNotes + "\n\nPlease provide source code for security review.")}
+                              onClick={() =>
+                                setReviewNotes(
+                                  reviewNotes +
+                                    '\n\nPlease provide source code for security review.',
+                                )
+                              }
                               className="w-full sm:w-auto text-xs sm:text-sm"
                             >
                               Request Source
@@ -899,7 +1050,11 @@ export function AdminModuleSubmissions() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setReviewNotes(reviewNotes + "\n\nModule description needs more detail.")}
+                              onClick={() =>
+                                setReviewNotes(
+                                  reviewNotes + '\n\nModule description needs more detail.',
+                                )
+                              }
                               className="w-full sm:w-auto text-xs sm:text-sm"
                             >
                               Need More Info
@@ -955,5 +1110,5 @@ export function AdminModuleSubmissions() {
         </Dialog>
       </div>
     </div>
-  )
+  );
 }

@@ -1,22 +1,22 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { UserProfile } from "@/components/features/profile/user-profile"
-import { useModuleNavigation, getCurrentCategory } from "@/lib/navigation"
-import { usePathname } from "next/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { UserProfile } from '@/components/features/profile/user-profile';
+import { useModuleNavigation, getCurrentCategory } from '@/lib/navigation';
+import { usePathname } from 'next/navigation';
 
 export function ProfilePageClient() {
-  const pathname = usePathname()
-  const currentCategory = getCurrentCategory(pathname)
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect: navHandleCategorySelect } = useModuleNavigation()
+  const pathname = usePathname();
+  const currentCategory = getCurrentCategory(pathname);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect: navHandleCategorySelect } = useModuleNavigation();
 
   const handleCategorySelect = (category: string) => {
     if (category !== currentCategory) {
-      navHandleCategorySelect(category)
+      navHandleCategorySelect(category);
     }
-  }
+  };
 
   return (
     <SharedLayout
@@ -38,5 +38,5 @@ export function ProfilePageClient() {
         </div>
       </div>
     </SharedLayout>
-  )
+  );
 }

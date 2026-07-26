@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { db } from "@/db"
-import { adminJobs, moduleGithubSync } from "@/db/schema"
-import { eq } from "drizzle-orm"
-import { jobExecutionService } from "@/lib/job-execution-service"
-import { logAdminAction } from "@/lib/audit-utils"
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { db } from '@/db';
+import { adminJobs, moduleGithubSync } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { jobExecutionService } from '@/lib/job-execution-service';
+import { logAdminAction } from '@/lib/audit-utils';
 
 /**
  * POST /api/admin/module-sync/[moduleId]/sync
@@ -23,7 +23,7 @@ import { logAdminAction } from "@/lib/audit-utils"
  * @returns {Object} returns.job - Created job details
  * @returns {number} returns.job.id - Job ID
  * @returns {string} returns.job.type - Job type
- * 
+ *
  * @throws {401} If user is not authenticated or not an admin
  * @throws {404} If module sync configuration not found
  * @throws {400} If module sync is disabled
@@ -31,85 +31,82 @@ import { logAdminAction } from "@/lib/audit-utils"
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ moduleId: string }> }
+  { params }: { params: Promise<{ moduleId: string }> },
 ) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
-    })
+    });
 
     if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { moduleId } = await params
+    const { moduleId } = await params;
 
     const [moduleSync] = await db
       .select()
       .from(moduleGithubSync)
       .where(eq(moduleGithubSync.moduleId, moduleId))
-      .limit(1)
+      .limit(1);
 
     if (!moduleSync) {
-      return NextResponse.json(
-        { error: "Module sync not configured" },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Module sync not configured' }, { status: 404 });
     }
 
     if (!moduleSync.enabled) {
-      return NextResponse.json(
-        { error: "Module sync is disabled" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Module sync is disabled' }, { status: 400 });
     }
 
     const [job] = await db
       .insert(adminJobs)
       .values({
-        type: "scrape_releases",
+        type: 'scrape_releases',
         name: `Manual Sync - Module ${moduleId}`,
         description: `Manually triggered GitHub release sync for module ${moduleId}`,
-        status: "pending",
+        status: 'pending',
         progress: 0,
         startedBy: session.user.id,
         parameters: {
           moduleId,
-          scope: "single",
-          manual: true
+          scope: 'single',
+          manual: true,
         },
-        logs: []
+        logs: [],
       })
-      .returning()
+      .returning();
 
     await logAdminAction({
       adminId: session.user.id,
-      action: "Module Sync Triggered",
+      action: 'Module Sync Triggered',
       details: `Manually triggered sync for module ${moduleId}`,
-      targetType: "module",
+      targetType: 'module',
       targetId: moduleId,
       newValues: {
-        jobId: job.id
-      }
-    })
+        jobId: job.id,
+      },
+    });
 
-    jobExecutionService.executeJob(job.id).catch(error => {
-      console.error(`[! /api/admin/module-sync/[moduleId]/sync] Failed to execute job ${job.id}:`, error)
-    })
+    jobExecutionService.executeJob(job.id).catch((error) => {
+      console.error(
+        `[! /api/admin/module-sync/[moduleId]/sync] Failed to execute job ${job.id}:`,
+        error,
+      );
+    });
 
     return NextResponse.json({
       success: true,
-      message: "Manual sync triggered for module",
+      message: 'Manual sync triggered for module',
       job: {
         id: job.id,
-        type: job.type
-      }
-    })
+        type: job.type,
+      },
+    });
   } catch (error) {
-    console.error("[! /api/admin/module-sync/[moduleId]/sync] Error triggering module sync:", error)
-    return NextResponse.json(
-      { error: "Failed to trigger module sync" },
-      { status: 500 }
-    )
+    console.error(
+      '[! /api/admin/module-sync/[moduleId]/sync] Error triggering module sync:',
+      error,
+    );
+    return NextResponse.json({ error: 'Failed to trigger module sync' }, { status: 500 });
   }
 }

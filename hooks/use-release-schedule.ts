@@ -1,50 +1,50 @@
-import useSWR from 'swr'
-import { useCallback } from 'react'
+import useSWR from 'swr';
+import { useCallback } from 'react';
 
 interface ReleaseScheduleData {
-  id: number
-  enabled: boolean
-  intervalHours: number
-  batchSize: number
-  nextRunAt: string
-  lastRunAt?: string
+  id: number;
+  enabled: boolean;
+  intervalHours: number;
+  batchSize: number;
+  nextRunAt: string;
+  lastRunAt?: string;
 }
 
 interface SyncStats {
-  totalModules: number
-  enabledModules: number
-  successfulSyncs: number
-  failedSyncs: number
-  lastRunTime?: string
-  nextRunTime?: string
-  averageSyncTime: number
+  totalModules: number;
+  enabledModules: number;
+  successfulSyncs: number;
+  failedSyncs: number;
+  lastRunTime?: string;
+  nextRunTime?: string;
+  averageSyncTime: number;
   recentActivity: Array<{
-    moduleId: string
-    moduleName: string
-    status: 'success' | 'error'
-    timestamp: string
-    error?: string
-  }>
+    moduleId: string;
+    moduleName: string;
+    status: 'success' | 'error';
+    timestamp: string;
+    error?: string;
+  }>;
 }
 
 interface ModuleSync {
-  id: number
-  moduleId: string
-  githubRepo: string
-  enabled: boolean
-  lastSyncAt?: string
-  lastReleaseId?: string
+  id: number;
+  moduleId: string;
+  githubRepo: string;
+  enabled: boolean;
+  lastSyncAt?: string;
+  lastReleaseId?: string;
   syncErrors: Array<{
-    error: string
-    timestamp: string
-    retryCount: number
-  }>
+    error: string;
+    timestamp: string;
+    retryCount: number;
+  }>;
   module: {
-    id: string
-    name: string
-    author: string
-    status: string
-  }
+    id: string;
+    name: string;
+    author: string;
+    status: string;
+  };
 }
 
 /**
@@ -77,40 +77,43 @@ export function useReleaseSchedule() {
   const { data, error, isLoading, mutate } = useSWR<ReleaseScheduleData>(
     '/api/admin/release-schedule',
     {
-      refreshInterval: 30000
-    }
-  )
+      refreshInterval: 30000,
+    },
+  );
 
-  const updateSchedule = useCallback(async (updates: Partial<ReleaseScheduleData>) => {
-    const response = await fetch('/api/admin/release-schedule', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    })
+  const updateSchedule = useCallback(
+    async (updates: Partial<ReleaseScheduleData>) => {
+      const response = await fetch('/api/admin/release-schedule', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to update schedule')
-    }
+      if (!response.ok) {
+        throw new Error('Failed to update schedule');
+      }
 
-    const updatedSchedule = await response.json()
-    mutate(updatedSchedule, false)
-    return updatedSchedule
-  }, [mutate])
+      const updatedSchedule = await response.json();
+      mutate(updatedSchedule, false);
+      return updatedSchedule;
+    },
+    [mutate],
+  );
 
   const runManualSync = useCallback(async () => {
     const response = await fetch('/api/admin/release-schedule/manual-run', {
-      method: 'POST'
-    })
+      method: 'POST',
+    });
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to start manual sync')
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to start manual sync');
     }
 
-    const result = await response.json()
-    mutate()
-    return result
-  }, [mutate])
+    const result = await response.json();
+    mutate();
+    return result;
+  }, [mutate]);
 
   return {
     schedule: data,
@@ -118,8 +121,8 @@ export function useReleaseSchedule() {
     isLoading,
     updateSchedule,
     runManualSync,
-    refetch: mutate
-  }
+    refetch: mutate,
+  };
 }
 
 /**
@@ -142,19 +145,16 @@ export function useReleaseSchedule() {
  * console.log(`Success rate: ${stats?.successfulSyncs}/${stats?.totalModules}`)
  */
 export function useSyncStats() {
-  const { data, error, isLoading, mutate } = useSWR<SyncStats>(
-    '/api/admin/sync-stats',
-    {
-      refreshInterval: 30000
-    }
-  )
+  const { data, error, isLoading, mutate } = useSWR<SyncStats>('/api/admin/sync-stats', {
+    refreshInterval: 30000,
+  });
 
   return {
     stats: data,
     error,
     isLoading,
-    refetch: mutate
-  }
+    refetch: mutate,
+  };
 }
 
 /**
@@ -184,51 +184,50 @@ export function useSyncStats() {
  * await triggerModuleSync('module-123')
  */
 export function useModuleSyncs() {
-  const { data, error, isLoading, mutate } = useSWR<ModuleSync[]>(
-    '/api/admin/module-sync',
-    {
-      refreshInterval: 60000
-    }
-  )
+  const { data, error, isLoading, mutate } = useSWR<ModuleSync[]>('/api/admin/module-sync', {
+    refreshInterval: 60000,
+  });
 
-  const toggleModuleSync = useCallback(async (moduleId: string, enabled: boolean) => {
-    const response = await fetch(`/api/admin/module-sync/${moduleId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled })
-    })
+  const toggleModuleSync = useCallback(
+    async (moduleId: string, enabled: boolean) => {
+      const response = await fetch(`/api/admin/module-sync/${moduleId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to update module sync')
-    }
+      if (!response.ok) {
+        throw new Error('Failed to update module sync');
+      }
 
-    const updatedSync = await response.json()
+      const updatedSync = await response.json();
 
-    mutate(
-      current => current?.map(m =>
-        m.moduleId === moduleId
-          ? { ...m, enabled }
-          : m
-      ),
-      false
-    )
+      mutate(
+        (current) => current?.map((m) => (m.moduleId === moduleId ? { ...m, enabled } : m)),
+        false,
+      );
 
-    return updatedSync
-  }, [mutate])
+      return updatedSync;
+    },
+    [mutate],
+  );
 
-  const triggerModuleSync = useCallback(async (moduleId: string) => {
-    const response = await fetch(`/api/admin/module-sync/${moduleId}/sync`, {
-      method: 'POST'
-    })
+  const triggerModuleSync = useCallback(
+    async (moduleId: string) => {
+      const response = await fetch(`/api/admin/module-sync/${moduleId}/sync`, {
+        method: 'POST',
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to trigger module sync')
-    }
+      if (!response.ok) {
+        throw new Error('Failed to trigger module sync');
+      }
 
-    const result = await response.json()
-    mutate()
-    return result
-  }, [mutate])
+      const result = await response.json();
+      mutate();
+      return result;
+    },
+    [mutate],
+  );
 
   return {
     modules: data || [],
@@ -236,6 +235,6 @@ export function useModuleSyncs() {
     isLoading,
     toggleModuleSync,
     triggerModuleSync,
-    refetch: mutate
-  }
+    refetch: mutate,
+  };
 }

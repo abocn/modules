@@ -1,17 +1,12 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { format } from "date-fns"
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { format } from 'date-fns';
 import {
   Copy,
   Shield,
@@ -22,74 +17,80 @@ import {
   AlertCircle,
   CheckCircle2,
   XCircle,
-} from "lucide-react"
-import { toast } from "sonner"
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ApiKeyWithUser {
-  id: string
-  name: string
-  keyPrefix: string
-  scopes: string[]
-  lastUsedAt: string | null
-  lastUsedIp: string | null
-  expiresAt: string | null
-  revokedAt: string | null
-  createdAt: string
-  userId: string
-  userName: string
-  userEmail: string
+  id: string;
+  name: string;
+  keyPrefix: string;
+  scopes: string[];
+  lastUsedAt: string | null;
+  lastUsedIp: string | null;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
 }
 
 interface ApiKeyDetailsDialogProps {
-  apiKey: ApiKeyWithUser | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onRevoke?: (key: ApiKeyWithUser) => void
+  apiKey: ApiKeyWithUser | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onRevoke?: (key: ApiKeyWithUser) => void;
 }
 
 export function ApiKeyDetailsDialog({
   apiKey,
   open,
   onOpenChange,
-  onRevoke
+  onRevoke,
 }: ApiKeyDetailsDialogProps) {
-  const [copying, setCopying] = useState(false)
+  const [copying, setCopying] = useState(false);
 
-  if (!apiKey) return null
+  if (!apiKey) return null;
 
-  const isExpired = apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date()
-  const isRevoked = !!apiKey.revokedAt
+  const isExpired = apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date();
+  const isRevoked = !!apiKey.revokedAt;
 
   const getStatusBadge = () => {
     if (isRevoked) {
-      return <Badge variant="destructive" className="gap-1">
-        <XCircle className="h-3 w-3" />
-        Revoked
-      </Badge>
+      return (
+        <Badge variant="destructive" className="gap-1">
+          <XCircle className="h-3 w-3" />
+          Revoked
+        </Badge>
+      );
     }
     if (isExpired) {
-      return <Badge variant="secondary" className="gap-1">
-        <Clock className="h-3 w-3" />
-        Expired
-      </Badge>
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <Clock className="h-3 w-3" />
+          Expired
+        </Badge>
+      );
     }
-    return <Badge variant="default" className="gap-1">
-      <CheckCircle2 className="h-3 w-3" />
-      Active
-    </Badge>
-  }
+    return (
+      <Badge variant="default" className="gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        Active
+      </Badge>
+    );
+  };
 
   const copyToClipboard = async (text: string, label: string) => {
-    setCopying(true)
+    setCopying(true);
     try {
-      await navigator.clipboard.writeText(text)
-      toast.success(`${label} copied to clipboard`)
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied to clipboard`);
     } catch {
-      toast.error(`Failed to copy ${label}`)
+      toast.error(`Failed to copy ${label}`);
     } finally {
-      setCopying(false)
+      setCopying(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,13 +116,11 @@ export function ApiKeyDetailsDialog({
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Key Prefix</Label>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs bg-muted px-2 py-1 rounded">
-                    {apiKey.keyPrefix}...
-                  </code>
+                  <code className="text-xs bg-muted px-2 py-1 rounded">{apiKey.keyPrefix}...</code>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard(apiKey.keyPrefix, "Key prefix")}
+                    onClick={() => copyToClipboard(apiKey.keyPrefix, 'Key prefix')}
                     disabled={copying}
                     className="h-7 w-7 p-0"
                   >
@@ -136,7 +135,7 @@ export function ApiKeyDetailsDialog({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard(apiKey.id, "Key ID")}
+                    onClick={() => copyToClipboard(apiKey.id, 'Key ID')}
                     disabled={copying}
                     className="h-7 w-7 p-0"
                   >
@@ -194,9 +193,7 @@ export function ApiKeyDetailsDialog({
                   Last Used
                 </Label>
                 <p className="text-sm">
-                  {apiKey.lastUsedAt
-                    ? format(new Date(apiKey.lastUsedAt), "PPp")
-                    : "Never used"}
+                  {apiKey.lastUsedAt ? format(new Date(apiKey.lastUsedAt), 'PPp') : 'Never used'}
                 </p>
               </div>
               {apiKey.lastUsedIp && (
@@ -221,13 +218,13 @@ export function ApiKeyDetailsDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">Created At</Label>
-                <p className="text-sm">{format(new Date(apiKey.createdAt), "PPp")}</p>
+                <p className="text-sm">{format(new Date(apiKey.createdAt), 'PPp')}</p>
               </div>
               {apiKey.expiresAt && (
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Expires At</Label>
                   <p className="text-sm flex items-center gap-2">
-                    {format(new Date(apiKey.expiresAt), "PPp")}
+                    {format(new Date(apiKey.expiresAt), 'PPp')}
                     {isExpired && (
                       <Badge variant="secondary" className="text-xs">
                         Expired
@@ -239,7 +236,7 @@ export function ApiKeyDetailsDialog({
               {apiKey.revokedAt && (
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground">Revoked At</Label>
-                  <p className="text-sm">{format(new Date(apiKey.revokedAt), "PPp")}</p>
+                  <p className="text-sm">{format(new Date(apiKey.revokedAt), 'PPp')}</p>
                 </div>
               )}
             </div>
@@ -256,9 +253,13 @@ export function ApiKeyDetailsDialog({
                   <Button
                     variant="destructive"
                     onClick={() => {
-                      if (confirm(`Are you sure you want to revoke the API key "${apiKey.name}"? This action cannot be undone.`)) {
-                        onRevoke(apiKey)
-                        onOpenChange(false)
+                      if (
+                        confirm(
+                          `Are you sure you want to revoke the API key "${apiKey.name}"? This action cannot be undone.`,
+                        )
+                      ) {
+                        onRevoke(apiKey);
+                        onOpenChange(false);
                       }
                     }}
                   >
@@ -276,7 +277,8 @@ export function ApiKeyDetailsDialog({
                 <div className="space-y-1 text-sm">
                   <p className="font-medium text-destructive">This API key has been revoked</p>
                   <p className="text-muted-foreground">
-                    Revoked keys cannot be reactivated. The user must create a new API key if needed.
+                    Revoked keys cannot be reactivated. The user must create a new API key if
+                    needed.
                   </p>
                 </div>
               </div>
@@ -285,5 +287,5 @@ export function ApiKeyDetailsDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,44 +1,45 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
-import { Search, ExternalLink, AlertCircle, CheckCircle } from "lucide-react"
-import { SiGithub } from "react-icons/si"
-import { useModuleSyncs } from "@/hooks/use-release-schedule"
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { Search, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
+import { SiGithub } from 'react-icons/si';
+import { useModuleSyncs } from '@/hooks/use-release-schedule';
 
 export function ModuleSyncManagement() {
-  const { modules, isLoading, toggleModuleSync, triggerModuleSync, refetch } = useModuleSyncs()
-  const [searchQuery, setSearchQuery] = useState("")
+  const { modules, isLoading, toggleModuleSync, triggerModuleSync, refetch } = useModuleSyncs();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleToggleSync = async (moduleId: string, enabled: boolean) => {
     try {
-      await toggleModuleSync(moduleId, enabled)
-      toast.success(`Sync ${enabled ? 'enabled' : 'disabled'} for module`)
+      await toggleModuleSync(moduleId, enabled);
+      toast.success(`Sync ${enabled ? 'enabled' : 'disabled'} for module`);
     } catch {
-      toast.error('Failed to update module sync')
+      toast.error('Failed to update module sync');
     }
-  }
+  };
 
   const handleManualSync = async (moduleId: string) => {
     try {
-      await triggerModuleSync(moduleId)
-      toast.success('Manual sync started for module')
-      refetch()
+      await triggerModuleSync(moduleId);
+      toast.success('Manual sync started for module');
+      refetch();
     } catch {
-      toast.error('Failed to start manual sync')
+      toast.error('Failed to start manual sync');
     }
-  }
+  };
 
-  const filteredModules = modules.filter(module =>
-    module.module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    module.module.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    module.githubRepo.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredModules = modules.filter(
+    (module) =>
+      module.module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      module.module.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      module.githubRepo.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   if (isLoading) {
     return (
@@ -49,7 +50,7 @@ export function ModuleSyncManagement() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -59,9 +60,7 @@ export function ModuleSyncManagement() {
           <SiGithub className="h-5 w-5" />
           Module Sync Management
         </CardTitle>
-        <CardDescription>
-          Manage GitHub repository syncing for individual modules.
-        </CardDescription>
+        <CardDescription>Manage GitHub repository syncing for individual modules.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative">
@@ -78,7 +77,9 @@ export function ModuleSyncManagement() {
           {filteredModules.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
-                {searchQuery ? 'No modules found matching your search.' : 'No modules with GitHub sync configured.'}
+                {searchQuery
+                  ? 'No modules found matching your search.'
+                  : 'No modules with GitHub sync configured.'}
               </p>
             </div>
           ) : (
@@ -87,12 +88,12 @@ export function ModuleSyncManagement() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium">{moduleSync.module.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      by {moduleSync.module.author}
-                    </p>
+                    <p className="text-sm text-muted-foreground">by {moduleSync.module.author}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={moduleSync.module.status === 'approved' ? 'default' : 'secondary'}>
+                    <Badge
+                      variant={moduleSync.module.status === 'approved' ? 'default' : 'secondary'}
+                    >
                       {moduleSync.module.status}
                     </Badge>
                     <Switch
@@ -125,8 +126,7 @@ export function ModuleSyncManagement() {
                     <span>
                       {moduleSync.syncErrors.length > 0
                         ? `${moduleSync.syncErrors.length} error(s)`
-                        : 'Sync healthy'
-                      }
+                        : 'Sync healthy'}
                     </span>
                   </div>
 
@@ -172,5 +172,5 @@ export function ModuleSyncManagement() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,17 +1,13 @@
-"use client"
+'use client';
 
-import { ModuleCardSkeleton } from "./module-card-skeleton"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel"
+import { ModuleCardSkeleton } from './module-card-skeleton';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 export function CarouselSkeleton() {
   return (
     <Carousel
       opts={{
-        align: "start",
+        align: 'start',
         loop: false,
       }}
       className="w-full relative pointer-events-none"
@@ -36,5 +32,5 @@ export function CarouselSkeleton() {
         </div>
       </div>
     </Carousel>
-  )
+  );
 }

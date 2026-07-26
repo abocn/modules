@@ -1,20 +1,20 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { MySubmissions } from "@/components/features/submissions/my-submissions"
-import { useModuleNavigation } from "@/lib/navigation"
-import { useSession } from "@/lib/auth-client"
+import { useState, useEffect } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { MySubmissions } from '@/components/features/submissions/my-submissions';
+import { useModuleNavigation } from '@/lib/navigation';
+import { useSession } from '@/lib/auth-client';
 
 export function MySubmissionsPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isHydrated, setIsHydrated] = useState(false)
-  const { handleCategorySelect } = useModuleNavigation()
-  const { data: session } = useSession()
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isHydrated, setIsHydrated] = useState(false);
+  const { handleCategorySelect } = useModuleNavigation();
+  const { data: session } = useSession();
 
   useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+    setIsHydrated(true);
+  }, []);
 
   if (!isHydrated) {
     return (
@@ -109,7 +109,7 @@ export function MySubmissionsPageClient() {
           </div>
         </div>
       </SharedLayout>
-    )
+    );
   }
 
   return (
@@ -120,9 +120,7 @@ export function MySubmissionsPageClient() {
       searchQuery={searchQuery}
       onSearchChange={setSearchQuery}
     >
-      <MySubmissions
-        userId={session?.user?.id}
-      />
+      <MySubmissions userId={session?.user?.id} />
     </SharedLayout>
-  )
+  );
 }

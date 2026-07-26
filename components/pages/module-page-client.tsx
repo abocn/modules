@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { useModuleNavigation } from '@/lib/navigation';
 
 interface ModulePageClientProps {
-  children: React.ReactNode
-  moduleName: string
+  children: React.ReactNode;
+  moduleName: string;
 }
 
 export function ModulePageClient({ children, moduleName }: ModulePageClientProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const router = useRouter()
-  const { handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const { handleCategorySelect } = useModuleNavigation();
 
   const handleBack = () => {
-    router.back()
-  }
+    router.back();
+  };
 
   return (
     <SharedLayout
@@ -30,5 +30,5 @@ export function ModulePageClient({ children, moduleName }: ModulePageClientProps
     >
       {children}
     </SharedLayout>
-  )
+  );
 }

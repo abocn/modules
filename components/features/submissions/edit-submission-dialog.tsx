@@ -1,22 +1,35 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LicenseCombobox } from "@/components/ui/license-combobox"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { CharacterCounter } from "@/components/ui/character-counter"
-import { Plus, X, AlertTriangle } from "lucide-react"
-import { MarkdownEditor } from "@/components/shared/markdown-editor"
-import { MODULE_CATEGORIES } from "@/lib/constants/categories"
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { LicenseCombobox } from '@/components/ui/license-combobox';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { CharacterCounter } from '@/components/ui/character-counter';
+import { Plus, X, AlertTriangle } from 'lucide-react';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
 
 /**
  * @interface Submission
@@ -43,35 +56,35 @@ import { MODULE_CATEGORIES } from "@/lib/constants/categories"
  * @property {string[]} [images] - Array of screenshot URLs
  */
 interface Submission {
-  id: string
-  name: string
-  shortDescription: string
-  description: string
-  author: string
-  category: string
-  icon?: string
-  isPublished: boolean
-  createdAt: string
-  updatedAt: string
-  reviewStatus?: "pending" | "approved" | "rejected" | "changes_requested"
+  id: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+  author: string;
+  category: string;
+  icon?: string;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+  reviewStatus?: 'pending' | 'approved' | 'rejected' | 'changes_requested';
   reviewNotes?: {
-    type: "approved" | "rejected" | "changes-requested"
-    message: string
-    reviewedBy?: string
-    reviewedAt?: string
-  }[]
-  reviewedAt?: string
-  reviewedBy?: string
+    type: 'approved' | 'rejected' | 'changes-requested';
+    message: string;
+    reviewedBy?: string;
+    reviewedAt?: string;
+  }[];
+  reviewedAt?: string;
+  reviewedBy?: string;
   compatibility: {
-    androidVersions: string[]
-    rootMethods: ("Magisk" | "KernelSU" | "KernelSU-Next")[]
-  }
-  features: string[]
-  isOpenSource: boolean
-  sourceUrl?: string
-  communityUrl?: string
-  images?: string[]
-  license: string
+    androidVersions: string[];
+    rootMethods: ('Magisk' | 'KernelSU' | 'KernelSU-Next')[];
+  };
+  features: string[];
+  isOpenSource: boolean;
+  sourceUrl?: string;
+  communityUrl?: string;
+  images?: string[];
+  license: string;
 }
 
 /**
@@ -83,10 +96,10 @@ interface Submission {
  * @property {(data: Partial<Submission>) => Promise<void>} onSave - Callback to save changes
  */
 interface EditSubmissionDialogProps {
-  submission: Submission
-  open: boolean
-  onClose: () => void
-  onSave: (data: Partial<Submission>) => Promise<void>
+  submission: Submission;
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: Partial<Submission>) => Promise<void>;
 }
 
 /**
@@ -105,21 +118,28 @@ interface EditSubmissionDialogProps {
  * />
  * ```
  */
-export function EditSubmissionDialog({ submission, open, onClose, onSave }: EditSubmissionDialogProps) {
+export function EditSubmissionDialog({
+  submission,
+  open,
+  onClose,
+  onSave,
+}: EditSubmissionDialogProps) {
   const parseLicense = (license: string) => {
-    if (license?.startsWith("Custom: ")) {
+    if (license?.startsWith('Custom: ')) {
       return {
-        license: "Custom",
-        customLicense: license.replace("Custom: ", "")
-      }
+        license: 'Custom',
+        customLicense: license.replace('Custom: ', ''),
+      };
     }
     return {
-      license: license || "",
-      customLicense: ""
-    }
-  }
+      license: license || '',
+      customLicense: '',
+    };
+  };
 
-  const { license: parsedLicense, customLicense: parsedCustomLicense } = parseLicense(submission.license)
+  const { license: parsedLicense, customLicense: parsedCustomLicense } = parseLicense(
+    submission.license,
+  );
 
   const [formData, setFormData] = useState({
     name: submission.name,
@@ -127,65 +147,77 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
     description: submission.description,
     author: submission.author,
     category: submission.category,
-    iconUrl: submission.icon || "",
+    iconUrl: submission.icon || '',
     license: parsedLicense,
     customLicense: parsedCustomLicense,
     isOpenSource: submission.isOpenSource,
-    sourceUrl: submission.sourceUrl || "",
-    communityUrl: submission.communityUrl || "",
+    sourceUrl: submission.sourceUrl || '',
+    communityUrl: submission.communityUrl || '',
     features: submission.features || [],
     androidVersions: submission.compatibility?.androidVersions || [],
     rootMethods: submission.compatibility?.rootMethods || [],
     images: submission.images || [],
-  })
+  });
 
-  const [newFeature, setNewFeature] = useState("")
-  const [newImage, setNewImage] = useState("")
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [newFeature, setNewFeature] = useState('');
+  const [newImage, setNewImage] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const androidVersionOptions = [
-    "4.1+", "5.0+", "6.0+", "7.0+", "8.0+", "9.0+", "10+", "11+", "12+", "13+", "14+", "15+", "16+"
-  ]
+    '4.1+',
+    '5.0+',
+    '6.0+',
+    '7.0+',
+    '8.0+',
+    '9.0+',
+    '10+',
+    '11+',
+    '12+',
+    '13+',
+    '14+',
+    '15+',
+    '16+',
+  ];
 
   const rootMethodOptions = [
-    { value: "Magisk", label: "Magisk" },
-    { value: "KernelSU", label: "KernelSU" },
-    { value: "KernelSU-Next", label: "KernelSU-Next" },
-  ]
+    { value: 'Magisk', label: 'Magisk' },
+    { value: 'KernelSU', label: 'KernelSU' },
+    { value: 'KernelSU-Next', label: 'KernelSU-Next' },
+  ];
 
-  const categoryOptions = MODULE_CATEGORIES.map(cat => ({
+  const categoryOptions = MODULE_CATEGORIES.map((cat) => ({
     value: cat.id,
     label: cat.label,
-  }))
+  }));
 
   const addFeature = () => {
     if (newFeature.trim() && formData.features.length < 20) {
-      setFormData({ ...formData, features: [...formData.features, newFeature.trim()] })
-      setNewFeature("")
+      setFormData({ ...formData, features: [...formData.features, newFeature.trim()] });
+      setNewFeature('');
     }
-  }
+  };
 
   const removeFeature = (index: number) => {
     setFormData({
       ...formData,
-      features: formData.features.filter((_, i) => i !== index)
-    })
-  }
+      features: formData.features.filter((_, i) => i !== index),
+    });
+  };
 
   const addImage = () => {
     if (newImage.trim() && /^https?:\/\/.+/.test(newImage.trim()) && formData.images.length < 10) {
-      setFormData({ ...formData, images: [...formData.images, newImage.trim()] })
-      setNewImage("")
+      setFormData({ ...formData, images: [...formData.images, newImage.trim()] });
+      setNewImage('');
     }
-  }
+  };
 
   const removeImage = (index: number) => {
     setFormData({
       ...formData,
-      images: formData.images.filter((_, i) => i !== index)
-    })
-  }
+      images: formData.images.filter((_, i) => i !== index),
+    });
+  };
 
   /**
    * @function handleSave
@@ -193,13 +225,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
    * @returns {Promise<void>}
    */
   const handleSave = async () => {
-    setSaving(true)
-    setError(null)
+    setSaving(true);
+    setError(null);
 
     try {
-      const processedLicense = formData.license === "Custom" && formData.customLicense 
-        ? `Custom: ${formData.customLicense.trim()}`
-        : formData.license
+      const processedLicense =
+        formData.license === 'Custom' && formData.customLicense
+          ? `Custom: ${formData.customLicense.trim()}`
+          : formData.license;
 
       await onSave({
         ...formData,
@@ -209,14 +242,14 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
           androidVersions: formData.androidVersions,
           rootMethods: formData.rootMethods,
         },
-      })
-      onClose()
+      });
+      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes")
+      setError(err instanceof Error ? err.message : 'Failed to save changes');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -261,7 +294,7 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                 <Label htmlFor="description">Full Description</Label>
                 <MarkdownEditor
                   value={formData.description}
-                  onChange={(value) => setFormData({ ...formData, description: value || "" })}
+                  onChange={(value) => setFormData({ ...formData, description: value || '' })}
                   placeholder="Detailed description of your module"
                   height={300}
                 />
@@ -283,7 +316,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
@@ -321,9 +357,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                     value={newImage}
                     onChange={(e) => setNewImage(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        addImage()
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addImage();
                       }
                     }}
                   />
@@ -358,7 +394,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                 <Checkbox
                   id="isOpenSource"
                   checked={formData.isOpenSource}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isOpenSource: checked as boolean })}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isOpenSource: checked as boolean })
+                  }
                 />
                 <Label htmlFor="isOpenSource">Open Source</Label>
               </div>
@@ -371,7 +409,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                       value={formData.license}
                       onValueChange={(license) => setFormData({ ...formData, license })}
                       customValue={formData.customLicense}
-                      onCustomValueChange={(value) => setFormData({ ...formData, customLicense: value })}
+                      onCustomValueChange={(value) =>
+                        setFormData({ ...formData, customLicense: value })
+                      }
                       required
                     />
                   </div>
@@ -414,13 +454,15 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                           if (checked) {
                             setFormData({
                               ...formData,
-                              androidVersions: [...formData.androidVersions, version]
-                            })
+                              androidVersions: [...formData.androidVersions, version],
+                            });
                           } else {
                             setFormData({
                               ...formData,
-                              androidVersions: formData.androidVersions.filter(v => v !== version)
-                            })
+                              androidVersions: formData.androidVersions.filter(
+                                (v) => v !== version,
+                              ),
+                            });
                           }
                         }}
                       />
@@ -436,18 +478,23 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                   {rootMethodOptions.map((method) => (
                     <div key={method.value} className="flex items-center space-x-2">
                       <Checkbox
-                        checked={formData.rootMethods.includes(method.value as "Magisk" | "KernelSU" | "KernelSU-Next")}
+                        checked={formData.rootMethods.includes(
+                          method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next',
+                        )}
                         onCheckedChange={(checked) => {
                           if (checked) {
                             setFormData({
                               ...formData,
-                              rootMethods: [...formData.rootMethods, method.value as "Magisk" | "KernelSU" | "KernelSU-Next"]
-                            })
+                              rootMethods: [
+                                ...formData.rootMethods,
+                                method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next',
+                              ],
+                            });
                           } else {
                             setFormData({
                               ...formData,
-                              rootMethods: formData.rootMethods.filter(m => m !== method.value)
-                            })
+                              rootMethods: formData.rootMethods.filter((m) => m !== method.value),
+                            });
                           }
                         }}
                       />
@@ -470,9 +517,9 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
                     value={newFeature}
                     onChange={(e) => setNewFeature(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        addFeature()
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addFeature();
                       }
                     }}
                   />
@@ -513,10 +560,10 @@ export function EditSubmissionDialog({ submission, open, onClose, onSave }: Edit
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

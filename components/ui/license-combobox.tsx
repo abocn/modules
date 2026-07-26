@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import * as React from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Command,
   CommandEmpty,
@@ -12,13 +12,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { getLicenseOptions } from "@/lib/utils/license-utils"
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { getLicenseOptions } from '@/lib/utils/license-utils';
 
 /**
  * @interface LicenseComboboxProps
@@ -33,14 +29,14 @@ import { getLicenseOptions } from "@/lib/utils/license-utils"
  * @property {boolean} [required] - Whether license selection is required
  */
 interface LicenseComboboxProps {
-  value?: string
-  onValueChange?: (license: string, customValue?: string) => void
-  customValue?: string
-  onCustomValueChange?: (customValue: string) => void
-  placeholder?: string
-  className?: string
-  disabled?: boolean
-  required?: boolean
+  value?: string;
+  onValueChange?: (license: string, customValue?: string) => void;
+  customValue?: string;
+  onCustomValueChange?: (customValue: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  required?: boolean;
 }
 
 /**
@@ -75,18 +71,18 @@ interface LicenseComboboxProps {
 export function LicenseCombobox({
   value,
   onValueChange,
-  customValue = "",
+  customValue = '',
   onCustomValueChange,
-  placeholder = "Select a license",
+  placeholder = 'Select a license',
   className,
   disabled,
   required = false,
 }: LicenseComboboxProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
-  const licenseOptions = React.useMemo(() => getLicenseOptions(), [])
-  const selectedOption = licenseOptions.find((option) => option.value === value)
-  const isCustomSelected = value === "Custom"
+  const licenseOptions = React.useMemo(() => getLicenseOptions(), []);
+  const selectedOption = licenseOptions.find((option) => option.value === value);
+  const isCustomSelected = value === 'Custom';
 
   /**
    * @function handleSelect
@@ -94,16 +90,16 @@ export function LicenseCombobox({
    * @param {string} selectedValue - The selected license value
    */
   const handleSelect = (selectedValue: string) => {
-    const newValue = selectedValue === value ? "" : selectedValue
-    onValueChange?.(newValue, customValue)
-    
+    const newValue = selectedValue === value ? '' : selectedValue;
+    onValueChange?.(newValue, customValue);
+
     // Clear custom value if switching away from Custom
-    if (selectedValue !== "Custom" && onCustomValueChange) {
-      onCustomValueChange("")
+    if (selectedValue !== 'Custom' && onCustomValueChange) {
+      onCustomValueChange('');
     }
-    
-    setOpen(false)
-  }
+
+    setOpen(false);
+  };
 
   /**
    * @function handleCustomValueChange
@@ -111,9 +107,9 @@ export function LicenseCombobox({
    * @param {string} newCustomValue - The new custom license value
    */
   const handleCustomValueChange = (newCustomValue: string) => {
-    onCustomValueChange?.(newCustomValue)
-    onValueChange?.(value || "Custom", newCustomValue)
-  }
+    onCustomValueChange?.(newCustomValue);
+    onValueChange?.(value || 'Custom', newCustomValue);
+  };
 
   /**
    * @function getDisplayLabel
@@ -121,14 +117,14 @@ export function LicenseCombobox({
    * @returns {string} The display label
    */
   const getDisplayLabel = (): string => {
-    if (!selectedOption) return placeholder
-    
+    if (!selectedOption) return placeholder;
+
     if (isCustomSelected && customValue.trim()) {
-      return `Custom: ${customValue.trim()}`
+      return `Custom: ${customValue.trim()}`;
     }
-    
-    return selectedOption.label
-  }
+
+    return selectedOption.label;
+  };
 
   return (
     <div className="space-y-3">
@@ -140,10 +136,10 @@ export function LicenseCombobox({
             aria-expanded={open}
             aria-required={required}
             className={cn(
-              "w-full justify-between",
-              !selectedOption && "text-muted-foreground",
-              disabled && "cursor-not-allowed opacity-50",
-              className
+              'w-full justify-between',
+              !selectedOption && 'text-muted-foreground',
+              disabled && 'cursor-not-allowed opacity-50',
+              className,
             )}
             disabled={disabled}
           >
@@ -166,8 +162,8 @@ export function LicenseCombobox({
                     {option.label}
                     <Check
                       className={cn(
-                        "ml-auto",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        'ml-auto',
+                        value === option.value ? 'opacity-100' : 'opacity-0',
                       )}
                     />
                   </CommandItem>
@@ -193,11 +189,12 @@ export function LicenseCombobox({
               aria-describedby="custom-license-help"
             />
             <p id="custom-license-help" className="text-xs text-muted-foreground leading-relaxed">
-              Specify the name of your custom license (e.g., &quot;My Project License&quot;, &quot;Proprietary License&quot;)
+              Specify the name of your custom license (e.g., &quot;My Project License&quot;,
+              &quot;Proprietary License&quot;)
             </p>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

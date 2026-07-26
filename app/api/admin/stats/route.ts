@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db"
-import { modules, user, releases } from "@/db/schema"
-import { count, sum, eq } from "drizzle-orm"
-import { auth } from "@/lib/auth"
-import { isUserAdmin } from "@/lib/admin-utils"
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { modules, user, releases } from '@/db/schema';
+import { count, sum, eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * Get admin statistics
@@ -20,34 +20,28 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
-    })
+    });
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     if (!(await isUserAdmin(session.user.id))) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const totalModulesResult = await db
-      .select({ count: count() })
-      .from(modules)
-    const totalUsersResult = await db
-      .select({ count: count() })
-      .from(user)
-    const totalDownloadsResult = await db
-      .select({ total: sum(releases.downloads) })
-      .from(releases)
+    const totalModulesResult = await db.select({ count: count() }).from(modules);
+    const totalUsersResult = await db.select({ count: count() }).from(user);
+    const totalDownloadsResult = await db.select({ total: sum(releases.downloads) }).from(releases);
     const pendingModulesResult = await db
       .select({ count: count() })
       .from(modules)
-      .where(eq(modules.status, 'pending'))
+      .where(eq(modules.status, 'pending'));
 
     const declinedModulesResult = await db
       .select({ count: count() })
       .from(modules)
-      .where(eq(modules.status, 'declined'))
+      .where(eq(modules.status, 'declined'));
 
     const stats = {
       totalModules: totalModulesResult[0]?.count || 0,
@@ -55,14 +49,11 @@ export async function GET(request: NextRequest) {
       totalDownloads: Number(totalDownloadsResult[0]?.total) || 0,
       pendingModules: pendingModulesResult[0]?.count || 0,
       declinedModules: declinedModulesResult[0]?.count || 0,
-    }
+    };
 
-    return NextResponse.json(stats)
+    return NextResponse.json(stats);
   } catch (error) {
-    console.error("[! /api/admin/stats] Error fetching admin stats:", error)
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    )
+    console.error('[! /api/admin/stats] Error fetching admin stats:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

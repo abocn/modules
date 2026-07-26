@@ -1,16 +1,10 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -18,14 +12,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -33,34 +27,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { toast } from "sonner"
-import { formatDistanceToNow } from "date-fns"
-import { useCachedAuth } from "@/hooks/use-cached-auth"
-import {
-  KeyRound,
-  Plus,
-  Trash2,
-  Copy,
-  AlertCircle,
-  ExternalLink,
-  Info
-} from "lucide-react"
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
+import { useCachedAuth } from '@/hooks/use-cached-auth';
+import { KeyRound, Plus, Trash2, Copy, AlertCircle, ExternalLink, Info } from 'lucide-react';
 
 /**
  * Represents an API key with its metadata and permissions
  */
 interface ApiKey {
-  id: string
-  name: string
-  keyPrefix: string
-  scopes: string[]
-  lastUsedAt: string | null
-  expiresAt: string | null
-  createdAt: string
+  id: string;
+  name: string;
+  keyPrefix: string;
+  scopes: string[];
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
 }
 
 /**
@@ -69,101 +55,105 @@ interface ApiKey {
  * and security warnings
  */
 export function ApiKeysSettings() {
-  const { isAdmin } = useCachedAuth()
-  const [keys, setKeys] = useState<ApiKey[]>([])
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [showKeyDialog, setShowKeyDialog] = useState(false)
-  const [newKey, setNewKey] = useState<string>("")
-  const [keyName, setKeyName] = useState("")
-  const [keyExpiry, setKeyExpiry] = useState("90days")
-  const [keyScopes, setKeyScopes] = useState<string[]>(["read"])
+  const { isAdmin } = useCachedAuth();
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showKeyDialog, setShowKeyDialog] = useState(false);
+  const [newKey, setNewKey] = useState<string>('');
+  const [keyName, setKeyName] = useState('');
+  const [keyExpiry, setKeyExpiry] = useState('90days');
+  const [keyScopes, setKeyScopes] = useState<string[]>(['read']);
 
   const fetchApiKeys = useCallback(async () => {
     try {
-      const response = await fetch("/api/user/api-keys")
-      if (!response.ok) throw new Error("Failed to fetch API keys")
-      const data = await response.json()
-      setKeys(data.keys)
+      const response = await fetch('/api/user/api-keys');
+      if (!response.ok) throw new Error('Failed to fetch API keys');
+      const data = await response.json();
+      setKeys(data.keys);
     } catch {
-      toast.error("Failed to load API keys")
+      toast.error('Failed to load API keys');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchApiKeys()
-  }, [fetchApiKeys])
+    fetchApiKeys();
+  }, [fetchApiKeys]);
 
   const createApiKey = async () => {
     if (!keyName.trim()) {
-      toast.error("Please enter a name for the API key")
-      return
+      toast.error('Please enter a name for the API key');
+      return;
     }
 
-    setCreating(true)
+    setCreating(true);
     try {
-      const response = await fetch("/api/user/api-keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/user/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: keyName,
           expiresIn: keyExpiry,
           scopes: keyScopes,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create API key")
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create API key');
       }
 
-      const data = await response.json()
-      setNewKey(data.key)
-      setShowCreateDialog(false)
-      setShowKeyDialog(true)
-      await fetchApiKeys()
+      const data = await response.json();
+      setNewKey(data.key);
+      setShowCreateDialog(false);
+      setShowKeyDialog(true);
+      await fetchApiKeys();
 
-      setKeyName("")
-      setKeyExpiry("90days")
-      setKeyScopes(["read"])
+      setKeyName('');
+      setKeyExpiry('90days');
+      setKeyScopes(['read']);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create API key")
+      toast.error(err instanceof Error ? err.message : 'Failed to create API key');
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
-  }
+  };
 
   const revokeApiKey = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to revoke the API key "${name}"? This action cannot be undone.`)) {
-      return
+    if (
+      !confirm(
+        `Are you sure you want to revoke the API key "${name}"? This action cannot be undone.`,
+      )
+    ) {
+      return;
     }
 
     try {
       const response = await fetch(`/api/user/api-keys/${id}`, {
-        method: "DELETE",
-      })
+        method: 'DELETE',
+      });
 
-      if (!response.ok) throw new Error("Failed to revoke API key")
+      if (!response.ok) throw new Error('Failed to revoke API key');
 
-      toast.success("API key revoked successfully")
-      await fetchApiKeys()
+      toast.success('API key revoked successfully');
+      await fetchApiKeys();
     } catch {
-      toast.error("Failed to revoke API key")
+      toast.error('Failed to revoke API key');
     }
-  }
+  };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success("API key copied to clipboard")
-  }
+    navigator.clipboard.writeText(text);
+    toast.success('API key copied to clipboard');
+  };
 
   const isExpired = (expiresAt: string | null) => {
-    if (!expiresAt) return false
-    return new Date(expiresAt) < new Date()
-  }
+    if (!expiresAt) return false;
+    return new Date(expiresAt) < new Date();
+  };
 
   return (
     <div>
@@ -186,10 +176,17 @@ export function ApiKeysSettings() {
           <Alert className="mb-6">
             <Info className="h-4 w-4" />
             <AlertDescription>
-              API keys provide programmatic access to your account and should be treated like passwords.
+              API keys provide programmatic access to your account and should be treated like
+              passwords.
               <span className="flex items-center gap-1">
-                They can have read-only, read-write{isAdmin ? ", or admin" : ""} permissions. View the complete API documentation at
-                <a href="/api-docs" className="font-medium underline inline-flex items-center gap-1 hover:text-primary transition-all duration-300" target="_blank" rel="noopener noreferrer">
+                They can have read-only, read-write{isAdmin ? ', or admin' : ''} permissions. View
+                the complete API documentation at
+                <a
+                  href="/api-docs"
+                  className="font-medium underline inline-flex items-center gap-1 hover:text-primary transition-all duration-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   /api-docs
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -198,9 +195,7 @@ export function ApiKeysSettings() {
           </Alert>
 
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading API keys...
-            </div>
+            <div className="text-center py-8 text-muted-foreground">Loading API keys...</div>
           ) : keys.length === 0 ? (
             <div className="text-center py-8">
               <KeyRound className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -287,7 +282,8 @@ export function ApiKeysSettings() {
           <DialogHeader>
             <DialogTitle>Create API Key</DialogTitle>
             <DialogDescription>
-              Create a new API key for programmatic access. Treat this like a password - the key will only be shown once and cannot be recovered.
+              Create a new API key for programmatic access. Treat this like a password - the key
+              will only be shown once and cannot be recovered.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -320,12 +316,12 @@ export function ApiKeysSettings() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="read"
-                    checked={keyScopes.includes("read")}
+                    checked={keyScopes.includes('read')}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setKeyScopes([...keyScopes, "read"])
+                        setKeyScopes([...keyScopes, 'read']);
                       } else {
-                        setKeyScopes(keyScopes.filter((s) => s !== "read"))
+                        setKeyScopes(keyScopes.filter((s) => s !== 'read'));
                       }
                     }}
                   />
@@ -339,12 +335,12 @@ export function ApiKeysSettings() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="write"
-                    checked={keyScopes.includes("write")}
+                    checked={keyScopes.includes('write')}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setKeyScopes([...keyScopes, "write"])
+                        setKeyScopes([...keyScopes, 'write']);
                       } else {
-                        setKeyScopes(keyScopes.filter((s) => s !== "write"))
+                        setKeyScopes(keyScopes.filter((s) => s !== 'write'));
                       }
                     }}
                   />
@@ -359,12 +355,12 @@ export function ApiKeysSettings() {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="admin"
-                      checked={keyScopes.includes("admin")}
+                      checked={keyScopes.includes('admin')}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setKeyScopes([...keyScopes, "admin"])
+                          setKeyScopes([...keyScopes, 'admin']);
                         } else {
-                          setKeyScopes(keyScopes.filter((s) => s !== "admin"))
+                          setKeyScopes(keyScopes.filter((s) => s !== 'admin'));
                         }
                       }}
                     />
@@ -384,7 +380,7 @@ export function ApiKeysSettings() {
               Cancel
             </Button>
             <Button onClick={createApiKey} disabled={creating}>
-              {creating ? "Creating..." : "Create Key"}
+              {creating ? 'Creating...' : 'Create Key'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -405,13 +401,8 @@ export function ApiKeysSettings() {
             </AlertDescription>
           </Alert>
           <div className="space-y-4">
-            <div className="p-4 bg-muted rounded-lg font-mono text-sm break-all">
-              {newKey}
-            </div>
-            <Button
-              className="w-full"
-              onClick={() => copyToClipboard(newKey)}
-            >
+            <div className="p-4 bg-muted rounded-lg font-mono text-sm break-all">{newKey}</div>
+            <Button className="w-full" onClick={() => copyToClipboard(newKey)}>
               <Copy className="h-4 w-4" />
               Copy to Clipboard
             </Button>
@@ -422,5 +413,5 @@ export function ApiKeysSettings() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

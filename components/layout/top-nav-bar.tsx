@@ -1,49 +1,58 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/shared/mode-toggle"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { LogIn, ArrowLeft, LogOut, User, Settings, Loader2 } from "lucide-react"
-import { useState } from "react"
-import { DialogTrigger } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import { signOut } from "@/lib/auth-client"
-import { useCachedAuth } from "@/hooks/use-cached-auth"
-import { SigninDialog } from "@/components/shared/signin-dialog"
-import Link from "next/link"
+import { Button } from '@/components/ui/button';
+import { ModeToggle } from '@/components/shared/mode-toggle';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { LogIn, ArrowLeft, LogOut, User, Settings, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { DialogTrigger } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { signOut } from '@/lib/auth-client';
+import { useCachedAuth } from '@/hooks/use-cached-auth';
+import { SigninDialog } from '@/components/shared/signin-dialog';
+import Link from 'next/link';
 
 interface TopNavBarProps {
-  currentPage?: string
-  showBackButton?: boolean
-  onBack?: () => void
+  currentPage?: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
 }
 
-export function TopNavBar({ currentPage = "Home", showBackButton = false, onBack }: TopNavBarProps) {
-  const { user, isLoading, refreshAuth } = useCachedAuth()
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
+export function TopNavBar({
+  currentPage = 'Home',
+  showBackButton = false,
+  onBack,
+}: TopNavBarProps) {
+  const { user, isLoading, refreshAuth } = useCachedAuth();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut({
         fetchOptions: {
           onSuccess: () => {
-            localStorage.clear()
-            sessionStorage.clear()
-            refreshAuth()
-            window.location.href = '/'
-          }
-        }
-      })
+            localStorage.clear();
+            sessionStorage.clear();
+            refreshAuth();
+            window.location.href = '/';
+          },
+        },
+      });
     } catch (error) {
-      console.error('Sign out error:', error)
-      localStorage.clear()
-      sessionStorage.clear()
-      refreshAuth()
-      window.location.href = '/'
+      console.error('Sign out error:', error);
+      localStorage.clear();
+      sessionStorage.clear();
+      refreshAuth();
+      window.location.href = '/';
     }
-  }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 w-full">
@@ -66,7 +75,9 @@ export function TopNavBar({ currentPage = "Home", showBackButton = false, onBack
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    {user?.image && <AvatarImage src={user.image} alt={user?.name || 'Loading...'} />}
+                    {user?.image && (
+                      <AvatarImage src={user.image} alt={user?.name || 'Loading...'} />
+                    )}
                     <AvatarFallback>
                       {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -87,9 +98,7 @@ export function TopNavBar({ currentPage = "Home", showBackButton = false, onBack
                       </>
                     ) : (
                       <>
-                        {user?.name && (
-                          <p className="font-medium">{user.name}</p>
-                        )}
+                        {user?.name && <p className="font-medium">{user.name}</p>}
                         {user?.email && (
                           <p className="w-[200px] truncate text-sm text-muted-foreground">
                             {user.email}
@@ -134,5 +143,5 @@ export function TopNavBar({ currentPage = "Home", showBackButton = false, onBack
         </div>
       </div>
     </header>
-  )
+  );
 }

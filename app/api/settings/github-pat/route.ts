@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { getUserGitHubPAT, saveUserGitHubPAT, deleteUserGitHubPAT } from "@/lib/db-utils"
-import { hashGitHubPAT, generateSalt } from "@/lib/github-utils"
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { getUserGitHubPAT, saveUserGitHubPAT, deleteUserGitHubPAT } from '@/lib/db-utils';
+import { hashGitHubPAT, generateSalt } from '@/lib/github-utils';
 
 /**
  * Check GitHub PAT status
@@ -16,21 +16,18 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
-    })
+    });
 
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const token = await getUserGitHubPAT(session.user.id)
+    const token = await getUserGitHubPAT(session.user.id);
 
-    return NextResponse.json({ hasToken: !!token })
+    return NextResponse.json({ hasToken: !!token });
   } catch (error) {
-    console.error("Error checking GitHub PAT:", error)
-    return NextResponse.json(
-      { error: "Failed to check GitHub PAT" },
-      { status: 500 }
-    )
+    console.error('Error checking GitHub PAT:', error);
+    return NextResponse.json({ error: 'Failed to check GitHub PAT' }, { status: 500 });
   }
 }
 
@@ -49,40 +46,31 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
-    })
+    });
 
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { token } = await request.json()
+    const { token } = await request.json();
 
     if (!token || typeof token !== 'string') {
-      return NextResponse.json(
-        { error: "GitHub PAT is required" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'GitHub PAT is required' }, { status: 400 });
     }
 
     if (!/^gh[pso]_[a-zA-Z0-9]{36,251}$/.test(token)) {
-      return NextResponse.json(
-        { error: "Invalid GitHub PAT format" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid GitHub PAT format' }, { status: 400 });
     }
 
-    const salt = generateSalt()
-    const hashedToken = hashGitHubPAT(token, salt)
+    const salt = generateSalt();
+    const hashedToken = hashGitHubPAT(token, salt);
 
-    await saveUserGitHubPAT(session.user.id, hashedToken, salt)
+    await saveUserGitHubPAT(session.user.id, hashedToken, salt);
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error saving GitHub PAT:", error)
-    return NextResponse.json(
-      { error: "Failed to save GitHub PAT" },
-      { status: 500 }
-    )
+    console.error('Error saving GitHub PAT:', error);
+    return NextResponse.json({ error: 'Failed to save GitHub PAT' }, { status: 500 });
   }
 }
 
@@ -99,20 +87,17 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
-    })
+    });
 
     if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await deleteUserGitHubPAT(session.user.id)
+    await deleteUserGitHubPAT(session.user.id);
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting GitHub PAT:", error)
-    return NextResponse.json(
-      { error: "Failed to remove GitHub PAT" },
-      { status: 500 }
-    )
+    console.error('Error deleting GitHub PAT:', error);
+    return NextResponse.json({ error: 'Failed to remove GitHub PAT' }, { status: 500 });
   }
 }

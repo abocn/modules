@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import { getAllReviewsForAdmin, getReviewsWithAdvancedFilters, getReviewStats } from '@/lib/db-utils'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import {
+  getAllReviewsForAdmin,
+  getReviewsWithAdvancedFilters,
+  getReviewStats,
+} from '@/lib/db-utils';
 
 /**
  * Get all reviews (admin)
@@ -17,41 +21,49 @@ import { getAllReviewsForAdmin, getReviewsWithAdvancedFilters, getReviewStats } 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: await headers()
-    })
+      headers: await headers(),
+    });
 
     if (!session || session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const query = searchParams.get('query') || ''
-    const ratingFilter = searchParams.get('rating') || 'all'
-    const dateFrom = searchParams.get('dateFrom') || undefined
-    const dateTo = searchParams.get('dateTo') || undefined
-    const minHelpful = searchParams.get('minHelpful') ? parseInt(searchParams.get('minHelpful')!) : undefined
-    const moduleFilter = searchParams.get('module') || 'all'
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('query') || '';
+    const ratingFilter = searchParams.get('rating') || 'all';
+    const dateFrom = searchParams.get('dateFrom') || undefined;
+    const dateTo = searchParams.get('dateTo') || undefined;
+    const minHelpful = searchParams.get('minHelpful')
+      ? parseInt(searchParams.get('minHelpful')!)
+      : undefined;
+    const moduleFilter = searchParams.get('module') || 'all';
 
-    let reviews
-    if (query.trim() || ratingFilter !== 'all' || dateFrom || dateTo || 
-        minHelpful !== undefined || moduleFilter !== 'all') {
+    let reviews;
+    if (
+      query.trim() ||
+      ratingFilter !== 'all' ||
+      dateFrom ||
+      dateTo ||
+      minHelpful !== undefined ||
+      moduleFilter !== 'all'
+    ) {
       reviews = await getReviewsWithAdvancedFilters({
         query,
         ratingFilter,
         dateFrom,
         dateTo,
         minHelpful,
-        moduleFilter
-      })
+        moduleFilter,
+      });
     } else {
-      reviews = await getAllReviewsForAdmin()
+      reviews = await getAllReviewsForAdmin();
     }
 
-    const stats = await getReviewStats()
+    const stats = await getReviewStats();
 
-    return NextResponse.json({ reviews, stats })
+    return NextResponse.json({ reviews, stats });
   } catch (error) {
-    console.error('[! /api/admin/reviews] Error fetching reviews:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[! /api/admin/reviews] Error fetching reviews:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

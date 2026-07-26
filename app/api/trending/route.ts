@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
-import { modules, ratings, releases } from '@/db/schema'
-import { sql, eq, and, desc, gte } from 'drizzle-orm'
-import { transformDbModuleToModule } from '@/lib/db-utils'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
-import { applyRateLimit } from '@/lib/rate-limit-enhanced'
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware'
-import type { DbModule } from '@/types/module'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { modules, ratings, releases } from '@/db/schema';
+import { sql, eq, and, desc, gte } from 'drizzle-orm';
+import { transformDbModuleToModule } from '@/lib/db-utils';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
+import type { DbModule } from '@/types/module';
 
 /**
  * Get trending modules
@@ -55,59 +55,58 @@ import type { DbModule } from '@/types/module'
  * @openapi
  */
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
-  const { user, error } = await getAuthenticatedUser(request)
+  const { user, error } = await getAuthenticatedUser(request);
 
   if (error && request.headers.get('authorization')) {
-    return NextResponse.json({ error }, { status: 401 })
+    return NextResponse.json({ error }, { status: 401 });
   }
 
-  if (user?.authMethod === "api-key") {
+  if (user?.authMethod === 'api-key') {
     try {
-      requireScope(user, "read")
+      requireScope(user, 'read');
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Insufficient permissions" },
-        { status: 403 }
-      )
+        { error: err instanceof Error ? err.message : 'Insufficient permissions' },
+        { status: 403 },
+      );
     }
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const timeframe = searchParams.get('timeframe') || '7d' // 1d, 7d, 30d
-    const category = searchParams.get('category')
-    const algorithm = searchParams.get('algorithm') || 'balanced' // downloads, ratings, balanced, new
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
+    const { searchParams } = new URL(request.url);
+    const timeframe = searchParams.get('timeframe') || '7d'; // 1d, 7d, 30d
+    const category = searchParams.get('category');
+    const algorithm = searchParams.get('algorithm') || 'balanced'; // downloads, ratings, balanced, new
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
 
-    const validTimeframes = ['1d', '7d', '30d']
+    const validTimeframes = ['1d', '7d', '30d'];
     if (!validTimeframes.includes(timeframe)) {
-      return createErrorResponse('Invalid timeframe. Must be one of: 1d, 7d, 30d', 400)
+      return createErrorResponse('Invalid timeframe. Must be one of: 1d, 7d, 30d', 400);
     }
 
-    const validAlgorithms = ['downloads', 'ratings', 'balanced', 'new']
+    const validAlgorithms = ['downloads', 'ratings', 'balanced', 'new'];
     if (!validAlgorithms.includes(algorithm)) {
-      return createErrorResponse('Invalid algorithm. Must be one of: downloads, ratings, balanced, new', 400)
+      return createErrorResponse(
+        'Invalid algorithm. Must be one of: downloads, ratings, balanced, new',
+        400,
+      );
     }
 
-    const daysAgo = parseInt(timeframe.replace('d', ''))
-    const dateThreshold = new Date()
-    dateThreshold.setDate(dateThreshold.getDate() - daysAgo)
+    const daysAgo = parseInt(timeframe.replace('d', ''));
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - daysAgo);
 
-    let trendingQuery
+    let trendingQuery;
 
     if (algorithm === 'downloads') {
       trendingQuery = db
@@ -133,10 +132,15 @@ export async function GET(request: NextRequest) {
         .leftJoin(releases, eq(modules.id, releases.moduleId))
         .where(getBaseWhereCondition(category))
         .groupBy(...getModuleGroupByFields())
-        .having(sql`SUM(CASE WHEN ${releases.createdAt} > ${dateThreshold.toISOString()} THEN ${releases.downloads} ELSE 0 END) > 0`)
-        .orderBy(desc(sql`COALESCE(SUM(CASE WHEN ${releases.createdAt} > ${dateThreshold.toISOString()} THEN ${releases.downloads} ELSE 0 END), 0)`))
-        .limit(limit)
-
+        .having(
+          sql`SUM(CASE WHEN ${releases.createdAt} > ${dateThreshold.toISOString()} THEN ${releases.downloads} ELSE 0 END) > 0`,
+        )
+        .orderBy(
+          desc(
+            sql`COALESCE(SUM(CASE WHEN ${releases.createdAt} > ${dateThreshold.toISOString()} THEN ${releases.downloads} ELSE 0 END), 0)`,
+          ),
+        )
+        .limit(limit);
     } else if (algorithm === 'ratings') {
       trendingQuery = db
         .select({
@@ -167,10 +171,15 @@ export async function GET(request: NextRequest) {
         .leftJoin(ratings, eq(modules.id, ratings.moduleId))
         .where(getBaseWhereCondition(category))
         .groupBy(...getModuleGroupByFields())
-        .having(sql`COUNT(CASE WHEN ${ratings.createdAt} > ${dateThreshold.toISOString()} THEN ${ratings.id} ELSE NULL END) > 0`)
-        .orderBy(desc(sql`COUNT(CASE WHEN ${ratings.createdAt} > ${dateThreshold.toISOString()} THEN ${ratings.id} ELSE NULL END)`))
-        .limit(limit)
-
+        .having(
+          sql`COUNT(CASE WHEN ${ratings.createdAt} > ${dateThreshold.toISOString()} THEN ${ratings.id} ELSE NULL END) > 0`,
+        )
+        .orderBy(
+          desc(
+            sql`COUNT(CASE WHEN ${ratings.createdAt} > ${dateThreshold.toISOString()} THEN ${ratings.id} ELSE NULL END)`,
+          ),
+        )
+        .limit(limit);
     } else if (algorithm === 'new') {
       trendingQuery = db
         .select({
@@ -183,16 +192,10 @@ export async function GET(request: NextRequest) {
           `,
         })
         .from(modules)
-        .where(
-          and(
-            getBaseWhereCondition(category),
-            gte(modules.createdAt, dateThreshold)
-          )
-        )
+        .where(and(getBaseWhereCondition(category), gte(modules.createdAt, dateThreshold)))
         .groupBy(...getModuleGroupByFields())
         .orderBy(desc(modules.createdAt))
-        .limit(limit)
-
+        .limit(limit);
     } else {
       trendingQuery = db
         .select({
@@ -237,7 +240,8 @@ export async function GET(request: NextRequest) {
         .leftJoin(ratings, eq(modules.id, ratings.moduleId))
         .where(getBaseWhereCondition(category))
         .groupBy(...getModuleGroupByFields())
-        .having(sql`
+        .having(
+          sql`
           (
             COALESCE(SUM(CASE
               WHEN ${releases.createdAt} > ${dateThreshold.toISOString()}
@@ -255,8 +259,10 @@ export async function GET(request: NextRequest) {
               ELSE 0
             END * 0.3
           ) > 0
-        `)
-        .orderBy(desc(sql`
+        `,
+        )
+        .orderBy(
+          desc(sql`
           (
             COALESCE(SUM(CASE
               WHEN ${releases.createdAt} > ${dateThreshold.toISOString()}
@@ -274,15 +280,16 @@ export async function GET(request: NextRequest) {
               ELSE 0
             END * 0.3
           )
-        `))
-        .limit(limit)
+        `),
+        )
+        .limit(limit);
     }
 
-    const trendingModules = await trendingQuery
+    const trendingModules = await trendingQuery;
 
     const transformedModules = await Promise.all(
       trendingModules.map(async (dbModule) => {
-        const transformedModule = await transformDbModuleToModule(dbModule as DbModule)
+        const transformedModule = await transformDbModuleToModule(dbModule as DbModule);
         const trendData = {
           recentDownloads: 0,
           recentRatings: 0,
@@ -290,22 +297,28 @@ export async function GET(request: NextRequest) {
           totalDownloads: 0,
           daysSinceCreated: 0,
           wasRecentlyUpdated: false,
-        }
+        };
 
-        if ('recentDownloads' in dbModule) trendData.recentDownloads = Number(dbModule.recentDownloads || 0)
-        if ('recentRatings' in dbModule) trendData.recentRatings = Number(dbModule.recentRatings || 0)
-        if ('avgRecentRating' in dbModule) trendData.avgRecentRating = Number(dbModule.avgRecentRating || 0)
-        if ('totalDownloads' in dbModule) trendData.totalDownloads = Number(dbModule.totalDownloads || 0)
-        if ('daysSinceCreated' in dbModule) trendData.daysSinceCreated = Number(dbModule.daysSinceCreated || 0)
-        if ('wasRecentlyUpdated' in dbModule) trendData.wasRecentlyUpdated = Boolean(dbModule.wasRecentlyUpdated || false)
+        if ('recentDownloads' in dbModule)
+          trendData.recentDownloads = Number(dbModule.recentDownloads || 0);
+        if ('recentRatings' in dbModule)
+          trendData.recentRatings = Number(dbModule.recentRatings || 0);
+        if ('avgRecentRating' in dbModule)
+          trendData.avgRecentRating = Number(dbModule.avgRecentRating || 0);
+        if ('totalDownloads' in dbModule)
+          trendData.totalDownloads = Number(dbModule.totalDownloads || 0);
+        if ('daysSinceCreated' in dbModule)
+          trendData.daysSinceCreated = Number(dbModule.daysSinceCreated || 0);
+        if ('wasRecentlyUpdated' in dbModule)
+          trendData.wasRecentlyUpdated = Boolean(dbModule.wasRecentlyUpdated || false);
 
         return {
           ...transformedModule,
           trendScore: Number(dbModule.trendScore),
-          trendData
-        }
-      })
-    )
+          trendData,
+        };
+      }),
+    );
 
     return createSuccessResponse({
       trending: transformedModules,
@@ -315,13 +328,12 @@ export async function GET(request: NextRequest) {
         category: category || 'all',
         limit,
         generatedAt: new Date().toISOString(),
-        explanation: getAlgorithmExplanation(algorithm, timeframe)
-      }
-    })
-
+        explanation: getAlgorithmExplanation(algorithm, timeframe),
+      },
+    });
   } catch (error) {
-    console.error('[! /api/trending] Error fetching trending modules:', error)
-    return createErrorResponse('Failed to fetch trending modules', 500)
+    console.error('[! /api/trending] Error fetching trending modules:', error);
+    return createErrorResponse('Failed to fetch trending modules', 500);
   }
 }
 
@@ -353,7 +365,7 @@ function getModuleSelectFields() {
     createdAt: modules.createdAt,
     updatedAt: modules.updatedAt,
     submittedBy: modules.submittedBy,
-  }
+  };
 }
 
 function getModuleGroupByFields() {
@@ -384,7 +396,7 @@ function getModuleGroupByFields() {
     modules.createdAt,
     modules.updatedAt,
     modules.submittedBy,
-  ]
+  ];
 }
 
 function getBaseWhereCondition(category?: string | null) {
@@ -392,28 +404,26 @@ function getBaseWhereCondition(category?: string | null) {
     return and(
       eq(modules.isPublished, true),
       eq(modules.status, 'approved'),
-      eq(modules.category, category)
-    )
+      eq(modules.category, category),
+    );
   }
-  return and(
-    eq(modules.isPublished, true),
-    eq(modules.status, 'approved')
-  )
+  return and(eq(modules.isPublished, true), eq(modules.status, 'approved'));
 }
 
 function getAlgorithmExplanation(algorithm: string, timeframe: string): string {
-  const timeFrameText = timeframe === '1d' ? 'past day' : timeframe === '7d' ? 'past week' : 'past month'
+  const timeFrameText =
+    timeframe === '1d' ? 'past day' : timeframe === '7d' ? 'past week' : 'past month';
 
   switch (algorithm) {
     case 'downloads':
-      return `Modules with the most downloads in the ${timeFrameText}`
+      return `Modules with the most downloads in the ${timeFrameText}`;
     case 'ratings':
-      return `Modules with the most ratings received in the ${timeFrameText}`
+      return `Modules with the most ratings received in the ${timeFrameText}`;
     case 'new':
-      return `Newest modules created in the ${timeFrameText}`
+      return `Newest modules created in the ${timeFrameText}`;
     case 'balanced':
-      return `Modules trending based on a balanced score of recent downloads (40%), ratings (30%), and updates (30%) in the ${timeFrameText}`
+      return `Modules trending based on a balanced score of recent downloads (40%), ratings (30%), and updates (30%) in the ${timeFrameText}`;
     default:
-      return `Trending modules in the ${timeFrameText}`
+      return `Trending modules in the ${timeFrameText}`;
   }
 }

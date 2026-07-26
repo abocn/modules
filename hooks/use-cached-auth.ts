@@ -1,33 +1,33 @@
-import { useAuth } from '@/lib/auth-context'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export function useCachedAuth() {
-  return useAuth()
+  return useAuth();
 }
 
 export function useRequireAuth() {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/')
+      router.push('/');
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router]);
 
-  return { user, isLoading, isAuthenticated: !!user }
+  return { user, isLoading, isAuthenticated: !!user };
 }
 
 export function useRequireAdmin() {
-  const { isAdmin, isLoading, user } = useAuth()
-  const router = useRouter()
+  const { isAdmin, isLoading, user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
-      router.push('/')
+      router.push('/');
     }
-  }, [isAdmin, isLoading, router])
+  }, [isAdmin, isLoading, router]);
 
-  return { isAdmin, isLoading, user }
+  return { isAdmin, isLoading, user };
 }

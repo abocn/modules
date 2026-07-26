@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { useState, useCallback } from "react"
-import { formatCustomLicense } from "@/lib/utils/license-utils"
+import { useState, useCallback } from 'react';
+import { formatCustomLicense } from '@/lib/utils/license-utils';
 
 /**
  * @interface UseLicenseSelectionReturn
@@ -16,14 +16,14 @@ import { formatCustomLicense } from "@/lib/utils/license-utils"
  * @property {boolean} isValid - Whether the current license selection is valid
  */
 interface UseLicenseSelectionReturn {
-  license: string
-  customLicense: string
-  formattedLicense: string
-  setLicense: (license: string, customValue?: string) => void
-  setCustomLicense: (customValue: string) => void
-  clearLicense: () => void
-  isCustom: boolean
-  isValid: boolean
+  license: string;
+  customLicense: string;
+  formattedLicense: string;
+  setLicense: (license: string, customValue?: string) => void;
+  setCustomLicense: (customValue: string) => void;
+  clearLicense: () => void;
+  isCustom: boolean;
+  isValid: boolean;
 }
 
 /**
@@ -34,9 +34,9 @@ interface UseLicenseSelectionReturn {
  * @property {boolean} [required] - Whether license selection is required
  */
 interface UseLicenseSelectionOptions {
-  initialLicense?: string
-  initialCustomLicense?: string
-  required?: boolean
+  initialLicense?: string;
+  initialCustomLicense?: string;
+  required?: boolean;
 }
 
 /**
@@ -70,15 +70,13 @@ interface UseLicenseSelectionOptions {
  * }
  * ```
  */
-export function useLicenseSelection(options: UseLicenseSelectionOptions = {}): UseLicenseSelectionReturn {
-  const {
-    initialLicense = "",
-    initialCustomLicense = "",
-    required = false
-  } = options
+export function useLicenseSelection(
+  options: UseLicenseSelectionOptions = {},
+): UseLicenseSelectionReturn {
+  const { initialLicense = '', initialCustomLicense = '', required = false } = options;
 
-  const [license, setLicenseState] = useState(initialLicense)
-  const [customLicense, setCustomLicenseState] = useState(initialCustomLicense)
+  const [license, setLicenseState] = useState(initialLicense);
+  const [customLicense, setCustomLicenseState] = useState(initialCustomLicense);
 
   /**
    * @function setLicense
@@ -87,14 +85,14 @@ export function useLicenseSelection(options: UseLicenseSelectionOptions = {}): U
    * @param {string} [customValue] - Optional custom license value
    */
   const setLicense = useCallback((newLicense: string, customValue?: string) => {
-    setLicenseState(newLicense)
+    setLicenseState(newLicense);
 
-    if (newLicense !== "Custom") {
-      setCustomLicenseState("")
+    if (newLicense !== 'Custom') {
+      setCustomLicenseState('');
     } else if (customValue !== undefined) {
-      setCustomLicenseState(customValue)
+      setCustomLicenseState(customValue);
     }
-  }, [])
+  }, []);
 
   /**
    * @function setCustomLicense
@@ -102,37 +100,38 @@ export function useLicenseSelection(options: UseLicenseSelectionOptions = {}): U
    * @param {string} customValue - The custom license value
    */
   const setCustomLicense = useCallback((customValue: string) => {
-    setCustomLicenseState(customValue)
-  }, [])
+    setCustomLicenseState(customValue);
+  }, []);
 
   /**
    * @function clearLicense
    * @description Clears all license data
    */
   const clearLicense = useCallback(() => {
-    setLicenseState("")
-    setCustomLicenseState("")
-  }, [])
+    setLicenseState('');
+    setCustomLicenseState('');
+  }, []);
 
   /**
    * @computed isCustom
    * @description Whether custom license is currently selected
    */
-  const isCustom = license === "Custom"
+  const isCustom = license === 'Custom';
 
   /**
    * @computed isValid
    * @description Whether the current license selection is valid
    */
-  const isValid = !required || (Boolean(license) && license.length > 0 && (!isCustom || customLicense.trim().length > 0))
+  const isValid =
+    !required ||
+    (Boolean(license) && license.length > 0 && (!isCustom || customLicense.trim().length > 0));
 
   /**
    * @computed formattedLicense
    * @description Formatted license string for storage or API submission
    */
-  const formattedLicense = isCustom && customLicense.trim() 
-    ? formatCustomLicense(customLicense)
-    : license
+  const formattedLicense =
+    isCustom && customLicense.trim() ? formatCustomLicense(customLicense) : license;
 
   return {
     license,
@@ -142,6 +141,6 @@ export function useLicenseSelection(options: UseLicenseSelectionOptions = {}): U
     setCustomLicense,
     clearLicense,
     isCustom,
-    isValid
-  }
+    isValid,
+  };
 }

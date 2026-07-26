@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { AdminGuard } from "@/components/features/admin/guards/admin-guard"
-import { CreateModuleForm } from "@/components/features/admin/modules/create-module-form"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { AdminGuard } from '@/components/features/admin/guards/admin-guard';
+import { CreateModuleForm } from '@/components/features/admin/modules/create-module-form';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function CreateModulePageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect } = useModuleNavigation();
 
   return (
     <AdminGuard>
@@ -32,5 +32,5 @@ export function CreateModulePageClient() {
         </div>
       </SharedLayout>
     </AdminGuard>
-  )
+  );
 }

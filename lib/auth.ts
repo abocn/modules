@@ -1,13 +1,13 @@
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../db";
-import * as schema from "../db/schema";
-import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from "./email";
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from '../db';
+import * as schema from '../db/schema';
+import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from './email';
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   database: drizzleAdapter(db, {
-    provider: "pg",
+    provider: 'pg',
     schema,
   }),
   emailAndPassword: {
@@ -20,10 +20,10 @@ export const auth = betterAuth({
         try {
           await sendPasswordResetEmail(user.email, url);
         } catch (error) {
-          console.error("Failed to send password reset email:", error);
+          console.error('Failed to send password reset email:', error);
         }
       } else {
-        console.warn("Email service not configured - password reset email not sent");
+        console.warn('Email service not configured - password reset email not sent');
       }
     },
     onPasswordReset: async ({ user }) => {
@@ -37,10 +37,10 @@ export const auth = betterAuth({
         try {
           await sendVerificationEmail(user.email, url);
         } catch (error) {
-          console.error("Failed to send verification email:", error);
+          console.error('Failed to send verification email:', error);
         }
       } else {
-        console.warn("Email service not configured - verification email not sent");
+        console.warn('Email service not configured - verification email not sent');
       }
     },
     sendOnSignUp: false,
@@ -49,12 +49,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
     },
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     },
   },
   session: {
@@ -68,8 +68,8 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: {
-        type: "string",
-        defaultValue: "user",
+        type: 'string',
+        defaultValue: 'user',
         required: false,
       },
     },

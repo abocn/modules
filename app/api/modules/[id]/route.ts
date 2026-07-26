@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getModuleById } from '@/lib/db-utils'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { getModuleById } from '@/lib/db-utils';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
 
 /**
  * Get module details
@@ -49,47 +49,38 @@ import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
  * }
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error) {
-      return NextResponse.json({ error }, { status: 401 })
+      return NextResponse.json({ error }, { status: 401 });
     }
 
     if (user) {
       try {
-        requireScope(user, "read")
+        requireScope(user, 'read');
       } catch (scopeError) {
         return NextResponse.json(
-          { error: scopeError instanceof Error ? scopeError.message : "Insufficient permissions" },
-          { status: 403 }
-        )
+          { error: scopeError instanceof Error ? scopeError.message : 'Insufficient permissions' },
+          { status: 403 },
+        );
       }
     }
 
-    const url = new URL(request.url)
-    const includeReleases = url.searchParams.get('includeReleases') === 'true'
+    const url = new URL(request.url);
+    const includeReleases = url.searchParams.get('includeReleases') === 'true';
 
-    const { id } = await params
-    const mod = await getModuleById(id, includeReleases)
+    const { id } = await params;
+    const mod = await getModuleById(id, includeReleases);
 
     if (!mod || !mod.isPublished) {
-      return NextResponse.json(
-        { error: 'Module not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ module: mod })
+    return NextResponse.json({ module: mod });
   } catch (error) {
-    console.error('[! /api/modules/[id]] Error fetching module:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch module' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules/[id]] Error fetching module:', error);
+    return NextResponse.json({ error: 'Failed to fetch module' }, { status: 500 });
   }
 }

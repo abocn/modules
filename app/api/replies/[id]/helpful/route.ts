@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { incrementReplyHelpful, checkUserHelpfulVote, addHelpfulVote } from '@/lib/db-utils'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { incrementReplyHelpful, checkUserHelpfulVote, addHelpfulVote } from '@/lib/db-utils';
+import { auth } from '@/lib/auth';
 
 /**
  * Mark reply as helpful
@@ -23,48 +23,36 @@ import { auth } from '@/lib/auth'
  * }
  * @openapi
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const replyId = parseInt(resolvedParams.id, 10)
+    const resolvedParams = await params;
+    const replyId = parseInt(resolvedParams.id, 10);
 
     if (isNaN(replyId)) {
-      return NextResponse.json(
-        { error: 'Invalid reply ID' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid reply ID' }, { status: 400 });
     }
 
     const session = await auth.api.getSession({
-      headers: request.headers
-    })
+      headers: request.headers,
+    });
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const hasVoted = await checkUserHelpfulVote(session.user.id, undefined, replyId)
+    const hasVoted = await checkUserHelpfulVote(session.user.id, undefined, replyId);
     if (hasVoted) {
       return NextResponse.json(
         { error: 'You have already marked this reply as helpful' },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
-    await addHelpfulVote(session.user.id, undefined, replyId)
-    await incrementReplyHelpful(replyId)
+    await addHelpfulVote(session.user.id, undefined, replyId);
+    await incrementReplyHelpful(replyId);
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('[! /api/replies/[id]/helpful] Error marking reply as helpful:', error)
-    return NextResponse.json(
-      { error: 'Failed to mark reply as helpful' },
-      { status: 500 }
-    )
+    console.error('[! /api/replies/[id]/helpful] Error marking reply as helpful:', error);
+    return NextResponse.json({ error: 'Failed to mark reply as helpful' }, { status: 500 });
   }
 }

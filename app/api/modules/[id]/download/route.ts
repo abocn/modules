@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { incrementReleaseDownloads, getLatestRelease } from '@/lib/db-utils'
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware'
-import { applyRateLimit } from '@/lib/rate-limit-enhanced'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { incrementReleaseDownloads, getLatestRelease } from '@/lib/db-utils';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
 
 /**
  * Download module (redirect)
@@ -25,79 +25,76 @@ import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
  * // Location: https://github.com/user/repo/releases/download/v1.0.0/module.zip
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error) {
-      return NextResponse.json({ error }, { status: 401 })
+      return NextResponse.json({ error }, { status: 401 });
     }
 
     if (user) {
       try {
-        requireScope(user, "read")
+        requireScope(user, 'read');
       } catch (scopeError) {
         return NextResponse.json(
-          { error: scopeError instanceof Error ? scopeError.message : "Insufficient permissions" },
-          { status: 403 }
-        )
+          { error: scopeError instanceof Error ? scopeError.message : 'Insufficient permissions' },
+          { status: 403 },
+        );
       }
     }
 
-    const rateLimitResult = await applyRateLimit(request, 'DOWNLOAD_TRACKING')
+    const rateLimitResult = await applyRateLimit(request, 'DOWNLOAD_TRACKING');
 
     if (!rateLimitResult.success) {
-      return createErrorResponse(
-        'Rate limit exceeded',
-        429,
-        {
-          "X-RateLimit-Limit": "50",
-          "X-RateLimit-Remaining": "0",
-          "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-        }
-      )
+      return createErrorResponse('Rate limit exceeded', 429, {
+        'X-RateLimit-Limit': '50',
+        'X-RateLimit-Remaining': '0',
+        'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+      });
     }
 
-    const { id } = await params
-    const latestRelease = await getLatestRelease(id)
+    const { id } = await params;
+    const latestRelease = await getLatestRelease(id);
 
     if (!latestRelease) {
-      return createErrorResponse('No releases found for this module', 404)
+      return createErrorResponse('No releases found for this module', 404);
     }
 
     try {
-      const downloadUrl = new URL(latestRelease.downloadUrl)
+      const downloadUrl = new URL(latestRelease.downloadUrl);
       const allowedHosts = [
         'github.com',
         'raw.githubusercontent.com',
         'releases.githubusercontent.com',
         'gitlab.com',
         'bitbucket.org',
-        'sourceforge.net'
-      ]
+        'sourceforge.net',
+      ];
 
-      if (!allowedHosts.some(host => downloadUrl.hostname === host || downloadUrl.hostname.endsWith(`.${host}`))) {
-        console.error(`Blocked redirect to untrusted host: ${downloadUrl.hostname}`)
-        return createErrorResponse('Download URL points to an untrusted source', 400)
+      if (
+        !allowedHosts.some(
+          (host) => downloadUrl.hostname === host || downloadUrl.hostname.endsWith(`.${host}`),
+        )
+      ) {
+        console.error(`Blocked redirect to untrusted host: ${downloadUrl.hostname}`);
+        return createErrorResponse('Download URL points to an untrusted source', 400);
       }
 
       if (!['http:', 'https:'].includes(downloadUrl.protocol)) {
-        return createErrorResponse('Invalid download URL protocol', 400)
+        return createErrorResponse('Invalid download URL protocol', 400);
       }
     } catch (error) {
-      console.error('Invalid download URL:', error)
-      return createErrorResponse('Invalid download URL', 400)
+      console.error('Invalid download URL:', error);
+      return createErrorResponse('Invalid download URL', 400);
     }
 
-    await incrementReleaseDownloads(latestRelease.id)
+    await incrementReleaseDownloads(latestRelease.id);
 
-    return NextResponse.redirect(latestRelease.downloadUrl, 302)
+    return NextResponse.redirect(latestRelease.downloadUrl, 302);
   } catch (error) {
-    console.error('[! /api/modules/[id]/download] Error processing download:', error)
-    return createErrorResponse('Failed to process download', 500)
+    console.error('[! /api/modules/[id]/download] Error processing download:', error);
+    return createErrorResponse('Failed to process download', 500);
   }
 }
 
@@ -134,67 +131,62 @@ export async function GET(
  * }
  * @openapi
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error) {
-      return NextResponse.json({ error }, { status: 401 })
+      return NextResponse.json({ error }, { status: 401 });
     }
 
     if (user) {
       try {
-        requireScope(user, "read")
+        requireScope(user, 'read');
       } catch (scopeError) {
         return NextResponse.json(
-          { error: scopeError instanceof Error ? scopeError.message : "Insufficient permissions" },
-          { status: 403 }
-        )
+          { error: scopeError instanceof Error ? scopeError.message : 'Insufficient permissions' },
+          { status: 403 },
+        );
       }
     }
 
-    const rateLimitResult = await applyRateLimit(request, 'DOWNLOAD_TRACKING')
+    const rateLimitResult = await applyRateLimit(request, 'DOWNLOAD_TRACKING');
 
     if (!rateLimitResult.success) {
-      return createErrorResponse(
-        'Rate limit exceeded',
-        429,
-        {
-          "X-RateLimit-Limit": "50",
-          "X-RateLimit-Remaining": "0",
-          "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-        }
-      )
+      return createErrorResponse('Rate limit exceeded', 429, {
+        'X-RateLimit-Limit': '50',
+        'X-RateLimit-Remaining': '0',
+        'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+      });
     }
 
-    const { id } = await params
-    const body = await request.json()
-    const { releaseId, assetName } = body
+    const { id } = await params;
+    const body = await request.json();
+    const { releaseId, assetName } = body;
 
     if (releaseId) {
       if (typeof releaseId !== 'number' || releaseId <= 0) {
-        return createErrorResponse('Invalid release ID', 400)
+        return createErrorResponse('Invalid release ID', 400);
       }
 
-      await incrementReleaseDownloads(releaseId)
+      await incrementReleaseDownloads(releaseId);
 
       if (assetName) {
-        console.log(`[/api/modules/[id]/download] Asset download: ${assetName} from release ${releaseId}`)
+        console.log(
+          `[/api/modules/[id]/download] Asset download: ${assetName} from release ${releaseId}`,
+        );
       }
     } else {
-      const latestRelease = await getLatestRelease(id)
+      const latestRelease = await getLatestRelease(id);
       if (!latestRelease) {
-        return createErrorResponse('No releases found for this module', 404)
+        return createErrorResponse('No releases found for this module', 404);
       }
-      await incrementReleaseDownloads(latestRelease.id)
+      await incrementReleaseDownloads(latestRelease.id);
     }
 
-    return createSuccessResponse({ success: true })
+    return createSuccessResponse({ success: true });
   } catch (error) {
-    console.error('[! /api/modules/[id]/download] Error tracking download:', error)
-    return createErrorResponse('Failed to track download', 500)
+    console.error('[! /api/modules/[id]/download] Error tracking download:', error);
+    return createErrorResponse('Failed to track download', 500);
   }
 }

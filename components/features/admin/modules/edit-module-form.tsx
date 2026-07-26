@@ -1,142 +1,189 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LicenseCombobox } from "@/components/ui/license-combobox"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { CharacterCounter } from "@/components/ui/character-counter"
-import { ExternalLink, Plus, X, AlertTriangle, Info } from "lucide-react"
-import { toast } from "sonner"
-import type { DbModule } from "@/types/module"
-import { MODULE_CATEGORIES } from "@/lib/constants/categories"
-import { MarkdownEditor } from "@/components/shared/markdown-editor"
-import { CATEGORIES, ANDROID_VERSIONS } from "@/lib/validations/module"
-import { WarningsManager, type Warning } from "./warnings-manager"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { LicenseCombobox } from '@/components/ui/license-combobox';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { CharacterCounter } from '@/components/ui/character-counter';
+import { ExternalLink, Plus, X, AlertTriangle, Info } from 'lucide-react';
+import { toast } from 'sonner';
+import type { DbModule } from '@/types/module';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
+import { CATEGORIES, ANDROID_VERSIONS } from '@/lib/validations/module';
+import { WarningsManager, type Warning } from './warnings-manager';
 
 /**
  * @constant formSchema
  * @description Zod schema for module editing form validation
  * @type {z.ZodObject}
  */
-const formSchema = z.object({
-  name: z.string().min(3, "Module name must be at least 3 characters").max(80, "Module name must be less than 80 characters"),
-  shortDescription: z.string().min(10, "Short description must be at least 10 characters").max(140, "Short description must be less than 140 characters"),
-  description: z.string().min(30, "Description must be at least 30 characters").max(8000, "Description must be less than 8000 characters"),
-  author: z.string().min(2, "Author name must be at least 2 characters").max(60, "Author name must be less than 60 characters"),
-  category: z.enum(CATEGORIES),
-  iconUrl: z.string()
-    .max(300, "Icon URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^(\/|https?:\/\/).+/.test(val),
-      { message: "Please enter a valid icon URL or path" }
-    )
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  license: z.string().optional(),
-  customLicense: z.string().optional(),
-  isOpenSource: z.boolean().default(false),
-  sourceUrl: z.string().optional(),
-  communityUrl: z.string()
-    .max(300, "URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^https?:\/\/.+/.test(val),
-      { message: "Please enter a valid URL" }
-    )
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  features: z.array(z.string().min(1, "Feature cannot be empty").max(150, "Feature must be at most 150 characters")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
-  androidVersions: z.array(z.string()).min(1, "Select at least one Android version"),
-  rootMethods: z.array(z.enum(["Magisk", "KernelSU", "KernelSU-Next"])).min(1, "Select at least one root method"),
-  images: z.array(z.string().refine(
-    (val) => /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  )).max(10, "Maximum 10 images allowed").optional(),
-  manualReleaseVersion: z.string()
-    .transform(val => val?.trim())
-    .refine(
-      (val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val),
-      { message: "Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)" }
-    )
-    .optional(),
-  manualReleaseUrl: z.string()
-    .max(300, "Download URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^https?:\/\/.+/.test(val),
-      { message: "Please enter a valid download URL" }
-    )
-    .optional(),
-  manualReleaseChangelog: z.string()
-    .max(5000, "Changelog must be at most 5000 characters")
-    .optional(),
-  isFeatured: z.boolean().default(false),
-  isRecommended: z.boolean().default(false),
-  warnings: z.array(z.object({
-    type: z.enum(["malware", "closed-source", "stolen-code"]),
-    message: z.string().min(1, "Warning message is required")
-  })).optional(),
-}).refine(
-  (data) => {
-    if (data.isOpenSource) {
-      return data.license && data.license.length > 0
-    }
-    return true
-  },
-  {
-    message: "License is required for open source modules",
-    path: ["license"],
-  }
-).refine(
-  (data) => {
-    if (data.isOpenSource) {
-      return data.sourceUrl && data.sourceUrl.length > 0
-    }
-    return true
-  },
-  {
-    message: "Source URL is required for open source modules",
-    path: ["sourceUrl"],
-  }
-).refine(
-  (data) => {
-    if (data.license === "Custom") {
-      return data.customLicense && data.customLicense.trim().length > 0
-    }
-    return true
-  },
-  {
-    message: "Custom license name is required when Custom license is selected",
-    path: ["customLicense"],
-  }
-).refine(
-  (data) => {
-    if (data.isOpenSource && data.sourceUrl) {
-      return /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/.test(data.sourceUrl)
-    }
-    return true
-  },
-  {
-    message: "Source URL must be a valid GitHub repository URL",
-    path: ["sourceUrl"],
-  }
-)
+const formSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, 'Module name must be at least 3 characters')
+      .max(80, 'Module name must be less than 80 characters'),
+    shortDescription: z
+      .string()
+      .min(10, 'Short description must be at least 10 characters')
+      .max(140, 'Short description must be less than 140 characters'),
+    description: z
+      .string()
+      .min(30, 'Description must be at least 30 characters')
+      .max(8000, 'Description must be less than 8000 characters'),
+    author: z
+      .string()
+      .min(2, 'Author name must be at least 2 characters')
+      .max(60, 'Author name must be less than 60 characters'),
+    category: z.enum(CATEGORIES),
+    iconUrl: z
+      .string()
+      .max(300, 'Icon URL must be at most 300 characters')
+      .refine((val) => !val || /^(\/|https?:\/\/).+/.test(val), {
+        message: 'Please enter a valid icon URL or path',
+      })
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    license: z.string().optional(),
+    customLicense: z.string().optional(),
+    isOpenSource: z.boolean().default(false),
+    sourceUrl: z.string().optional(),
+    communityUrl: z
+      .string()
+      .max(300, 'URL must be at most 300 characters')
+      .refine((val) => !val || /^https?:\/\/.+/.test(val), { message: 'Please enter a valid URL' })
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    features: z
+      .array(
+        z
+          .string()
+          .min(1, 'Feature cannot be empty')
+          .max(150, 'Feature must be at most 150 characters'),
+      )
+      .min(1, 'Add at least one feature')
+      .max(25, 'Maximum 25 features allowed'),
+    androidVersions: z.array(z.string()).min(1, 'Select at least one Android version'),
+    rootMethods: z
+      .array(z.enum(['Magisk', 'KernelSU', 'KernelSU-Next']))
+      .min(1, 'Select at least one root method'),
+    images: z
+      .array(
+        z.string().refine((val) => /^https?:\/\/.+/.test(val), { message: 'Must be a valid URL' }),
+      )
+      .max(10, 'Maximum 10 images allowed')
+      .optional(),
+    manualReleaseVersion: z
+      .string()
+      .transform((val) => val?.trim())
+      .refine((val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val), {
+        message:
+          'Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)',
+      })
+      .optional(),
+    manualReleaseUrl: z
+      .string()
+      .max(300, 'Download URL must be at most 300 characters')
+      .refine((val) => !val || /^https?:\/\/.+/.test(val), {
+        message: 'Please enter a valid download URL',
+      })
+      .optional(),
+    manualReleaseChangelog: z
+      .string()
+      .max(5000, 'Changelog must be at most 5000 characters')
+      .optional(),
+    isFeatured: z.boolean().default(false),
+    isRecommended: z.boolean().default(false),
+    warnings: z
+      .array(
+        z.object({
+          type: z.enum(['malware', 'closed-source', 'stolen-code']),
+          message: z.string().min(1, 'Warning message is required'),
+        }),
+      )
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.isOpenSource) {
+        return data.license && data.license.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'License is required for open source modules',
+      path: ['license'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.isOpenSource) {
+        return data.sourceUrl && data.sourceUrl.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Source URL is required for open source modules',
+      path: ['sourceUrl'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.license === 'Custom') {
+        return data.customLicense && data.customLicense.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Custom license name is required when Custom license is selected',
+      path: ['customLicense'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.isOpenSource && data.sourceUrl) {
+        return /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/.test(data.sourceUrl);
+      }
+      return true;
+    },
+    {
+      message: 'Source URL must be a valid GitHub repository URL',
+      path: ['sourceUrl'],
+    },
+  );
 
 /**
  * @typedef {z.infer<typeof formSchema>} FormData
  * @description Type definition for the module editing form data
  */
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 /**
  * @interface EditModuleFormProps
@@ -144,7 +191,7 @@ type FormData = z.infer<typeof formSchema>
  * @property {DbModule} module - The module data to edit
  */
 interface EditModuleFormProps {
-  module: DbModule
+  module: DbModule;
 }
 
 /**
@@ -159,99 +206,107 @@ interface EditModuleFormProps {
  * ```
  */
 export function EditModuleForm({ module }: EditModuleFormProps) {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [newFeature, setNewFeature] = useState("")
-  const [newImage, setNewImage] = useState("")
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [newFeature, setNewFeature] = useState('');
+  const [newImage, setNewImage] = useState('');
 
   const parseLicense = (license: string) => {
-    if (license?.startsWith("Custom: ")) {
+    if (license?.startsWith('Custom: ')) {
       return {
-        license: "Custom",
-        customLicense: license.replace("Custom: ", "")
-      }
+        license: 'Custom',
+        customLicense: license.replace('Custom: ', ''),
+      };
     }
     return {
-      license: license || "GPL-3.0",
-      customLicense: ""
-    }
-  }
+      license: license || 'GPL-3.0',
+      customLicense: '',
+    };
+  };
 
-  const { license: parsedLicense, customLicense: parsedCustomLicense } = parseLicense(module.license)
+  const { license: parsedLicense, customLicense: parsedCustomLicense } = parseLicense(
+    module.license,
+  );
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: module.name || "",
-      shortDescription: module.shortDescription || "",
-      description: module.description || "",
-      author: module.author || "",
-      category: (module.category as typeof CATEGORIES[number]) || "system",
-      iconUrl: module.icon || "",
+      name: module.name || '',
+      shortDescription: module.shortDescription || '',
+      description: module.description || '',
+      author: module.author || '',
+      category: (module.category as (typeof CATEGORIES)[number]) || 'system',
+      iconUrl: module.icon || '',
       license: parsedLicense,
       customLicense: parsedCustomLicense,
       isOpenSource: module.isOpenSource || false,
-      sourceUrl: module.sourceUrl || "",
-      communityUrl: module.communityUrl || "",
+      sourceUrl: module.sourceUrl || '',
+      communityUrl: module.communityUrl || '',
       features: module.features || [],
       androidVersions: module.compatibility?.androidVersions || [],
-      rootMethods: (module.compatibility?.rootMethods as ("Magisk" | "KernelSU" | "KernelSU-Next")[]) || [],
+      rootMethods:
+        (module.compatibility?.rootMethods as ('Magisk' | 'KernelSU' | 'KernelSU-Next')[]) || [],
       images: module.images || [],
       isFeatured: module.isFeatured || false,
       isRecommended: module.isRecommended || false,
       warnings: (module.warnings as Warning[]) || [],
     },
-  })
+  });
 
-  const androidVersionOptions = ANDROID_VERSIONS
+  const androidVersionOptions = ANDROID_VERSIONS;
   const rootMethodOptions = [
-    { value: "Magisk", label: "Magisk" },
-    { value: "KernelSU", label: "KernelSU" },
-    { value: "KernelSU-Next", label: "KernelSU-Next" },
-  ]
+    { value: 'Magisk', label: 'Magisk' },
+    { value: 'KernelSU', label: 'KernelSU' },
+    { value: 'KernelSU-Next', label: 'KernelSU-Next' },
+  ];
 
-  const categoryOptions = MODULE_CATEGORIES.map(cat => ({
+  const categoryOptions = MODULE_CATEGORIES.map((cat) => ({
     value: cat.id,
     label: cat.shortLabel,
-  }))
-
+  }));
 
   const addFeature = () => {
     if (newFeature.trim()) {
-      const currentFeatures = form.getValues("features")
-      form.setValue("features", [...currentFeatures, newFeature.trim()])
-      setNewFeature("")
+      const currentFeatures = form.getValues('features');
+      form.setValue('features', [...currentFeatures, newFeature.trim()]);
+      setNewFeature('');
     }
-  }
+  };
 
   const removeFeature = (index: number) => {
-    const currentFeatures = form.getValues("features")
-    form.setValue("features", currentFeatures.filter((_, i) => i !== index))
-  }
+    const currentFeatures = form.getValues('features');
+    form.setValue(
+      'features',
+      currentFeatures.filter((_, i) => i !== index),
+    );
+  };
 
   const addImage = () => {
-    const trimmedImage = newImage.trim()
+    const trimmedImage = newImage.trim();
     if (trimmedImage) {
       if (!/^https?:\/\/.+/.test(trimmedImage)) {
-        form.setError("images", { message: "Please enter a valid URL" })
-        return
+        form.setError('images', { message: 'Please enter a valid URL' });
+        return;
       }
-      const currentImages = form.getValues("images") || []
+      const currentImages = form.getValues('images') || [];
       if (currentImages.length >= 10) {
-        form.setError("images", { message: "Maximum 10 screenshots allowed" })
-        return
+        form.setError('images', { message: 'Maximum 10 screenshots allowed' });
+        return;
       }
-      form.setValue("images", [...currentImages, trimmedImage])
-      setNewImage("")
-      form.clearErrors("images")
+      form.setValue('images', [...currentImages, trimmedImage]);
+      setNewImage('');
+      form.clearErrors('images');
     }
-  }
+  };
 
   const removeImage = (index: number) => {
-    const currentImages = form.getValues("images") || []
-    form.setValue("images", currentImages.filter((_, i) => i !== index))
-  }
+    const currentImages = form.getValues('images') || [];
+    form.setValue(
+      'images',
+      currentImages.filter((_, i) => i !== index),
+    );
+  };
 
   /**
    * @function onSubmit
@@ -260,34 +315,35 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
    * @returns {Promise<void>}
    */
   const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true)
-    setSubmitError(null)
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      const processedLicense = data.license === "Custom" && data.customLicense 
-        ? `Custom: ${data.customLicense.trim()}`
-        : data.license || ""
+      const processedLicense =
+        data.license === 'Custom' && data.customLicense
+          ? `Custom: ${data.customLicense.trim()}`
+          : data.license || '';
 
       const updatePayload: {
-        name: string
-        description: string
-        shortDescription: string
-        author: string
-        category: string
-        license: string
-        isOpenSource: boolean
-        features: string[]
+        name: string;
+        description: string;
+        shortDescription: string;
+        author: string;
+        category: string;
+        license: string;
+        isOpenSource: boolean;
+        features: string[];
         compatibility: {
-          androidVersions: string[]
-          rootMethods: ("Magisk" | "KernelSU" | "KernelSU-Next")[]
-        }
-        isFeatured: boolean
-        isRecommended: boolean
-        warnings: { type: "malware" | "closed-source" | "stolen-code"; message: string }[]
-        sourceUrl?: string
-        communityUrl?: string
-        icon?: string
-        images?: string[]
+          androidVersions: string[];
+          rootMethods: ('Magisk' | 'KernelSU' | 'KernelSU-Next')[];
+        };
+        isFeatured: boolean;
+        isRecommended: boolean;
+        warnings: { type: 'malware' | 'closed-source' | 'stolen-code'; message: string }[];
+        sourceUrl?: string;
+        communityUrl?: string;
+        icon?: string;
+        images?: string[];
       } = {
         name: data.name,
         description: data.description,
@@ -304,19 +360,19 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         isFeatured: data.isFeatured,
         isRecommended: data.isRecommended,
         warnings: data.warnings || [],
-      }
+      };
 
       if (data.sourceUrl) {
-        updatePayload.sourceUrl = data.sourceUrl
+        updatePayload.sourceUrl = data.sourceUrl;
       }
       if (data.communityUrl) {
-        updatePayload.communityUrl = data.communityUrl
+        updatePayload.communityUrl = data.communityUrl;
       }
       if (data.iconUrl) {
-        updatePayload.icon = data.iconUrl
+        updatePayload.icon = data.iconUrl;
       }
       if (data.images && data.images.length > 0) {
-        updatePayload.images = data.images
+        updatePayload.images = data.images;
       }
 
       const response = await fetch(`/api/admin/modules/${module.id}/edit`, {
@@ -325,39 +381,41 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatePayload),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
+        const error = await response.json();
         if (error.errors && Array.isArray(error.errors)) {
-          const errorMessages = error.errors.map((e: { field: string; message: string }) => {
-            const fieldName = e.field
-              .replace('module.', '')
-              .replace(/\.\d+$/, '')
-              .replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase())
-              .replace('Icon', 'Icon URL')
-              .replace('Images', 'Screenshot URLs')
-              .trim()
+          const errorMessages = error.errors
+            .map((e: { field: string; message: string }) => {
+              const fieldName = e.field
+                .replace('module.', '')
+                .replace(/\.\d+$/, '')
+                .replace(/([A-Z])/g, ' $1')
+                .replace(/^./, (str) => str.toUpperCase())
+                .replace('Icon', 'Icon URL')
+                .replace('Images', 'Screenshot URLs')
+                .trim();
 
-            return `${fieldName}: ${e.message}`
-          }).join('\n')
-          throw new Error(errorMessages || error.message || "Failed to update module")
+              return `${fieldName}: ${e.message}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || error.message || 'Failed to update module');
         }
-        throw new Error(error.error || error.message || 'Failed to update module')
+        throw new Error(error.error || error.message || 'Failed to update module');
       }
 
-      toast.success(`Module "${data.name}" updated successfully`)
+      toast.success(`Module "${data.name}" updated successfully`);
 
-      router.push('/admin/modules')
-      router.refresh()
+      router.push('/admin/modules');
+      router.refresh();
     } catch (error) {
-      console.error('Error updating module:', error)
-      setSubmitError(error instanceof Error ? error.message : 'Failed to update module')
+      console.error('Error updating module:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to update module');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -379,7 +437,11 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     <FormItem>
                       <FormLabel>Module Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="My Awesome Module" {...field} value={field.value as string} />
+                        <Input
+                          placeholder="My Awesome Module"
+                          {...field}
+                          value={field.value as string}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -418,7 +480,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                         <div className="space-y-2">
                           <MarkdownEditor
                             value={field.value as string}
-                            onChange={(value) => field.onChange(value || "")}
+                            onChange={(value) => field.onChange(value || '')}
                             placeholder="Detailed description of your module, features, installation instructions, etc."
                             height={400}
                           />
@@ -427,7 +489,10 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                           </div>
                         </div>
                       </FormControl>
-                      <FormDescription>Use the editor to format your description with Markdown. You can switch between write and preview modes.</FormDescription>
+                      <FormDescription>
+                        Use the editor to format your description with Markdown. You can switch
+                        between write and preview modes.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -441,7 +506,11 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       <FormItem>
                         <FormLabel>Author</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your name or username" {...field} value={field.value as string} />
+                          <Input
+                            placeholder="Your name or username"
+                            {...field}
+                            value={field.value as string}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -486,7 +555,11 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     <FormItem>
                       <FormLabel>Icon URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/icon.png" {...field} value={field.value as string} />
+                        <Input
+                          placeholder="https://example.com/icon.png"
+                          {...field}
+                          value={field.value as string}
+                        />
                       </FormControl>
                       <FormDescription>
                         Provide a URL to your module&apos;s icon image.
@@ -530,9 +603,9 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       value={newImage}
                       onChange={(e) => setNewImage(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addImage()
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addImage();
                         }
                       }}
                     />
@@ -541,7 +614,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     </Button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                    {form.watch("images")?.map((image, index) => (
+                    {form.watch('images')?.map((image, index) => (
                       <div key={index} className="relative group border rounded-lg overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -582,10 +655,8 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       </div>
                     ))}
                   </div>
-                  {form.watch("images")?.length === 0 && (
-                    <div className="text-sm text-muted-foreground">
-                      Add up to 10 screenshots.
-                    </div>
+                  {form.watch('images')?.length === 0 && (
+                    <div className="text-sm text-muted-foreground">Add up to 10 screenshots.</div>
                   )}
                   {form.formState.errors.images && (
                     <p className="text-sm text-red-500">{form.formState.errors.images.message}</p>
@@ -609,18 +680,14 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Open Source
-                        </FormLabel>
-                        <FormDescription>
-                          Is your module open source?
-                        </FormDescription>
+                        <FormLabel>Open Source</FormLabel>
+                        <FormDescription>Is your module open source?</FormDescription>
                       </div>
                     </FormItem>
                   )}
                 />
 
-                {form.watch("isOpenSource") && (
+                {form.watch('isOpenSource') && (
                   <>
                     <FormField
                       control={form.control}
@@ -632,8 +699,8 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                             <LicenseCombobox
                               value={field.value as string}
                               onValueChange={(license) => field.onChange(license)}
-                              customValue={form.watch("customLicense")}
-                              onCustomValueChange={(value) => form.setValue("customLicense", value)}
+                              customValue={form.watch('customLicense')}
+                              onCustomValueChange={(value) => form.setValue('customLicense', value)}
                               required
                             />
                           </FormControl>
@@ -654,7 +721,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                   </>
                 )}
 
-                {form.watch("isOpenSource") && (
+                {form.watch('isOpenSource') && (
                   <FormField
                     control={form.control}
                     name="sourceUrl"
@@ -662,9 +729,15 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       <FormItem>
                         <FormLabel>GitHub Repository URL *</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://github.com/user/module" {...field} value={field.value as string} />
+                          <Input
+                            placeholder="https://github.com/user/module"
+                            {...field}
+                            value={field.value as string}
+                          />
                         </FormControl>
-                        <FormDescription>GitHub repository URL for open source modules</FormDescription>
+                        <FormDescription>
+                          GitHub repository URL for open source modules
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -678,7 +751,11 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     <FormItem>
                       <FormLabel>Community URL (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://t.me/modulegroup" {...field} value={field.value as string} />
+                        <Input
+                          placeholder="https://t.me/modulegroup"
+                          {...field}
+                          value={field.value as string}
+                        />
                       </FormControl>
                       <FormDescription>Telegram, Discord, Reddit, XDA forum, etc.</FormDescription>
                       <FormMessage />
@@ -687,7 +764,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                 />
               </div>
 
-              {!form.watch("isOpenSource") && (
+              {!form.watch('isOpenSource') && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Release Information</h3>
                   <Separator />
@@ -701,7 +778,9 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                         <FormControl>
                           <Input placeholder="1.0.0" {...field} value={field.value as string} />
                         </FormControl>
-                        <FormDescription>Semantic version (e.g., 1.0.0, 2.1.3-beta)</FormDescription>
+                        <FormDescription>
+                          Semantic version (e.g., 1.0.0, 2.1.3-beta)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -714,9 +793,15 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       <FormItem>
                         <FormLabel>Download URL *</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/module.zip" {...field} value={field.value as string} />
+                          <Input
+                            placeholder="https://example.com/module.zip"
+                            {...field}
+                            value={field.value as string}
+                          />
                         </FormControl>
-                        <FormDescription>Direct download link to your module file (max 100MB)</FormDescription>
+                        <FormDescription>
+                          Direct download link to your module file (max 100MB)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -745,7 +830,8 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                   <Alert>
                     <Info className="h-4 w-4" />
                     <AlertDescription>
-                      File size will be automatically determined from your download URL. Maximum file size is 100MB.
+                      File size will be automatically determined from your download URL. Maximum
+                      file size is 100MB.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -769,8 +855,10 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                               onCheckedChange={(checked) => {
                                 const updatedVersions = checked
                                   ? [...((field.value as string[]) || []), version]
-                                  : (field.value as string[])?.filter((v: string) => v !== version) || []
-                                field.onChange(updatedVersions)
+                                  : (field.value as string[])?.filter(
+                                      (v: string) => v !== version,
+                                    ) || [];
+                                field.onChange(updatedVersions);
                               }}
                             />
                             <label className="text-sm">{version}</label>
@@ -792,12 +880,21 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                         {rootMethodOptions.map((method) => (
                           <div key={method.value} className="flex items-center space-x-2">
                             <Checkbox
-                              checked={(field.value as ("Magisk" | "KernelSU" | "KernelSU-Next")[])?.includes(method.value as "Magisk" | "KernelSU" | "KernelSU-Next")}
+                              checked={(
+                                field.value as ('Magisk' | 'KernelSU' | 'KernelSU-Next')[]
+                              )?.includes(method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next')}
                               onCheckedChange={(checked) => {
                                 const updatedMethods = checked
-                                  ? [...((field.value as ("Magisk" | "KernelSU" | "KernelSU-Next")[]) || []), method.value as "Magisk" | "KernelSU" | "KernelSU-Next"]
-                                  : (field.value as ("Magisk" | "KernelSU" | "KernelSU-Next")[])?.filter((m: string) => m !== method.value) || []
-                                field.onChange(updatedMethods)
+                                  ? [
+                                      ...((field.value as (
+                                        'Magisk' | 'KernelSU' | 'KernelSU-Next'
+                                      )[]) || []),
+                                      method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next',
+                                    ]
+                                  : (
+                                      field.value as ('Magisk' | 'KernelSU' | 'KernelSU-Next')[]
+                                    )?.filter((m: string) => m !== method.value) || [];
+                                field.onChange(updatedMethods);
                               }}
                             />
                             <label className="text-sm">{method.label}</label>
@@ -822,9 +919,9 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       value={newFeature}
                       onChange={(e) => setNewFeature(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault()
-                          addFeature()
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addFeature();
                         }
                       }}
                     />
@@ -833,7 +930,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {form.watch("features").map((feature, index) => (
+                    {form.watch('features').map((feature, index) => (
                       <Badge key={index} variant="secondary">
                         {feature}
                         <Button
@@ -937,7 +1034,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Updating..." : "Update Module"}
+                    {isSubmitting ? 'Updating...' : 'Update Module'}
                   </Button>
                 </div>
               </div>
@@ -946,6 +1043,5 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

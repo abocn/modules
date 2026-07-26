@@ -1,22 +1,23 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { MainContent } from "@/components/features/modules/main-content"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { MainContent } from '@/components/features/modules/main-content';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function HomePageClient() {
-  const [selectedCategory, setSelectedCategory] = useState("home")
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleModuleSelect, handleCategorySelect: navHandleCategorySelect } = useModuleNavigation()
+  const [selectedCategory, setSelectedCategory] = useState('home');
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleModuleSelect, handleCategorySelect: navHandleCategorySelect } =
+    useModuleNavigation();
 
   const handleCategorySelect = (category: string) => {
-    if (category === "home") {
-      setSelectedCategory(category)
+    if (category === 'home') {
+      setSelectedCategory(category);
     } else {
-      navHandleCategorySelect(category)
+      navHandleCategorySelect(category);
     }
-  }
+  };
 
   return (
     <SharedLayout
@@ -32,5 +33,5 @@ export function HomePageClient() {
         onModuleSelect={handleModuleSelect}
       />
     </SharedLayout>
-  )
+  );
 }

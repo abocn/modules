@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { Skeleton } from "@/components/ui/skeleton"
-import { CarouselSkeleton } from "./carousel-skeleton"
-import { ClockCardSkeleton, StatsCardSkeleton, TelegramCardSkeleton } from "./stats-card-skeleton"
+import { Skeleton } from '@/components/ui/skeleton';
+import { CarouselSkeleton } from './carousel-skeleton';
+import { ClockCardSkeleton, StatsCardSkeleton, TelegramCardSkeleton } from './stats-card-skeleton';
 
 export function HomePageSkeleton() {
   return (
@@ -40,5 +40,5 @@ export function HomePageSkeleton() {
         </section>
       </div>
     </div>
-  )
+  );
 }

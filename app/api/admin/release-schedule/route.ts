@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server"
-import { getReleaseSchedule, updateReleaseSchedule } from "@/lib/db-utils"
-import { logAdminAction } from "@/lib/audit-utils"
-import { withAuth } from "@/lib/api-wrapper"
+import { NextResponse, type NextRequest } from 'next/server';
+import { getReleaseSchedule, updateReleaseSchedule } from '@/lib/db-utils';
+import { logAdminAction } from '@/lib/audit-utils';
+import { withAuth } from '@/lib/api-wrapper';
 
 /**
  * GET /api/admin/release-schedule
@@ -25,28 +25,27 @@ import { withAuth } from "@/lib/api-wrapper"
 const _wrappedGet = withAuth(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_request, _context) => {
-  try {
-    const schedule = await getReleaseSchedule()
+    try {
+      const schedule = await getReleaseSchedule();
 
-    if (!schedule) {
-      const defaultSchedule = await updateReleaseSchedule({
-        enabled: false,
-        intervalHours: 1,
-        batchSize: 10,
-        nextRunAt: new Date(Date.now() + 60 * 60 * 1000)
-      })
-      return NextResponse.json(defaultSchedule)
+      if (!schedule) {
+        const defaultSchedule = await updateReleaseSchedule({
+          enabled: false,
+          intervalHours: 1,
+          batchSize: 10,
+          nextRunAt: new Date(Date.now() + 60 * 60 * 1000),
+        });
+        return NextResponse.json(defaultSchedule);
+      }
+
+      return NextResponse.json(schedule);
+    } catch (error) {
+      console.error('[! /api/admin/release-schedule] Error fetching release schedule:', error);
+      return NextResponse.json({ error: 'Failed to fetch release schedule' }, { status: 500 });
     }
-
-    return NextResponse.json(schedule)
-  } catch (error) {
-    console.error("[! /api/admin/release-schedule] Error fetching release schedule:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch release schedule" },
-      { status: 500 }
-    )
-  }
-}, { requireAdmin: true, requireScope: "read" })
+  },
+  { requireAdmin: true, requireScope: 'read' },
+);
 
 /**
  * PUT /api/admin/release-schedule
@@ -66,46 +65,48 @@ const _wrappedGet = withAuth(
  * @throws {401} If user is not authenticated or not an admin
  * @throws {500} If there's a database error
  */
-const _wrappedPut = withAuth(async (request, context) => {
-  const { user } = context
-  try {
-    const data = await request.json()
-    const existingSchedule = await getReleaseSchedule()
+const _wrappedPut = withAuth(
+  async (request, context) => {
+    const { user } = context;
+    try {
+      const data = await request.json();
+      const existingSchedule = await getReleaseSchedule();
 
-    let nextRunAt: Date | undefined
-    if (data.intervalHours) {
-      nextRunAt = new Date(Date.now() + data.intervalHours * 60 * 60 * 1000)
+      let nextRunAt: Date | undefined;
+      if (data.intervalHours) {
+        nextRunAt = new Date(Date.now() + data.intervalHours * 60 * 60 * 1000);
+      }
+
+      const updatedSchedule = await updateReleaseSchedule({
+        ...data,
+        nextRunAt,
+      });
+
+      await logAdminAction({
+        adminId: user.id,
+        action: 'Release Schedule Updated',
+        details: `Updated release schedule - ${Object.entries(data)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ')}`,
+        targetType: 'system',
+        targetId: updatedSchedule?.id?.toString() || 'schedule',
+        oldValues: existingSchedule,
+        newValues: updatedSchedule,
+      });
+
+      return NextResponse.json(updatedSchedule);
+    } catch (error) {
+      console.error('[! /api/admin/release-schedule] Error updating release schedule:', error);
+      return NextResponse.json({ error: 'Failed to update release schedule' }, { status: 500 });
     }
-
-    const updatedSchedule = await updateReleaseSchedule({
-      ...data,
-      nextRunAt
-    })
-
-    await logAdminAction({
-      adminId: user.id,
-      action: "Release Schedule Updated",
-      details: `Updated release schedule - ${Object.entries(data).map(([k, v]) => `${k}: ${v}`).join(', ')}`,
-      targetType: "system",
-      targetId: updatedSchedule?.id?.toString() || "schedule",
-      oldValues: existingSchedule,
-      newValues: updatedSchedule
-    })
-
-    return NextResponse.json(updatedSchedule)
-  } catch (error) {
-    console.error("[! /api/admin/release-schedule] Error updating release schedule:", error)
-    return NextResponse.json(
-      { error: "Failed to update release schedule" },
-      { status: 500 }
-    )
-  }
-}, { requireAdmin: true, requireScope: "write" })
+  },
+  { requireAdmin: true, requireScope: 'write' },
+);
 
 export async function GET(request: NextRequest) {
-  return _wrappedGet(request, {})
+  return _wrappedGet(request, {});
 }
 
 export async function PUT(request: NextRequest) {
-  return _wrappedPut(request, {})
+  return _wrappedPut(request, {});
 }

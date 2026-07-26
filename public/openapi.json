@@ -19,10 +19,7 @@
       "description": "Configurable server",
       "variables": {
         "protocol": {
-          "enum": [
-            "http",
-            "https"
-          ],
+          "enum": ["http", "https"],
           "default": "http"
         },
         "host": {
@@ -68,10 +65,7 @@
             "description": "Success message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "ModuleFlagsUpdateRequest": {},
       "ModuleUpdateResponse": {},
@@ -114,19 +108,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "name",
-                "displayName",
-                "description",
-                "count"
-              ]
+              "required": ["name", "displayName", "description", "count"]
             },
             "description": "Available module categories"
           }
         },
-        "required": [
-          "categories"
-        ]
+        "required": ["categories"]
       },
       "HealthCheckResponse": {},
       "ModuleParams": {
@@ -137,9 +124,7 @@
             "description": "Module ID"
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       },
       "Redirect": {},
       "DownloadTrackingBody": {
@@ -175,10 +160,7 @@
             "description": "Reply IDs the user has marked helpful"
           }
         },
-        "required": [
-          "ratingVotes",
-          "replyVotes"
-        ]
+        "required": ["ratingVotes", "replyVotes"]
       },
       "RatingsListResponse": {
         "type": "object",
@@ -195,9 +177,7 @@
             "description": "Current user rating if exists"
           }
         },
-        "required": [
-          "ratings"
-        ]
+        "required": ["ratings"]
       },
       "CreateRatingBody": {
         "type": "object",
@@ -219,10 +199,7 @@
             "description": "Turnstile captcha token for verification"
           }
         },
-        "required": [
-          "rating",
-          "turnstileToken"
-        ]
+        "required": ["rating", "turnstileToken"]
       },
       "CreateRatingResponse": {
         "type": "object",
@@ -236,35 +213,25 @@
             "description": "Newly created rating"
           }
         },
-        "required": [
-          "rating"
-        ]
+        "required": ["rating"]
       },
       "ModuleReleasesQueryParams": {
         "type": "object",
         "properties": {
           "latest": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "nullable": true,
             "description": "Return only latest release"
           },
           "includeAssets": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "default": "false",
             "description": "Include release assets"
           }
         },
-        "required": [
-          "includeAssets"
-        ]
+        "required": ["includeAssets"]
       },
       "ReleasesListResponse": {
         "type": "object",
@@ -277,19 +244,14 @@
             "description": "List of module releases"
           }
         },
-        "required": [
-          "releases"
-        ]
+        "required": ["releases"]
       },
       "ModuleQueryParams": {
         "type": "object",
         "properties": {
           "includeReleases": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "nullable": true,
             "description": "Include release information"
           }
@@ -302,9 +264,7 @@
             "description": "Module object with full details"
           }
         },
-        "required": [
-          "module"
-        ]
+        "required": ["module"]
       },
       "Detailed": {},
       "MySubmissionsResponse": {
@@ -317,11 +277,7 @@
               "properties": {
                 "status": {
                   "type": "string",
-                  "enum": [
-                    "pending",
-                    "approved",
-                    "rejected"
-                  ],
+                  "enum": ["pending", "approved", "rejected"],
                   "description": "Module status"
                 },
                 "submittedAt": {
@@ -341,17 +297,12 @@
                   "description": "Review feedback"
                 }
               },
-              "required": [
-                "status",
-                "submittedAt"
-              ]
+              "required": ["status", "submittedAt"]
             },
             "description": "User submitted modules"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "ModulesQueryParams": {
         "type": "object",
@@ -368,11 +319,7 @@
           },
           "filter": {
             "type": "string",
-            "enum": [
-              "featured",
-              "recommended",
-              "recent"
-            ],
+            "enum": ["featured", "recommended", "recent"],
             "nullable": true,
             "description": "Pre-defined filter type"
           }
@@ -387,9 +334,7 @@
             "description": "Array of module objects"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "SubmitModuleRequest": {},
       "SubmitModuleResponse": {
@@ -408,11 +353,7 @@
             "description": "Indicates module is pending review"
           }
         },
-        "required": [
-          "id",
-          "message",
-          "pending"
-        ]
+        "required": ["id", "message", "pending"]
       },
       "UpdateModuleBody": {
         "type": "object",
@@ -440,17 +381,12 @@
                 "nullable": true
               }
             },
-            "required": [
-              "version",
-              "downloadUrl"
-            ],
+            "required": ["version", "downloadUrl"],
             "nullable": true,
             "description": "New release information"
           }
         },
-        "required": [
-          "module"
-        ]
+        "required": ["module"]
       },
       "UpdateModuleResponse": {
         "type": "object",
@@ -472,11 +408,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "module",
-          "message"
-        ]
+        "required": ["success", "module", "message"]
       },
       "RatingParams": {},
       "HelpfulVoteResponse": {
@@ -495,11 +427,7 @@
             "description": "Whether current user has voted"
           }
         },
-        "required": [
-          "success",
-          "helpful",
-          "userVoted"
-        ]
+        "required": ["success", "helpful", "userVoted"]
       },
       "RepliesListResponse": {
         "type": "object",
@@ -512,9 +440,7 @@
             "description": "List of replies for the rating"
           }
         },
-        "required": [
-          "replies"
-        ]
+        "required": ["replies"]
       },
       "CreateReplyBody": {
         "type": "object",
@@ -530,10 +456,7 @@
             "description": "Turnstile captcha token for verification"
           }
         },
-        "required": [
-          "content",
-          "turnstileToken"
-        ]
+        "required": ["content", "turnstileToken"]
       },
       "CreateReplyResponse": {
         "type": "object",
@@ -547,9 +470,7 @@
             "description": "Newly created reply"
           }
         },
-        "required": [
-          "reply"
-        ]
+        "required": ["reply"]
       },
       "ReplyParams": {},
       "SearchQueryParams": {
@@ -568,22 +489,13 @@
           },
           "sort": {
             "type": "string",
-            "enum": [
-              "relevance",
-              "downloads",
-              "rating",
-              "updated",
-              "name"
-            ],
+            "enum": ["relevance", "downloads", "rating", "updated", "name"],
             "default": "relevance",
             "description": "Sort order"
           },
           "order": {
             "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ],
+            "enum": ["asc", "desc"],
             "default": "desc",
             "description": "Sort direction"
           },
@@ -623,13 +535,7 @@
             "description": "Filter by Android version compatibility"
           }
         },
-        "required": [
-          "q",
-          "sort",
-          "order",
-          "page",
-          "limit"
-        ]
+        "required": ["q", "sort", "order", "page", "limit"]
       },
       "SearchResponse": {},
       "SearchSuggestionsRequest": {},
@@ -643,11 +549,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "module",
-                    "author",
-                    "category"
-                  ]
+                  "enum": ["module", "author", "category"]
                 },
                 "value": {
                   "type": "string"
@@ -660,18 +562,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "type",
-                "value",
-                "label"
-              ]
+              "required": ["type", "value", "label"]
             },
             "description": "Search suggestions"
           }
         },
-        "required": [
-          "suggestions"
-        ]
+        "required": ["suggestions"]
       },
       "FormData": {},
       "UploadAvatarResponse": {
@@ -690,11 +586,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "url",
-          "message"
-        ]
+        "required": ["success", "url", "message"]
       },
       "DeleteAvatarResponse": {
         "type": "object",
@@ -708,10 +600,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "GitHubPATStatusResponse": {
         "type": "object",
@@ -726,9 +615,7 @@
             "description": "Associated GitHub username"
           }
         },
-        "required": [
-          "hasToken"
-        ]
+        "required": ["hasToken"]
       },
       "GitHubPATBody": {
         "type": "object",
@@ -739,9 +626,7 @@
             "description": "GitHub Personal Access Token"
           }
         },
-        "required": [
-          "token"
-        ]
+        "required": ["token"]
       },
       "SaveGitHubPATResponse": {
         "type": "object",
@@ -755,10 +640,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "DeleteGitHubPATResponse": {
         "type": "object",
@@ -772,10 +654,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "ValidateGitHubPATBody": {
         "type": "object",
@@ -786,9 +665,7 @@
             "description": "GitHub Personal Access Token to validate"
           }
         },
-        "required": [
-          "token"
-        ]
+        "required": ["token"]
       },
       "ValidateGitHubPATResponse": {
         "type": "object",
@@ -816,9 +693,7 @@
             "description": "Validation error message"
           }
         },
-        "required": [
-          "valid"
-        ]
+        "required": ["valid"]
       },
       "UpdateProfileBody": {
         "type": "object",
@@ -829,9 +704,7 @@
             "maxLength": 100
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "UpdateProfileResponse": {
         "type": "object",
@@ -858,17 +731,11 @@
                 "nullable": true
               }
             },
-            "required": [
-              "id",
-              "name"
-            ],
+            "required": ["id", "name"],
             "description": "Updated user information"
           }
         },
-        "required": [
-          "success",
-          "user"
-        ]
+        "required": ["success", "user"]
       },
       "StatsResponse": {
         "type": "object",
@@ -901,21 +768,12 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "name",
-                "count"
-              ]
+              "required": ["name", "count"]
             },
             "description": "Module count by category"
           }
         },
-        "required": [
-          "totalModules",
-          "totalDownloads",
-          "totalUsers",
-          "pendingModules",
-          "categories"
-        ]
+        "required": ["totalModules", "totalDownloads", "totalUsers", "pendingModules", "categories"]
       },
       "TrendingQueryParams": {},
       "TrendingResponse": {
@@ -929,9 +787,7 @@
             "description": "Trending modules"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "ApiKeyParams": {},
       "RevokeApiKeyResponse": {
@@ -946,10 +802,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "ApiKeysListResponse": {
         "type": "object",
@@ -986,19 +839,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "id",
-                "name",
-                "scopes",
-                "createdAt"
-              ]
+              "required": ["id", "name", "scopes", "createdAt"]
             },
             "description": "List of user API keys (without key values)"
           }
         },
-        "required": [
-          "apiKeys"
-        ]
+        "required": ["apiKeys"]
       },
       "CreateApiKeyBody": {
         "type": "object",
@@ -1010,30 +856,19 @@
           },
           "expiresIn": {
             "type": "string",
-            "enum": [
-              "30days",
-              "90days",
-              "1year",
-              "never"
-            ],
+            "enum": ["30days", "90days", "1year", "never"],
             "nullable": true
           },
           "scopes": {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "read",
-                "write",
-                "admin"
-              ]
+              "enum": ["read", "write", "admin"]
             },
             "nullable": true
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "CreateApiKeyResponse": {
         "type": "object",
@@ -1069,13 +904,7 @@
             "description": "Creation date"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "key",
-          "scopes",
-          "createdAt"
-        ]
+        "required": ["id", "name", "key", "scopes", "createdAt"]
       },
       "UserProfileQueryParams": {},
       "UserProfileParams": {
@@ -1086,9 +915,7 @@
             "description": "User ID"
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       },
       "UserProfileResponse": {
         "type": "object",
@@ -1122,12 +949,7 @@
                 "nullable": true
               }
             },
-            "required": [
-              "id",
-              "joinedAt",
-              "modulesCount",
-              "totalDownloads"
-            ],
+            "required": ["id", "joinedAt", "modulesCount", "totalDownloads"],
             "description": "Public user profile"
           },
           "modules": {
@@ -1144,11 +966,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "module_published",
-                    "module_updated",
-                    "rating_posted"
-                  ]
+                  "enum": ["module_published", "module_updated", "rating_posted"]
                 },
                 "timestamp": {
                   "type": "string",
@@ -1163,19 +981,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "type",
-                "timestamp"
-              ]
+              "required": ["type", "timestamp"]
             },
             "description": "Recent user activity"
           }
         },
-        "required": [
-          "user",
-          "modules",
-          "recentActivity"
-        ]
+        "required": ["user", "modules", "recentActivity"]
       },
       "UserRoleResponse": {
         "type": "object",
@@ -1194,10 +1005,7 @@
             "description": "User email"
           }
         },
-        "required": [
-          "isAdmin",
-          "userId"
-        ]
+        "required": ["isAdmin", "userId"]
       },
       "testEmailSchema": {
         "type": "object",
@@ -1207,9 +1015,7 @@
             "format": "email"
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       },
       "ModulesQueryParamsSchema": {
         "type": "object",
@@ -1226,11 +1032,7 @@
           },
           "filter": {
             "type": "string",
-            "enum": [
-              "featured",
-              "recommended",
-              "recent"
-            ],
+            "enum": ["featured", "recommended", "recent"],
             "nullable": true,
             "description": "Pre-defined filter type"
           }
@@ -1245,9 +1047,7 @@
             "description": "Array of module objects"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "ModuleParamsSchema": {
         "type": "object",
@@ -1257,19 +1057,14 @@
             "description": "Module ID"
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       },
       "ModuleQueryParamsSchema": {
         "type": "object",
         "properties": {
           "includeReleases": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "nullable": true,
             "description": "Include release information"
           }
@@ -1282,9 +1077,7 @@
             "description": "Module object with full details"
           }
         },
-        "required": [
-          "module"
-        ]
+        "required": ["module"]
       },
       "updateProfileSchema": {
         "type": "object",
@@ -1295,9 +1088,7 @@
             "maxLength": 100
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "createApiKeySchema": {
         "type": "object",
@@ -1309,30 +1100,19 @@
           },
           "expiresIn": {
             "type": "string",
-            "enum": [
-              "30days",
-              "90days",
-              "1year",
-              "never"
-            ],
+            "enum": ["30days", "90days", "1year", "never"],
             "nullable": true
           },
           "scopes": {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": [
-                "read",
-                "write",
-                "admin"
-              ]
+              "enum": ["read", "write", "admin"]
             },
             "nullable": true
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "ErrorResponseSchema": {
         "type": "object",
@@ -1358,10 +1138,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "field",
-                "message"
-              ]
+              "required": ["field", "message"]
             },
             "nullable": true,
             "description": "Field-specific validation errors"
@@ -1382,9 +1159,7 @@
             "description": "ID of existing duplicate resource"
           }
         },
-        "required": [
-          "error"
-        ]
+        "required": ["error"]
       },
       "SubmitModuleResponseSchema": {
         "type": "object",
@@ -1402,11 +1177,7 @@
             "description": "Indicates module is pending review"
           }
         },
-        "required": [
-          "id",
-          "message",
-          "pending"
-        ]
+        "required": ["id", "message", "pending"]
       },
       "ModuleResponseSchema": {
         "type": "object",
@@ -1477,10 +1248,7 @@
                 }
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ],
+            "required": ["androidVersions", "rootMethods"],
             "description": "Compatibility information"
           },
           "features": {
@@ -1567,13 +1335,7 @@
             "description": "Total number of pages"
           }
         },
-        "required": [
-          "data",
-          "total",
-          "page",
-          "pageSize",
-          "totalPages"
-        ]
+        "required": ["data", "total", "page", "pageSize", "totalPages"]
       },
       "RatingResponseSchema": {
         "type": "object",
@@ -1631,15 +1393,7 @@
             "description": "User information"
           }
         },
-        "required": [
-          "id",
-          "moduleId",
-          "userId",
-          "rating",
-          "createdAt",
-          "updatedAt",
-          "helpful"
-        ]
+        "required": ["id", "moduleId", "userId", "rating", "createdAt", "updatedAt", "helpful"]
       },
       "AdminActionResponseSchema": {
         "type": "object",
@@ -1658,10 +1412,7 @@
             "description": "Affected module ID"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "StatsResponseSchema": {
         "type": "object",
@@ -1694,21 +1445,12 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "name",
-                "count"
-              ]
+              "required": ["name", "count"]
             },
             "description": "Module count by category"
           }
         },
-        "required": [
-          "totalModules",
-          "totalDownloads",
-          "totalUsers",
-          "pendingModules",
-          "categories"
-        ]
+        "required": ["totalModules", "totalDownloads", "totalUsers", "pendingModules", "categories"]
       },
       "UserRoleResponseSchema": {
         "type": "object",
@@ -1727,10 +1469,7 @@
             "description": "User email"
           }
         },
-        "required": [
-          "isAdmin",
-          "userId"
-        ]
+        "required": ["isAdmin", "userId"]
       },
       "CreateRatingBodySchema": {
         "type": "object",
@@ -1752,10 +1491,7 @@
             "description": "Turnstile captcha token for verification"
           }
         },
-        "required": [
-          "rating",
-          "turnstileToken"
-        ]
+        "required": ["rating", "turnstileToken"]
       },
       "RatingsListResponseSchema": {
         "type": "object",
@@ -1772,9 +1508,7 @@
             "description": "Current user rating if exists"
           }
         },
-        "required": [
-          "ratings"
-        ]
+        "required": ["ratings"]
       },
       "CreateRatingResponseSchema": {
         "type": "object",
@@ -1788,9 +1522,7 @@
             "description": "Newly created rating"
           }
         },
-        "required": [
-          "rating"
-        ]
+        "required": ["rating"]
       },
       "SearchQueryParamsSchema": {
         "type": "object",
@@ -1808,22 +1540,13 @@
           },
           "sort": {
             "type": "string",
-            "enum": [
-              "relevance",
-              "downloads",
-              "rating",
-              "updated",
-              "name"
-            ],
+            "enum": ["relevance", "downloads", "rating", "updated", "name"],
             "default": "relevance",
             "description": "Sort order"
           },
           "order": {
             "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ],
+            "enum": ["asc", "desc"],
             "default": "desc",
             "description": "Sort direction"
           },
@@ -1863,13 +1586,7 @@
             "description": "Filter by Android version compatibility"
           }
         },
-        "required": [
-          "q",
-          "sort",
-          "order",
-          "page",
-          "limit"
-        ]
+        "required": ["q", "sort", "order", "page", "limit"]
       },
       "SearchSuggestionsBodySchema": {
         "type": "object",
@@ -1888,10 +1605,7 @@
             "description": "Maximum suggestions to return"
           }
         },
-        "required": [
-          "query",
-          "limit"
-        ]
+        "required": ["query", "limit"]
       },
       "SearchSuggestionsResponseSchema": {
         "type": "object",
@@ -1903,11 +1617,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "module",
-                    "author",
-                    "category"
-                  ]
+                  "enum": ["module", "author", "category"]
                 },
                 "value": {
                   "type": "string"
@@ -1920,18 +1630,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "type",
-                "value",
-                "label"
-              ]
+              "required": ["type", "value", "label"]
             },
             "description": "Search suggestions"
           }
         },
-        "required": [
-          "suggestions"
-        ]
+        "required": ["suggestions"]
       },
       "ImageDownloadBodySchema": {
         "type": "object",
@@ -1943,10 +1647,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "icon",
-              "screenshot"
-            ],
+            "enum": ["icon", "screenshot"],
             "description": "Image type"
           },
           "maxSize": {
@@ -1957,11 +1658,7 @@
             "description": "Maximum file size in bytes (default 5MB)"
           }
         },
-        "required": [
-          "url",
-          "type",
-          "maxSize"
-        ]
+        "required": ["url", "type", "maxSize"]
       },
       "ImageDownloadResponseSchema": {
         "type": "object",
@@ -1993,12 +1690,7 @@
             "description": "Image height in pixels"
           }
         },
-        "required": [
-          "url",
-          "originalUrl",
-          "size",
-          "contentType"
-        ]
+        "required": ["url", "originalUrl", "size", "contentType"]
       },
       "UpdateProfileResponseSchema": {
         "type": "object",
@@ -2025,17 +1717,11 @@
                 "nullable": true
               }
             },
-            "required": [
-              "id",
-              "name"
-            ],
+            "required": ["id", "name"],
             "description": "Updated user information"
           }
         },
-        "required": [
-          "success",
-          "user"
-        ]
+        "required": ["success", "user"]
       },
       "CreateApiKeyResponseSchema": {
         "type": "object",
@@ -2071,13 +1757,7 @@
             "description": "Creation date"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "key",
-          "scopes",
-          "createdAt"
-        ]
+        "required": ["id", "name", "key", "scopes", "createdAt"]
       },
       "ApiKeysListResponseSchema": {
         "type": "object",
@@ -2114,19 +1794,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "id",
-                "name",
-                "scopes",
-                "createdAt"
-              ]
+              "required": ["id", "name", "scopes", "createdAt"]
             },
             "description": "List of user API keys (without key values)"
           }
         },
-        "required": [
-          "apiKeys"
-        ]
+        "required": ["apiKeys"]
       },
       "RevokeApiKeyResponseSchema": {
         "type": "object",
@@ -2140,10 +1813,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "GitHubPATBodySchema": {
         "type": "object",
@@ -2154,9 +1824,7 @@
             "description": "GitHub Personal Access Token"
           }
         },
-        "required": [
-          "token"
-        ]
+        "required": ["token"]
       },
       "ValidateGitHubPATBodySchema": {
         "type": "object",
@@ -2167,9 +1835,7 @@
             "description": "GitHub Personal Access Token to validate"
           }
         },
-        "required": [
-          "token"
-        ]
+        "required": ["token"]
       },
       "ValidateGitHubPATResponseSchema": {
         "type": "object",
@@ -2197,9 +1863,7 @@
             "description": "Validation error message"
           }
         },
-        "required": [
-          "valid"
-        ]
+        "required": ["valid"]
       },
       "GitHubPATStatusResponseSchema": {
         "type": "object",
@@ -2214,9 +1878,7 @@
             "description": "Associated GitHub username"
           }
         },
-        "required": [
-          "hasToken"
-        ]
+        "required": ["hasToken"]
       },
       "SaveGitHubPATResponseSchema": {
         "type": "object",
@@ -2230,10 +1892,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "DeleteGitHubPATResponseSchema": {
         "type": "object",
@@ -2247,10 +1906,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "UploadAvatarResponseSchema": {
         "type": "object",
@@ -2268,11 +1924,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "url",
-          "message"
-        ]
+        "required": ["success", "url", "message"]
       },
       "DeleteAvatarResponseSchema": {
         "type": "object",
@@ -2286,10 +1938,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "HelpfulVoteResponseSchema": {
         "type": "object",
@@ -2307,11 +1956,7 @@
             "description": "Whether current user has voted"
           }
         },
-        "required": [
-          "success",
-          "helpful",
-          "userVoted"
-        ]
+        "required": ["success", "helpful", "userVoted"]
       },
       "HelpfulVotesResponseSchema": {
         "type": "object",
@@ -2331,10 +1976,7 @@
             "description": "Reply IDs the user has marked helpful"
           }
         },
-        "required": [
-          "ratingVotes",
-          "replyVotes"
-        ]
+        "required": ["ratingVotes", "replyVotes"]
       },
       "CreateReplyBodySchema": {
         "type": "object",
@@ -2350,10 +1992,7 @@
             "description": "Turnstile captcha token for verification"
           }
         },
-        "required": [
-          "content",
-          "turnstileToken"
-        ]
+        "required": ["content", "turnstileToken"]
       },
       "ReplyResponseSchema": {
         "type": "object",
@@ -2404,15 +2043,7 @@
             "description": "Author information"
           }
         },
-        "required": [
-          "id",
-          "ratingId",
-          "userId",
-          "content",
-          "createdAt",
-          "updatedAt",
-          "helpful"
-        ]
+        "required": ["id", "ratingId", "userId", "content", "createdAt", "updatedAt", "helpful"]
       },
       "CreateReplyResponseSchema": {
         "type": "object",
@@ -2426,9 +2057,7 @@
             "description": "Newly created reply"
           }
         },
-        "required": [
-          "reply"
-        ]
+        "required": ["reply"]
       },
       "RepliesListResponseSchema": {
         "type": "object",
@@ -2441,35 +2070,25 @@
             "description": "List of replies for the rating"
           }
         },
-        "required": [
-          "replies"
-        ]
+        "required": ["replies"]
       },
       "ModuleReleasesQueryParamsSchema": {
         "type": "object",
         "properties": {
           "latest": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "nullable": true,
             "description": "Return only latest release"
           },
           "includeAssets": {
             "type": "string",
-            "enum": [
-              "true",
-              "false"
-            ],
+            "enum": ["true", "false"],
             "default": "false",
             "description": "Include release assets"
           }
         },
-        "required": [
-          "includeAssets"
-        ]
+        "required": ["includeAssets"]
       },
       "ReleaseResponseSchema": {
         "type": "object",
@@ -2538,13 +2157,7 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "id",
-                "name",
-                "downloadUrl",
-                "size",
-                "downloads"
-              ]
+              "required": ["id", "name", "downloadUrl", "size", "downloads"]
             },
             "nullable": true,
             "description": "Release assets"
@@ -2571,9 +2184,7 @@
             "description": "List of module releases"
           }
         },
-        "required": [
-          "releases"
-        ]
+        "required": ["releases"]
       },
       "TrendingResponseSchema": {
         "type": "object",
@@ -2586,9 +2197,7 @@
             "description": "Trending modules"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "CategoriesResponseSchema": {
         "type": "object",
@@ -2615,19 +2224,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "name",
-                "displayName",
-                "description",
-                "count"
-              ]
+              "required": ["name", "displayName", "description", "count"]
             },
             "description": "Available module categories"
           }
         },
-        "required": [
-          "categories"
-        ]
+        "required": ["categories"]
       },
       "MySubmissionsResponseSchema": {
         "type": "object",
@@ -2639,11 +2241,7 @@
               "properties": {
                 "status": {
                   "type": "string",
-                  "enum": [
-                    "pending",
-                    "approved",
-                    "rejected"
-                  ],
+                  "enum": ["pending", "approved", "rejected"],
                   "description": "Module status"
                 },
                 "submittedAt": {
@@ -2663,17 +2261,12 @@
                   "description": "Review feedback"
                 }
               },
-              "required": [
-                "status",
-                "submittedAt"
-              ]
+              "required": ["status", "submittedAt"]
             },
             "description": "User submitted modules"
           }
         },
-        "required": [
-          "modules"
-        ]
+        "required": ["modules"]
       },
       "ModuleStatsResponseSchema": {
         "type": "object",
@@ -2696,10 +2289,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "date",
-                    "count"
-                  ]
+                  "required": ["date", "count"]
                 }
               },
               "weekly": {
@@ -2714,10 +2304,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "week",
-                    "count"
-                  ]
+                  "required": ["week", "count"]
                 }
               },
               "monthly": {
@@ -2732,19 +2319,11 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "month",
-                    "count"
-                  ]
+                  "required": ["month", "count"]
                 }
               }
             },
-            "required": [
-              "total",
-              "daily",
-              "weekly",
-              "monthly"
-            ],
+            "required": ["total", "daily", "weekly", "monthly"],
             "description": "Download statistics"
           },
           "ratings": {
@@ -2772,13 +2351,7 @@
                     "type": "number"
                   }
                 },
-                "required": [
-                  "1",
-                  "2",
-                  "3",
-                  "4",
-                  "5"
-                ]
+                "required": ["1", "2", "3", "4", "5"]
               },
               "recent": {
                 "type": "array",
@@ -2787,11 +2360,7 @@
                 }
               }
             },
-            "required": [
-              "average",
-              "distribution",
-              "recent"
-            ],
+            "required": ["average", "distribution", "recent"],
             "description": "Rating statistics"
           },
           "releases": {
@@ -2805,17 +2374,11 @@
                 "nullable": true
               }
             },
-            "required": [
-              "total"
-            ],
+            "required": ["total"],
             "description": "Release statistics"
           }
         },
-        "required": [
-          "downloads",
-          "ratings",
-          "releases"
-        ]
+        "required": ["downloads", "ratings", "releases"]
       },
       "DownloadTrackingBodySchema": {
         "type": "object",
@@ -2844,10 +2407,7 @@
             "description": "Success message"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "UpdateModuleBodySchema": {
         "type": "object",
@@ -2875,17 +2435,12 @@
                 "nullable": true
               }
             },
-            "required": [
-              "version",
-              "downloadUrl"
-            ],
+            "required": ["version", "downloadUrl"],
             "nullable": true,
             "description": "New release information"
           }
         },
-        "required": [
-          "module"
-        ]
+        "required": ["module"]
       },
       "UpdateModuleResponseSchema": {
         "type": "object",
@@ -2907,11 +2462,7 @@
             "description": "Result message"
           }
         },
-        "required": [
-          "success",
-          "module",
-          "message"
-        ]
+        "required": ["success", "module", "message"]
       },
       "UserProfileParamsSchema": {
         "type": "object",
@@ -2921,9 +2472,7 @@
             "description": "User ID"
           }
         },
-        "required": [
-          "id"
-        ]
+        "required": ["id"]
       },
       "UserProfileResponseSchema": {
         "type": "object",
@@ -2957,12 +2506,7 @@
                 "nullable": true
               }
             },
-            "required": [
-              "id",
-              "joinedAt",
-              "modulesCount",
-              "totalDownloads"
-            ],
+            "required": ["id", "joinedAt", "modulesCount", "totalDownloads"],
             "description": "Public user profile"
           },
           "modules": {
@@ -2979,11 +2523,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "module_published",
-                    "module_updated",
-                    "rating_posted"
-                  ]
+                  "enum": ["module_published", "module_updated", "rating_posted"]
                 },
                 "timestamp": {
                   "type": "string",
@@ -2998,19 +2538,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "type",
-                "timestamp"
-              ]
+              "required": ["type", "timestamp"]
             },
             "description": "Recent user activity"
           }
         },
-        "required": [
-          "user",
-          "modules",
-          "recentActivity"
-        ]
+        "required": ["user", "modules", "recentActivity"]
       },
       "ErrorResponse": {
         "type": "object",
@@ -3036,10 +2569,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "field",
-                "message"
-              ]
+              "required": ["field", "message"]
             },
             "nullable": true,
             "description": "Field-specific validation errors"
@@ -3060,9 +2590,7 @@
             "description": "ID of existing duplicate resource"
           }
         },
-        "required": [
-          "error"
-        ]
+        "required": ["error"]
       },
       "ModuleResponse": {
         "type": "object",
@@ -3133,10 +2661,7 @@
                 }
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ],
+            "required": ["androidVersions", "rootMethods"],
             "description": "Compatibility information"
           },
           "features": {
@@ -3223,13 +2748,7 @@
             "description": "Total number of pages"
           }
         },
-        "required": [
-          "data",
-          "total",
-          "page",
-          "pageSize",
-          "totalPages"
-        ]
+        "required": ["data", "total", "page", "pageSize", "totalPages"]
       },
       "RatingResponse": {
         "type": "object",
@@ -3287,15 +2806,7 @@
             "description": "User information"
           }
         },
-        "required": [
-          "id",
-          "moduleId",
-          "userId",
-          "rating",
-          "createdAt",
-          "updatedAt",
-          "helpful"
-        ]
+        "required": ["id", "moduleId", "userId", "rating", "createdAt", "updatedAt", "helpful"]
       },
       "AdminActionResponse": {
         "type": "object",
@@ -3314,10 +2825,7 @@
             "description": "Affected module ID"
           }
         },
-        "required": [
-          "success",
-          "message"
-        ]
+        "required": ["success", "message"]
       },
       "SearchSuggestionsBody": {
         "type": "object",
@@ -3336,10 +2844,7 @@
             "description": "Maximum suggestions to return"
           }
         },
-        "required": [
-          "query",
-          "limit"
-        ]
+        "required": ["query", "limit"]
       },
       "ImageDownloadBody": {
         "type": "object",
@@ -3351,10 +2856,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "icon",
-              "screenshot"
-            ],
+            "enum": ["icon", "screenshot"],
             "description": "Image type"
           },
           "maxSize": {
@@ -3365,11 +2867,7 @@
             "description": "Maximum file size in bytes (default 5MB)"
           }
         },
-        "required": [
-          "url",
-          "type",
-          "maxSize"
-        ]
+        "required": ["url", "type", "maxSize"]
       },
       "ImageDownloadResponse": {
         "type": "object",
@@ -3401,12 +2899,7 @@
             "description": "Image height in pixels"
           }
         },
-        "required": [
-          "url",
-          "originalUrl",
-          "size",
-          "contentType"
-        ]
+        "required": ["url", "originalUrl", "size", "contentType"]
       },
       "ReplyResponse": {
         "type": "object",
@@ -3457,15 +2950,7 @@
             "description": "Author information"
           }
         },
-        "required": [
-          "id",
-          "ratingId",
-          "userId",
-          "content",
-          "createdAt",
-          "updatedAt",
-          "helpful"
-        ]
+        "required": ["id", "ratingId", "userId", "content", "createdAt", "updatedAt", "helpful"]
       },
       "ReleaseResponse": {
         "type": "object",
@@ -3534,13 +3019,7 @@
                   "type": "number"
                 }
               },
-              "required": [
-                "id",
-                "name",
-                "downloadUrl",
-                "size",
-                "downloads"
-              ]
+              "required": ["id", "name", "downloadUrl", "size", "downloads"]
             },
             "nullable": true,
             "description": "Release assets"
@@ -3577,10 +3056,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "date",
-                    "count"
-                  ]
+                  "required": ["date", "count"]
                 }
               },
               "weekly": {
@@ -3595,10 +3071,7 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "week",
-                    "count"
-                  ]
+                  "required": ["week", "count"]
                 }
               },
               "monthly": {
@@ -3613,19 +3086,11 @@
                       "type": "number"
                     }
                   },
-                  "required": [
-                    "month",
-                    "count"
-                  ]
+                  "required": ["month", "count"]
                 }
               }
             },
-            "required": [
-              "total",
-              "daily",
-              "weekly",
-              "monthly"
-            ],
+            "required": ["total", "daily", "weekly", "monthly"],
             "description": "Download statistics"
           },
           "ratings": {
@@ -3653,13 +3118,7 @@
                     "type": "number"
                   }
                 },
-                "required": [
-                  "1",
-                  "2",
-                  "3",
-                  "4",
-                  "5"
-                ]
+                "required": ["1", "2", "3", "4", "5"]
               },
               "recent": {
                 "type": "array",
@@ -3668,11 +3127,7 @@
                 }
               }
             },
-            "required": [
-              "average",
-              "distribution",
-              "recent"
-            ],
+            "required": ["average", "distribution", "recent"],
             "description": "Rating statistics"
           },
           "releases": {
@@ -3686,17 +3141,11 @@
                 "nullable": true
               }
             },
-            "required": [
-              "total"
-            ],
+            "required": ["total"],
             "description": "Release statistics"
           }
         },
-        "required": [
-          "downloads",
-          "ratings",
-          "releases"
-        ]
+        "required": ["downloads", "ratings", "releases"]
       },
       "moduleSubmissionSchema": {
         "type": "object",
@@ -3733,9 +3182,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3750,9 +3197,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3764,9 +3209,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3778,9 +3221,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3812,10 +3253,7 @@
                 "maxItems": 5
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ]
+            "required": ["androidVersions", "rootMethods"]
           },
           "icon": {
             "oneOf": [
@@ -3825,9 +3263,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3900,20 +3336,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "name",
-                "downloadUrl",
-                "size"
-              ]
+              "required": ["name", "downloadUrl", "size"]
             },
             "nullable": true
           }
         },
-        "required": [
-          "version",
-          "downloadUrl",
-          "isLatest"
-        ]
+        "required": ["version", "downloadUrl", "isLatest"]
       },
       "moduleSubmissionWithReleaseSchema": {
         "type": "object",
@@ -3925,10 +3353,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "module",
-          "module"
-        ]
+        "required": ["module", "module"]
       },
       "ModuleSubmission": {
         "type": "object",
@@ -3965,9 +3390,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3982,9 +3405,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -3996,9 +3417,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4010,9 +3429,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4044,10 +3461,7 @@
                 "maxItems": 5
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ]
+            "required": ["androidVersions", "rootMethods"]
           },
           "icon": {
             "oneOf": [
@@ -4057,9 +3471,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4132,20 +3544,12 @@
                   "nullable": true
                 }
               },
-              "required": [
-                "name",
-                "downloadUrl",
-                "size"
-              ]
+              "required": ["name", "downloadUrl", "size"]
             },
             "nullable": true
           }
         },
-        "required": [
-          "version",
-          "downloadUrl",
-          "isLatest"
-        ]
+        "required": ["version", "downloadUrl", "isLatest"]
       },
       "ModuleSubmissionWithRelease": {
         "type": "object",
@@ -4157,10 +3561,7 @@
             "type": "object"
           }
         },
-        "required": [
-          "module",
-          "module"
-        ]
+        "required": ["module", "module"]
       },
       "clientModuleSchema": {
         "type": "object",
@@ -4197,9 +3598,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4214,9 +3613,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4228,9 +3625,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4242,9 +3637,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4276,10 +3669,7 @@
                 "maxItems": 5
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ]
+            "required": ["androidVersions", "rootMethods"]
           },
           "icon": {
             "oneOf": [
@@ -4289,9 +3679,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4350,9 +3738,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4367,9 +3753,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4381,9 +3765,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4395,9 +3777,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4429,10 +3809,7 @@
                 "maxItems": 5
               }
             },
-            "required": [
-              "androidVersions",
-              "rootMethods"
-            ]
+            "required": ["androidVersions", "rootMethods"]
           },
           "icon": {
             "oneOf": [
@@ -4442,9 +3819,7 @@
               },
               {
                 "type": "string",
-                "enum": [
-                  ""
-                ]
+                "enum": [""]
               }
             ]
           },
@@ -4598,9 +3973,7 @@
         "operationId": "get-modules-{id}-stats",
         "summary": "Get detailed module statistics",
         "description": "Get statistics for a specific module including downloads, ratings, and trends",
-        "tags": [
-          "Modules"
-        ],
+        "tags": ["Modules"],
         "parameters": [
           {
             "in": "path",
@@ -4637,9 +4010,7 @@
         "operationId": "put-modules-update-{id}",
         "summary": "Update module",
         "description": "Update a module's information. Only the submitter can update their own unpublished modules.",
-        "tags": [
-          "Modules"
-        ],
+        "tags": ["Modules"],
         "parameters": [
           {
             "in": "path",
@@ -4687,17 +4058,12 @@
                         "nullable": true
                       }
                     },
-                    "required": [
-                      "version",
-                      "downloadUrl"
-                    ],
+                    "required": ["version", "downloadUrl"],
                     "nullable": true,
                     "description": "New release information"
                   }
                 },
-                "required": [
-                  "module"
-                ]
+                "required": ["module"]
               }
             }
           }
@@ -4727,11 +4093,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "module",
-                    "message"
-                  ]
+                  "required": ["success", "module", "message"]
                 }
               }
             }
@@ -4750,9 +4112,7 @@
         "operationId": "get-ratings-{id}-replies",
         "summary": "Get rating replies",
         "description": "Get all replies for a specific rating/review",
-        "tags": [
-          "Ratings"
-        ],
+        "tags": ["Ratings"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4770,9 +4130,7 @@
                       "description": "List of replies for the rating"
                     }
                   },
-                  "required": [
-                    "replies"
-                  ]
+                  "required": ["replies"]
                 }
               }
             }
@@ -4789,9 +4147,7 @@
         "operationId": "post-ratings-{id}-replies",
         "summary": "Post reply to rating",
         "description": "Post a reply to a rating/review. Requires authentication.",
-        "tags": [
-          "Ratings"
-        ],
+        "tags": ["Ratings"],
         "parameters": [],
         "security": [
           {
@@ -4815,10 +4171,7 @@
                     "description": "Turnstile captcha token for verification"
                   }
                 },
-                "required": [
-                  "content",
-                  "turnstileToken"
-                ]
+                "required": ["content", "turnstileToken"]
               }
             }
           }
@@ -4840,9 +4193,7 @@
                       "description": "Newly created reply"
                     }
                   },
-                  "required": [
-                    "reply"
-                  ]
+                  "required": ["reply"]
                 }
               }
             }
@@ -4861,9 +4212,7 @@
         "operationId": "get-admin",
         "summary": "Get API key details",
         "description": "Retrieve detailed information about a specific API key including user information. Requires admin authentication.",
-        "tags": [
-          "s Admin - API Keys"
-        ],
+        "tags": ["s Admin - API Keys"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4886,9 +4235,7 @@
         "operationId": "delete-admin",
         "summary": "Revoke an API key",
         "description": "Permanently revoke an API key, preventing any further use. This action cannot be undone. Requires admin authentication.",
-        "tags": [
-          "s Admin - API Keys"
-        ],
+        "tags": ["s Admin - API Keys"],
         "parameters": [],
         "responses": {
           "200": {
@@ -4913,9 +4260,7 @@
         "operationId": "get-admin-recent-actions",
         "summary": "Get recent admin actions",
         "description": "Get audit log of recent administrative actions. Requires admin role.",
-        "tags": [
-          "s Admin, Audit"
-        ],
+        "tags": ["s Admin, Audit"],
         "parameters": [],
         "security": [
           {
@@ -4945,9 +4290,7 @@
         "operationId": "get-admin-modules",
         "summary": "List all modules (admin)",
         "description": "Get a list of all modules with administrative details. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -4975,9 +4318,7 @@
         "operationId": "post-admin-modules",
         "summary": "Create a new module (admin)",
         "description": "Create a new module directly without going through submission process. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5014,9 +4355,7 @@
         "operationId": "delete-admin-modules-{id}",
         "summary": "Delete a module (admin)",
         "description": "Permanently delete a module and all associated data. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5040,10 +4379,7 @@
                       "description": "Success message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -5060,9 +4396,7 @@
         "operationId": "patch-admin-modules-{id}",
         "summary": "Update module flags (admin)",
         "description": "Update module featured, recommended status and warnings. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5099,9 +4433,7 @@
         "operationId": "get-admin-modules-pending",
         "summary": "Get pending modules (admin)",
         "description": "Get list of modules awaiting approval. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5131,9 +4463,7 @@
         "operationId": "patch-admin-modules-{id}-edit",
         "summary": "Edit module details (admin)",
         "description": "Edit complete module information including metadata and sync settings. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5170,9 +4500,7 @@
         "operationId": "patch-admin-modules-{id}-status",
         "summary": "Update module status (admin)",
         "description": "Approve or reject a module submission. Requires admin role.",
-        "tags": [
-          "s Admin, Modules"
-        ],
+        "tags": ["s Admin, Modules"],
         "parameters": [],
         "security": [
           {
@@ -5209,9 +4537,7 @@
         "operationId": "get-admin-reviews",
         "summary": "Get all reviews (admin)",
         "description": "Get all module reviews with advanced filtering. Requires admin role.",
-        "tags": [
-          "s Admin, Reviews"
-        ],
+        "tags": ["s Admin, Reviews"],
         "parameters": [],
         "security": [
           {
@@ -5241,9 +4567,7 @@
         "operationId": "get-admin-stats",
         "summary": "Get admin statistics",
         "description": "Get platform statistics including module, user, and download counts. Requires admin role.",
-        "tags": [
-          "s Admin, Statistics"
-        ],
+        "tags": ["s Admin, Statistics"],
         "parameters": [],
         "security": [
           {
@@ -5273,9 +4597,7 @@
         "operationId": "get-categories",
         "summary": "List module categories",
         "description": "Get a list of all available module categories with detailed statistics, module counts, and metadata.",
-        "tags": [
-          "s Categories"
-        ],
+        "tags": ["s Categories"],
         "parameters": [],
         "responses": {
           "200": {
@@ -5307,19 +4629,12 @@
                             "nullable": true
                           }
                         },
-                        "required": [
-                          "name",
-                          "displayName",
-                          "description",
-                          "count"
-                        ]
+                        "required": ["name", "displayName", "description", "count"]
                       },
                       "description": "Available module categories"
                     }
                   },
-                  "required": [
-                    "categories"
-                  ]
+                  "required": ["categories"]
                 }
               }
             }
@@ -5338,9 +4653,7 @@
         "operationId": "get-modules-{id}-download",
         "summary": "Download module (redirect)",
         "description": "Initiate download of the latest module release. Automatically tracks download statistics and redirects to the actual file. Rate limited. Supports both public access and API key authentication.",
-        "tags": [
-          "s Downloads"
-        ],
+        "tags": ["s Downloads"],
         "parameters": [
           {
             "in": "path",
@@ -5375,9 +4688,7 @@
         "operationId": "post-modules-{id}-download",
         "summary": "Track download (internal)",
         "description": "Internal endpoint for analytics tracking of downloads. Used by frontend applications to track specific release downloads before initiating the actual download. Supports both public access and API key authentication.",
-        "tags": [
-          "s Downloads"
-        ],
+        "tags": ["s Downloads"],
         "parameters": [
           {
             "in": "path",
@@ -5429,10 +4740,7 @@
                       "description": "Success message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -5451,9 +4759,7 @@
         "operationId": "get-modules-{id}-helpful-votes",
         "summary": "Get user's helpful votes for module",
         "description": "Retrieve the authenticated user's helpful vote history for all ratings and replies on a specific module. Returns empty arrays for unauthenticated users.",
-        "tags": [
-          "s Helpful Votes"
-        ],
+        "tags": ["s Helpful Votes"],
         "parameters": [
           {
             "in": "path",
@@ -5490,10 +4796,7 @@
                       "description": "Reply IDs the user has marked helpful"
                     }
                   },
-                  "required": [
-                    "ratingVotes",
-                    "replyVotes"
-                  ]
+                  "required": ["ratingVotes", "replyVotes"]
                 }
               }
             }
@@ -5512,9 +4815,7 @@
         "operationId": "post-ratings-{id}-helpful",
         "summary": "Mark rating as helpful",
         "description": "Mark a rating/review as helpful to increase its visibility and credibility. Each user can only vote once per rating.",
-        "tags": [
-          "s Helpful Votes"
-        ],
+        "tags": ["s Helpful Votes"],
         "parameters": [],
         "security": [
           {
@@ -5549,11 +4850,7 @@
                       "description": "Whether current user has voted"
                     }
                   },
-                  "required": [
-                    "success",
-                    "helpful",
-                    "userVoted"
-                  ]
+                  "required": ["success", "helpful", "userVoted"]
                 }
               }
             }
@@ -5572,9 +4869,7 @@
         "operationId": "post-replies-{id}-helpful",
         "summary": "Mark reply as helpful",
         "description": "Mark a reply to a rating as helpful to highlight valuable community responses. Each user can only vote once per reply.",
-        "tags": [
-          "s Helpful Votes"
-        ],
+        "tags": ["s Helpful Votes"],
         "parameters": [],
         "security": [
           {
@@ -5609,11 +4904,7 @@
                       "description": "Whether current user has voted"
                     }
                   },
-                  "required": [
-                    "success",
-                    "helpful",
-                    "userVoted"
-                  ]
+                  "required": ["success", "helpful", "userVoted"]
                 }
               }
             }
@@ -5632,9 +4923,7 @@
         "operationId": "get-modules",
         "summary": "List modules",
         "description": "Get a list of published modules with optional filtering, search, and sorting. Supports both session-based and API key authentication.",
-        "tags": [
-          "s Modules"
-        ],
+        "tags": ["s Modules"],
         "parameters": [
           {
             "in": "query",
@@ -5661,11 +4950,7 @@
             "name": "filter",
             "schema": {
               "type": "string",
-              "enum": [
-                "featured",
-                "recommended",
-                "recent"
-              ],
+              "enum": ["featured", "recommended", "recent"],
               "description": "Pre-defined filter type"
             },
             "required": false,
@@ -5686,9 +4971,7 @@
                       "description": "Array of module objects"
                     }
                   },
-                  "required": [
-                    "modules"
-                  ]
+                  "required": ["modules"]
                 }
               }
             }
@@ -5707,19 +4990,14 @@
         "operationId": "get-modules-{id}",
         "summary": "Get module details",
         "description": "Retrieve information about a specific module including metadata, compatibility, features, and optionally releases. Supports both session-based and API key authentication.",
-        "tags": [
-          "s Modules"
-        ],
+        "tags": ["s Modules"],
         "parameters": [
           {
             "in": "query",
             "name": "includeReleases",
             "schema": {
               "type": "string",
-              "enum": [
-                "true",
-                "false"
-              ],
+              "enum": ["true", "false"],
               "description": "Include release information"
             },
             "required": false,
@@ -5749,9 +5027,7 @@
                       "description": "Module object with full details"
                     }
                   },
-                  "required": [
-                    "module"
-                  ]
+                  "required": ["module"]
                 }
               }
             }
@@ -5770,9 +5046,7 @@
         "operationId": "post-modules-submit",
         "summary": "Submit a new module",
         "description": "Submit a new module for community review and approval. Includes automatic image processing, file size validation, and duplicate prevention. All submissions undergo moderation before publication.",
-        "tags": [
-          "s Modules"
-        ],
+        "tags": ["s Modules"],
         "parameters": [],
         "security": [
           {
@@ -5807,11 +5081,7 @@
                       "description": "Indicates module is pending review"
                     }
                   },
-                  "required": [
-                    "id",
-                    "message",
-                    "pending"
-                  ]
+                  "required": ["id", "message", "pending"]
                 }
               }
             }
@@ -5830,9 +5100,7 @@
         "operationId": "get-modules-{id}-ratings",
         "summary": "Get module ratings",
         "description": "Retrieve all ratings and reviews for a specific module, including the authenticated user's own rating if available. Returns rating data with user information.",
-        "tags": [
-          "s Ratings"
-        ],
+        "tags": ["s Ratings"],
         "parameters": [
           {
             "in": "path",
@@ -5866,9 +5134,7 @@
                       "description": "Current user rating if exists"
                     }
                   },
-                  "required": [
-                    "ratings"
-                  ]
+                  "required": ["ratings"]
                 }
               }
             }
@@ -5885,9 +5151,7 @@
         "operationId": "post-modules-{id}-ratings",
         "summary": "Submit a rating",
         "description": "Submit a rating and optional review comment for a module. Includes spam protection via Turnstile captcha and validation. Users can only rate each module once.",
-        "tags": [
-          "s Ratings"
-        ],
+        "tags": ["s Ratings"],
         "parameters": [
           {
             "in": "path",
@@ -5929,10 +5193,7 @@
                     "description": "Turnstile captcha token for verification"
                   }
                 },
-                "required": [
-                  "rating",
-                  "turnstileToken"
-                ]
+                "required": ["rating", "turnstileToken"]
               }
             }
           }
@@ -5954,9 +5215,7 @@
                       "description": "Newly created rating"
                     }
                   },
-                  "required": [
-                    "rating"
-                  ]
+                  "required": ["rating"]
                 }
               }
             }
@@ -5975,19 +5234,14 @@
         "operationId": "get-modules-{id}-releases",
         "summary": "Get module releases",
         "description": "Retrieve version history and release information for a specific module. Can return all releases or just the latest release with metadata.",
-        "tags": [
-          "s Releases"
-        ],
+        "tags": ["s Releases"],
         "parameters": [
           {
             "in": "query",
             "name": "latest",
             "schema": {
               "type": "string",
-              "enum": [
-                "true",
-                "false"
-              ],
+              "enum": ["true", "false"],
               "description": "Return only latest release"
             },
             "required": false,
@@ -5998,10 +5252,7 @@
             "name": "includeAssets",
             "schema": {
               "type": "string",
-              "enum": [
-                "true",
-                "false"
-              ],
+              "enum": ["true", "false"],
               "description": "Include release assets"
             },
             "required": false,
@@ -6035,9 +5286,7 @@
                       "description": "List of module releases"
                     }
                   },
-                  "required": [
-                    "releases"
-                  ]
+                  "required": ["releases"]
                 }
               }
             }
@@ -6056,9 +5305,7 @@
         "operationId": "get-search",
         "summary": "Advanced module search",
         "description": "Search modules with advanced filtering, sorting, and pagination. Supports full-text search across module names, descriptions, and authors with filtering options.",
-        "tags": [
-          "s Search"
-        ],
+        "tags": ["s Search"],
         "parameters": [
           {
             "in": "query",
@@ -6085,13 +5332,7 @@
             "name": "sort",
             "schema": {
               "type": "string",
-              "enum": [
-                "relevance",
-                "downloads",
-                "rating",
-                "updated",
-                "name"
-              ],
+              "enum": ["relevance", "downloads", "rating", "updated", "name"],
               "description": "Sort order"
             },
             "required": false,
@@ -6102,10 +5343,7 @@
             "name": "order",
             "schema": {
               "type": "string",
-              "enum": [
-                "asc",
-                "desc"
-              ],
+              "enum": ["asc", "desc"],
               "description": "Sort direction"
             },
             "required": false,
@@ -6193,9 +5431,7 @@
         "operationId": "post-search",
         "summary": "Search suggestions",
         "description": "Get intelligent search suggestions and autocomplete for module names, authors, and categories. Helps users discover relevant content as they type.",
-        "tags": [
-          "s Search"
-        ],
+        "tags": ["s Search"],
         "parameters": [],
         "requestBody": {
           "content": {
@@ -6219,11 +5455,7 @@
                         "properties": {
                           "type": {
                             "type": "string",
-                            "enum": [
-                              "module",
-                              "author",
-                              "category"
-                            ]
+                            "enum": ["module", "author", "category"]
                           },
                           "value": {
                             "type": "string"
@@ -6236,18 +5468,12 @@
                             "nullable": true
                           }
                         },
-                        "required": [
-                          "type",
-                          "value",
-                          "label"
-                        ]
+                        "required": ["type", "value", "label"]
                       },
                       "description": "Search suggestions"
                     }
                   },
-                  "required": [
-                    "suggestions"
-                  ]
+                  "required": ["suggestions"]
                 }
               }
             }
@@ -6266,9 +5492,7 @@
         "operationId": "get-stats",
         "summary": "Get platform statistics",
         "description": "Retrieve platform statistics including total modules, downloads, activity metrics, and category breakdowns.",
-        "tags": [
-          "s Statistics"
-        ],
+        "tags": ["s Statistics"],
         "parameters": [],
         "responses": {
           "200": {
@@ -6306,10 +5530,7 @@
                             "type": "number"
                           }
                         },
-                        "required": [
-                          "name",
-                          "count"
-                        ]
+                        "required": ["name", "count"]
                       },
                       "description": "Module count by category"
                     }
@@ -6339,9 +5560,7 @@
         "operationId": "get-health",
         "summary": "Health check",
         "description": "Monitor application and scheduler health status. Requires admin role.",
-        "tags": [
-          "s System, Health"
-        ],
+        "tags": ["s System, Health"],
         "parameters": [],
         "security": [
           {
@@ -6371,9 +5590,7 @@
         "operationId": "get-trending",
         "summary": "Get trending modules",
         "description": "Discover trending modules using sophisticated algorithms based on recent downloads, ratings, and updates. Multiple algorithms available.",
-        "tags": [
-          "s Trending"
-        ],
+        "tags": ["s Trending"],
         "parameters": [],
         "responses": {
           "200": {
@@ -6391,9 +5608,7 @@
                       "description": "Trending modules"
                     }
                   },
-                  "required": [
-                    "modules"
-                  ]
+                  "required": ["modules"]
                 }
               }
             }
@@ -6412,9 +5627,7 @@
         "operationId": "get-user-profile-{id}",
         "summary": "Get authenticated user profile",
         "description": "Retrieve profile information for the authenticated user only, including their published modules, statistics, recent activity, and achievements. Requires authentication and users can only access their own profile.",
-        "tags": [
-          "s User Profiles"
-        ],
+        "tags": ["s User Profiles"],
         "parameters": [
           {
             "in": "path",
@@ -6465,12 +5678,7 @@
                           "nullable": true
                         }
                       },
-                      "required": [
-                        "id",
-                        "joinedAt",
-                        "modulesCount",
-                        "totalDownloads"
-                      ],
+                      "required": ["id", "joinedAt", "modulesCount", "totalDownloads"],
                       "description": "Public user profile"
                     },
                     "modules": {
@@ -6487,11 +5695,7 @@
                         "properties": {
                           "type": {
                             "type": "string",
-                            "enum": [
-                              "module_published",
-                              "module_updated",
-                              "rating_posted"
-                            ]
+                            "enum": ["module_published", "module_updated", "rating_posted"]
                           },
                           "timestamp": {
                             "type": "string",
@@ -6506,19 +5710,12 @@
                             "nullable": true
                           }
                         },
-                        "required": [
-                          "type",
-                          "timestamp"
-                        ]
+                        "required": ["type", "timestamp"]
                       },
                       "description": "Recent user activity"
                     }
                   },
-                  "required": [
-                    "user",
-                    "modules",
-                    "recentActivity"
-                  ]
+                  "required": ["user", "modules", "recentActivity"]
                 }
               }
             }
@@ -6537,9 +5734,7 @@
         "operationId": "get-modules-my-submissions",
         "summary": "Get user's module submissions",
         "description": "Retrieve all modules submitted by the authenticated user, including submission status, warnings, and review progress.",
-        "tags": [
-          "s User Submissions"
-        ],
+        "tags": ["s User Submissions"],
         "parameters": [],
         "security": [
           {
@@ -6561,11 +5756,7 @@
                         "properties": {
                           "status": {
                             "type": "string",
-                            "enum": [
-                              "pending",
-                              "approved",
-                              "rejected"
-                            ],
+                            "enum": ["pending", "approved", "rejected"],
                             "description": "Module status"
                           },
                           "submittedAt": {
@@ -6585,17 +5776,12 @@
                             "description": "Review feedback"
                           }
                         },
-                        "required": [
-                          "status",
-                          "submittedAt"
-                        ]
+                        "required": ["status", "submittedAt"]
                       },
                       "description": "User submitted modules"
                     }
                   },
-                  "required": [
-                    "modules"
-                  ]
+                  "required": ["modules"]
                 }
               }
             }
@@ -6614,9 +5800,7 @@
         "operationId": "post-settings-avatar",
         "summary": "Upload user avatar",
         "description": "Upload a new avatar image for the authenticated user",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6651,11 +5835,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "url",
-                    "message"
-                  ]
+                  "required": ["success", "url", "message"]
                 }
               }
             }
@@ -6672,9 +5852,7 @@
         "operationId": "delete-settings-avatar",
         "summary": "Delete user avatar",
         "description": "Remove the authenticated user's avatar image",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6698,10 +5876,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -6720,9 +5895,7 @@
         "operationId": "get-settings-github-pat",
         "summary": "Check GitHub PAT status",
         "description": "Check if the authenticated user has a GitHub Personal Access Token configured",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6747,9 +5920,7 @@
                       "description": "Associated GitHub username"
                     }
                   },
-                  "required": [
-                    "hasToken"
-                  ]
+                  "required": ["hasToken"]
                 }
               }
             }
@@ -6766,9 +5937,7 @@
         "operationId": "post-settings-github-pat",
         "summary": "Save GitHub PAT",
         "description": "Save a GitHub Personal Access Token for the authenticated user",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6787,9 +5956,7 @@
                     "description": "GitHub Personal Access Token"
                   }
                 },
-                "required": [
-                  "token"
-                ]
+                "required": ["token"]
               }
             }
           }
@@ -6811,10 +5978,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -6831,9 +5995,7 @@
         "operationId": "delete-settings-github-pat",
         "summary": "Delete GitHub PAT",
         "description": "Remove the GitHub Personal Access Token for the authenticated user",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6857,10 +6019,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -6879,9 +6038,7 @@
         "operationId": "patch-settings-profile",
         "summary": "Update user profile",
         "description": "Update the authenticated user's profile information",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6900,9 +6057,7 @@
                     "maxLength": 100
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -6937,17 +6092,11 @@
                           "nullable": true
                         }
                       },
-                      "required": [
-                        "id",
-                        "name"
-                      ],
+                      "required": ["id", "name"],
                       "description": "Updated user information"
                     }
                   },
-                  "required": [
-                    "success",
-                    "user"
-                  ]
+                  "required": ["success", "user"]
                 }
               }
             }
@@ -6966,9 +6115,7 @@
         "operationId": "post-settings-github-pat-validate",
         "summary": "Validate GitHub PAT",
         "description": "Validate a GitHub Personal Access Token and retrieve associated user information",
-        "tags": [
-          "Settings"
-        ],
+        "tags": ["Settings"],
         "parameters": [],
         "security": [
           {
@@ -6987,9 +6134,7 @@
                     "description": "GitHub Personal Access Token to validate"
                   }
                 },
-                "required": [
-                  "token"
-                ]
+                "required": ["token"]
               }
             }
           }
@@ -7025,9 +6170,7 @@
                       "description": "Validation error message"
                     }
                   },
-                  "required": [
-                    "valid"
-                  ]
+                  "required": ["valid"]
                 }
               }
             }
@@ -7046,9 +6189,7 @@
         "operationId": "delete-user",
         "summary": "Revoke API key",
         "description": "Revoke/delete a specific API key for the authenticated user",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "parameters": [],
         "security": [
           {
@@ -7072,10 +6213,7 @@
                       "description": "Result message"
                     }
                   },
-                  "required": [
-                    "success",
-                    "message"
-                  ]
+                  "required": ["success", "message"]
                 }
               }
             }
@@ -7092,9 +6230,7 @@
         "operationId": "get-user",
         "summary": "List user API keys",
         "description": "Get all active API keys for the authenticated user",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "parameters": [],
         "security": [
           {
@@ -7141,19 +6277,12 @@
                             "nullable": true
                           }
                         },
-                        "required": [
-                          "id",
-                          "name",
-                          "scopes",
-                          "createdAt"
-                        ]
+                        "required": ["id", "name", "scopes", "createdAt"]
                       },
                       "description": "List of user API keys (without key values)"
                     }
                   },
-                  "required": [
-                    "apiKeys"
-                  ]
+                  "required": ["apiKeys"]
                 }
               }
             }
@@ -7170,9 +6299,7 @@
         "operationId": "post-user",
         "summary": "Create API key",
         "description": "Create a new API key for the authenticated user (max 10 keys per user)",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "parameters": [],
         "security": [
           {
@@ -7192,30 +6319,19 @@
                   },
                   "expiresIn": {
                     "type": "string",
-                    "enum": [
-                      "30days",
-                      "90days",
-                      "1year",
-                      "never"
-                    ],
+                    "enum": ["30days", "90days", "1year", "never"],
                     "nullable": true
                   },
                   "scopes": {
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": [
-                        "read",
-                        "write",
-                        "admin"
-                      ]
+                      "enum": ["read", "write", "admin"]
                     },
                     "nullable": true
                   }
                 },
-                "required": [
-                  "name"
-                ]
+                "required": ["name"]
               }
             }
           }
@@ -7259,13 +6375,7 @@
                       "description": "Creation date"
                     }
                   },
-                  "required": [
-                    "id",
-                    "name",
-                    "key",
-                    "scopes",
-                    "createdAt"
-                  ]
+                  "required": ["id", "name", "key", "scopes", "createdAt"]
                 }
               }
             }
@@ -7284,9 +6394,7 @@
         "operationId": "get-user-role",
         "summary": "Get user role",
         "description": "Get the role of the authenticated user (user or admin)",
-        "tags": [
-          "User"
-        ],
+        "tags": ["User"],
         "parameters": [],
         "security": [
           {
@@ -7315,10 +6423,7 @@
                       "description": "User email"
                     }
                   },
-                  "required": [
-                    "isAdmin",
-                    "userId"
-                  ]
+                  "required": ["isAdmin", "userId"]
                 }
               }
             }

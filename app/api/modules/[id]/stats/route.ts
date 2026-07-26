@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/db'
-import { modules, ratings, releases } from '@/db/schema'
-import { sql, eq, and, desc } from 'drizzle-orm'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
-import { applyRateLimit } from '@/lib/rate-limit-enhanced'
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { modules, ratings, releases } from '@/db/schema';
+import { sql, eq, and, desc } from 'drizzle-orm';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
 
 /**
  * Get detailed module statistics
@@ -15,72 +15,60 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware
  * @response 500:ErrorResponse:Failed to fetch module statistics
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
-  const { user, error } = await getAuthenticatedUser(request)
+  const { user, error } = await getAuthenticatedUser(request);
 
   if (error && request.headers.get('authorization')) {
-    return NextResponse.json({ error }, { status: 401 })
+    return NextResponse.json({ error }, { status: 401 });
   }
 
-  if (user?.authMethod === "api-key") {
+  if (user?.authMethod === 'api-key') {
     try {
-      requireScope(user, "read")
+      requireScope(user, 'read');
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Insufficient permissions" },
-        { status: 403 }
-      )
+        { error: err instanceof Error ? err.message : 'Insufficient permissions' },
+        { status: 403 },
+      );
     }
   }
 
   try {
-    const { id } = await params
-    const { searchParams } = new URL(request.url)
-    const timeframe = searchParams.get('timeframe') || '30d' // 7d, 30d, 90d, all
-    const includeHistory = searchParams.get('includeHistory') === 'true'
+    const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const timeframe = searchParams.get('timeframe') || '30d'; // 7d, 30d, 90d, all
+    const includeHistory = searchParams.get('includeHistory') === 'true';
 
-    const validTimeframes = ['7d', '30d', '90d', 'all']
+    const validTimeframes = ['7d', '30d', '90d', 'all'];
     if (!validTimeframes.includes(timeframe)) {
-      return createErrorResponse('Invalid timeframe. Must be one of: 7d, 30d, 90d, all', 400)
+      return createErrorResponse('Invalid timeframe. Must be one of: 7d, 30d, 90d, all', 400);
     }
 
     const moduleExists = await db
       .select({ id: modules.id })
       .from(modules)
-      .where(
-        and(
-          eq(modules.id, id),
-          eq(modules.isPublished, true)
-        )
-      )
-      .limit(1)
+      .where(and(eq(modules.id, id), eq(modules.isPublished, true)))
+      .limit(1);
 
     if (moduleExists.length === 0) {
-      return createErrorResponse('Module not found', 404)
+      return createErrorResponse('Module not found', 404);
     }
 
-    let dateThreshold: Date | null = null
+    let dateThreshold: Date | null = null;
     if (timeframe !== 'all') {
-      const daysAgo = parseInt(timeframe.replace('d', ''))
-      dateThreshold = new Date()
-      dateThreshold.setDate(dateThreshold.getDate() - daysAgo)
+      const daysAgo = parseInt(timeframe.replace('d', ''));
+      dateThreshold = new Date();
+      dateThreshold.setDate(dateThreshold.getDate() - daysAgo);
     }
 
     const basicStatsQuery = db
@@ -98,7 +86,7 @@ export async function GET(
         `,
       })
       .from(releases)
-      .where(eq(releases.moduleId, id))
+      .where(eq(releases.moduleId, id));
 
     const ratingStatsQuery = db
       .select({
@@ -117,9 +105,9 @@ export async function GET(
         reviewsWithComments: sql<number>`COUNT(CASE WHEN ${ratings.comment} IS NOT NULL THEN 1 END)`,
       })
       .from(ratings)
-      .where(eq(ratings.moduleId, id))
+      .where(eq(ratings.moduleId, id));
 
-    let timeFilteredStats = null
+    let timeFilteredStats = null;
     if (dateThreshold) {
       const timeFilteredStatsQuery = db
         .select({
@@ -151,12 +139,12 @@ export async function GET(
         })
         .from(releases)
         .leftJoin(ratings, eq(releases.moduleId, ratings.moduleId))
-        .where(eq(releases.moduleId, id))
+        .where(eq(releases.moduleId, id));
 
-      timeFilteredStats = await timeFilteredStatsQuery
+      timeFilteredStats = await timeFilteredStatsQuery;
     }
 
-    let downloadHistory = null
+    let downloadHistory = null;
     if (includeHistory) {
       downloadHistory = await db
         .select({
@@ -167,10 +155,10 @@ export async function GET(
         })
         .from(releases)
         .where(eq(releases.moduleId, id))
-        .orderBy(desc(releases.createdAt))
+        .orderBy(desc(releases.createdAt));
     }
 
-    let ratingHistory = null
+    let ratingHistory = null;
     if (includeHistory) {
       const ratingHistoryQuery = db
         .select({
@@ -182,9 +170,9 @@ export async function GET(
         .where(eq(ratings.moduleId, id))
         .groupBy(sql`DATE(${ratings.createdAt})`)
         .orderBy(sql`DATE(${ratings.createdAt}) DESC`)
-        .limit(90)
+        .limit(90);
 
-      ratingHistory = await ratingHistoryQuery
+      ratingHistory = await ratingHistoryQuery;
     }
 
     const categoryStats = await db
@@ -201,20 +189,20 @@ export async function GET(
           FROM releases
           GROUP BY module_id
         ) as total_downloads`,
-        sql`total_downloads.module_id = ${modules.id}`
+        sql`total_downloads.module_id = ${modules.id}`,
       )
       .where(
         and(
           sql`${modules.category} = (SELECT category FROM modules WHERE id = ${id})`,
-          eq(modules.isPublished, true)
-        )
-      )
+          eq(modules.isPublished, true),
+        ),
+      );
 
     const [basicStats, ratingStats, categoryComparison] = await Promise.all([
       basicStatsQuery,
       ratingStatsQuery,
-      categoryStats
-    ])
+      categoryStats,
+    ]);
 
     const stats = {
       moduleId: id,
@@ -222,26 +210,32 @@ export async function GET(
       downloads: {
         total: Number(basicStats[0]?.totalDownloads || 0),
         inPeriod: timeFilteredStats ? Number(timeFilteredStats[0]?.downloadsInPeriod || 0) : null,
-        history: downloadHistory?.map(h => ({
-          version: h.version,
-          downloads: Number(h.downloads),
-          releaseDate: h.releaseDate,
-          isLatest: h.isLatest,
-        })) || null,
+        history:
+          downloadHistory?.map((h) => ({
+            version: h.version,
+            downloads: Number(h.downloads),
+            releaseDate: h.releaseDate,
+            isLatest: h.isLatest,
+          })) || null,
       },
       ratings: {
         average: Number(ratingStats[0]?.avgRating || 0),
         total: Number(ratingStats[0]?.totalRatings || 0),
         inPeriod: timeFilteredStats ? Number(timeFilteredStats[0]?.ratingsInPeriod || 0) : null,
-        averageInPeriod: timeFilteredStats ? Number(timeFilteredStats[0]?.avgRatingInPeriod || 0) : null,
-        distribution: JSON.parse(ratingStats[0]?.ratingDistribution || '{"1":0,"2":0,"3":0,"4":0,"5":0}'),
+        averageInPeriod: timeFilteredStats
+          ? Number(timeFilteredStats[0]?.avgRatingInPeriod || 0)
+          : null,
+        distribution: JSON.parse(
+          ratingStats[0]?.ratingDistribution || '{"1":0,"2":0,"3":0,"4":0,"5":0}',
+        ),
         totalHelpfulVotes: Number(ratingStats[0]?.totalHelpfulVotes || 0),
         reviewsWithComments: Number(ratingStats[0]?.reviewsWithComments || 0),
-        history: ratingHistory?.map(h => ({
-          date: h.date,
-          averageRating: Number(h.avgRating || 0),
-          count: Number(h.count),
-        })) || null,
+        history:
+          ratingHistory?.map((h) => ({
+            date: h.date,
+            averageRating: Number(h.avgRating || 0),
+            count: Number(h.count),
+          })) || null,
       },
       releases: {
         total: Number(basicStats[0]?.releaseCount || 0),
@@ -256,8 +250,8 @@ export async function GET(
         moduleCount: Number(categoryComparison[0]?.categoryModuleCount || 0),
       },
       performance: {
-        ratingsToDownloadsRatio: basicStats[0]?.totalDownloads 
-          ? Number(ratingStats[0]?.totalRatings || 0) / Number(basicStats[0].totalDownloads) 
+        ratingsToDownloadsRatio: basicStats[0]?.totalDownloads
+          ? Number(ratingStats[0]?.totalRatings || 0) / Number(basicStats[0].totalDownloads)
           : 0,
         helpfulnessRatio: ratingStats[0]?.totalRatings
           ? Number(ratingStats[0].totalHelpfulVotes) / Number(ratingStats[0].totalRatings)
@@ -270,13 +264,12 @@ export async function GET(
         generatedAt: new Date().toISOString(),
         includeHistory,
         timeframe,
-      }
-    }
+      },
+    };
 
-    return createSuccessResponse(stats)
-
+    return createSuccessResponse(stats);
   } catch (error) {
-    console.error('[! /api/modules/[id]/stats] Error fetching module stats:', error)
-    return createErrorResponse('Failed to fetch module statistics', 500)
+    console.error('[! /api/modules/[id]/stats] Error fetching module stats:', error);
+    return createErrorResponse('Failed to fetch module statistics', 500);
   }
 }

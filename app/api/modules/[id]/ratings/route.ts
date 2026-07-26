@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getModuleRatings, createRating, getUserRating } from '@/lib/db-utils'
-import { validateTurnstileToken, getClientIP } from '@/lib/turnstile'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { getModuleRatings, createRating, getUserRating } from '@/lib/db-utils';
+import { validateTurnstileToken, getClientIP } from '@/lib/turnstile';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
 
 /**
  * Get module ratings
@@ -34,27 +34,21 @@ import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
  * }
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const ratings = await getModuleRatings(resolvedParams.id)
+    const resolvedParams = await params;
+    const ratings = await getModuleRatings(resolvedParams.id);
 
-    const { user } = await getAuthenticatedUser(request)
-    let userRating = null
+    const { user } = await getAuthenticatedUser(request);
+    let userRating = null;
     if (user) {
-      userRating = await getUserRating(resolvedParams.id, user.id)
+      userRating = await getUserRating(resolvedParams.id, user.id);
     }
 
-    return NextResponse.json({ ratings, userRating })
+    return NextResponse.json({ ratings, userRating });
   } catch (error) {
-    console.error('[! /api/modules/[id]/ratings] Error fetching ratings:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch ratings' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules/[id]/ratings] Error fetching ratings:', error);
+    return NextResponse.json({ error: 'Failed to fetch ratings' }, { status: 500 });
   }
 }
 
@@ -95,67 +89,54 @@ export async function GET(
  * }
  * @openapi
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params
-    const { user, error } = await getAuthenticatedUser(request)
+    const resolvedParams = await params;
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error || !user) {
-      return NextResponse.json(
-        { error: error || 'Authentication required' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: error || 'Authentication required' }, { status: 401 });
     }
 
-    requireScope(user, "write")
+    requireScope(user, 'write');
 
-    const body = await request.json()
-    const { rating, comment, turnstileToken } = body
+    const body = await request.json();
+    const { rating, comment, turnstileToken } = body;
 
-    const turnstileResult = await validateTurnstileToken(
-      turnstileToken,
-      { remoteip: getClientIP(request) }
-    )
+    const turnstileResult = await validateTurnstileToken(turnstileToken, {
+      remoteip: getClientIP(request),
+    });
 
     if (!turnstileResult.success) {
       return NextResponse.json(
         {
           error: turnstileResult.error || 'Captcha verification failed',
-          captchaError: true
+          captchaError: true,
         },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
     if (!rating || rating < 1 || rating > 5) {
-      return NextResponse.json(
-        { error: 'Rating must be between 1 and 5' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
     }
 
     if (comment && typeof comment !== 'string') {
-      return NextResponse.json(
-        { error: 'Comment must be a string' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Comment must be a string' }, { status: 400 });
     }
 
     if (comment && comment.length > 1000) {
       return NextResponse.json(
         { error: 'Comment must be 1000 characters or less' },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
     if (comment && comment.trim().length === 0) {
       return NextResponse.json(
         { error: 'Comment cannot be empty or only whitespace' },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
     const newRating = await createRating({
@@ -163,14 +144,11 @@ export async function POST(
       userId: user.id,
       rating,
       comment,
-    })
+    });
 
-    return NextResponse.json({ rating: newRating }, { status: 201 })
+    return NextResponse.json({ rating: newRating }, { status: 201 });
   } catch (error) {
-    console.error('[! /api/modules/[id]/ratings] Error creating rating:', error)
-    return NextResponse.json(
-      { error: 'Failed to create rating' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules/[id]/ratings] Error creating rating:', error);
+    return NextResponse.json({ error: 'Failed to create rating' }, { status: 500 });
   }
 }

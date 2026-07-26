@@ -1,27 +1,21 @@
-import { URL } from 'url'
-import dns from 'dns/promises'
-import net from 'net'
+import { URL } from 'url';
+import dns from 'dns/promises';
+import net from 'net';
 
 /**
  * SSRF validation result
  * @interface SSRFValidationResult
  */
 interface SSRFValidationResult {
-  safe: boolean
-  error?: string
-  resolvedIP?: string
+  safe: boolean;
+  error?: string;
+  resolvedIP?: string;
 }
 
 /**
  * List of blocked hostnames and patterns
  */
-const BLOCKED_HOSTS = [
-  'localhost',
-  '127.0.0.1',
-  '0.0.0.0',
-  '[::1]',
-  '[::ffff:127.0.0.1]',
-]
+const BLOCKED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', '[::ffff:127.0.0.1]'];
 
 /**
  * Private IP ranges (CIDR notation)
@@ -34,13 +28,13 @@ const PRIVATE_IP_RANGES = [
   'fc00::/7',
   'fe80::/10',
   '::1/128',
-  '127.0.0.0/8'
-]
+  '127.0.0.0/8',
+];
 
 /**
  * Allowed protocols for external requests
  */
-const ALLOWED_PROTOCOLS = ['http:', 'https:']
+const ALLOWED_PROTOCOLS = ['http:', 'https:'];
 
 /**
  * Check if an IP address is private
@@ -50,18 +44,18 @@ const ALLOWED_PROTOCOLS = ['http:', 'https:']
  */
 function isPrivateIP(ip: string): boolean {
   if (!net.isIP(ip)) {
-    return false
+    return false;
   }
 
-  const isIPv6 = net.isIPv6(ip)
+  const isIPv6 = net.isIPv6(ip);
 
   for (const range of PRIVATE_IP_RANGES) {
     if (isIPInRange(ip, range, isIPv6)) {
-      return true
+      return true;
     }
   }
 
-  return false
+  return false;
 }
 
 /**
@@ -73,16 +67,16 @@ function isPrivateIP(ip: string): boolean {
  * @returns True if IP is in range
  */
 function isIPInRange(ip: string, cidr: string, isIPv6: boolean): boolean {
-  const [range, bits] = cidr.split('/')
+  const [range, bits] = cidr.split('/');
 
-  if ((cidr.includes(':') !== isIPv6) || (ip.includes(':') !== isIPv6)) {
-    return false
+  if (cidr.includes(':') !== isIPv6 || ip.includes(':') !== isIPv6) {
+    return false;
   }
 
   if (isIPv6) {
-    return isIPv6InRange(ip, range, parseInt(bits))
+    return isIPv6InRange(ip, range, parseInt(bits));
   } else {
-    return isIPv4InRange(ip, range, parseInt(bits))
+    return isIPv4InRange(ip, range, parseInt(bits));
   }
 }
 
@@ -90,19 +84,19 @@ function isIPInRange(ip: string, cidr: string, isIPv6: boolean): boolean {
  * Check if IPv4 address is in CIDR range
  */
 function isIPv4InRange(ip: string, range: string, bits: number): boolean {
-  const ipParts = ip.split('.').map(Number)
-  const rangeParts = range.split('.').map(Number)
+  const ipParts = ip.split('.').map(Number);
+  const rangeParts = range.split('.').map(Number);
 
-  let ipNum = 0
-  let rangeNum = 0
+  let ipNum = 0;
+  let rangeNum = 0;
 
   for (let i = 0; i < 4; i++) {
-    ipNum = (ipNum << 8) + ipParts[i]
-    rangeNum = (rangeNum << 8) + rangeParts[i]
+    ipNum = (ipNum << 8) + ipParts[i];
+    rangeNum = (rangeNum << 8) + rangeParts[i];
   }
 
-  const mask = (0xFFFFFFFF << (32 - bits)) >>> 0
-  return (ipNum & mask) === (rangeNum & mask)
+  const mask = (0xffffffff << (32 - bits)) >>> 0;
+  return (ipNum & mask) === (rangeNum & mask);
 }
 
 /**
@@ -110,28 +104,28 @@ function isIPv4InRange(ip: string, range: string, bits: number): boolean {
  */
 function isIPv6InRange(ip: string, range: string, bits: number): boolean {
   const normalizeIPv6 = (addr: string) => {
-    const parts = addr.split(':')
-    const fullParts: string[] = []
+    const parts = addr.split(':');
+    const fullParts: string[] = [];
 
     for (const part of parts) {
       if (part === '') {
-        const missing = 8 - parts.filter(p => p !== '').length
+        const missing = 8 - parts.filter((p) => p !== '').length;
         for (let i = 0; i <= missing; i++) {
-          fullParts.push('0000')
+          fullParts.push('0000');
         }
       } else {
-        fullParts.push(part.padStart(4, '0'))
+        fullParts.push(part.padStart(4, '0'));
       }
     }
 
-    return fullParts.slice(0, 8).join('')
-  }
+    return fullParts.slice(0, 8).join('');
+  };
 
-  const ipHex = normalizeIPv6(ip)
-  const rangeHex = normalizeIPv6(range)
-  const hexBits = Math.floor(bits / 4)
+  const ipHex = normalizeIPv6(ip);
+  const rangeHex = normalizeIPv6(range);
+  const hexBits = Math.floor(bits / 4);
 
-  return ipHex.substring(0, hexBits) === rangeHex.substring(0, hexBits)
+  return ipHex.substring(0, hexBits) === rangeHex.substring(0, hexBits);
 }
 
 /**
@@ -151,40 +145,40 @@ function isIPv6InRange(ip: string, range: string, bits: number): boolean {
 export async function validateURL(
   url: string,
   options: {
-    allowedHosts?: string[]
-    allowPrivateIPs?: boolean
-    timeout?: number
-  } = {}
+    allowedHosts?: string[];
+    allowPrivateIPs?: boolean;
+    timeout?: number;
+  } = {},
 ): Promise<SSRFValidationResult> {
   try {
-    const parsedUrl = new URL(url)
+    const parsedUrl = new URL(url);
 
     if (!ALLOWED_PROTOCOLS.includes(parsedUrl.protocol)) {
       return {
         safe: false,
-        error: `Protocol ${parsedUrl.protocol} is not allowed`
-      }
+        error: `Protocol ${parsedUrl.protocol} is not allowed`,
+      };
     }
 
-    const hostname = parsedUrl.hostname.toLowerCase()
+    const hostname = parsedUrl.hostname.toLowerCase();
 
     if (BLOCKED_HOSTS.includes(hostname)) {
       return {
         safe: false,
-        error: `Hostname ${hostname} is blocked`
-      }
+        error: `Hostname ${hostname} is blocked`,
+      };
     }
 
     if (options.allowedHosts && options.allowedHosts.length > 0) {
-      const isAllowed = options.allowedHosts.some(allowed =>
-        hostname === allowed || hostname.endsWith(`.${allowed}`)
-      )
+      const isAllowed = options.allowedHosts.some(
+        (allowed) => hostname === allowed || hostname.endsWith(`.${allowed}`),
+      );
 
       if (!isAllowed) {
         return {
           safe: false,
-          error: `Hostname ${hostname} is not in the allowed list`
-        }
+          error: `Hostname ${hostname} is not in the allowed list`,
+        };
       }
     }
 
@@ -192,73 +186,73 @@ export async function validateURL(
       if (!options.allowPrivateIPs && isPrivateIP(hostname)) {
         return {
           safe: false,
-          error: `Private IP address ${hostname} is not allowed`
-        }
+          error: `Private IP address ${hostname} is not allowed`,
+        };
       }
 
       return {
         safe: true,
-        resolvedIP: hostname
-      }
+        resolvedIP: hostname,
+      };
     }
 
     try {
       const [ipv4Addresses, ipv6Addresses] = await Promise.all([
         dns.resolve4(hostname).catch(() => [] as string[]),
-        dns.resolve6(hostname).catch(() => [] as string[])
-      ])
+        dns.resolve6(hostname).catch(() => [] as string[]),
+      ]);
 
-      const addresses = [...ipv4Addresses, ...ipv6Addresses]
+      const addresses = [...ipv4Addresses, ...ipv6Addresses];
 
       if (!addresses || addresses.length === 0) {
         return {
           safe: false,
-          error: `Could not resolve hostname ${hostname}`
-        }
+          error: `Could not resolve hostname ${hostname}`,
+        };
       }
 
       for (const ip of addresses) {
         if (!options.allowPrivateIPs && isPrivateIP(ip)) {
           return {
             safe: false,
-            error: `Hostname ${hostname} resolves to private IP ${ip}`
-          }
+            error: `Hostname ${hostname} resolves to private IP ${ip}`,
+          };
         }
       }
 
-      const [primaryIP] = addresses
+      const [primaryIP] = addresses;
 
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const [revalidationIPv4, revalidationIPv6] = await Promise.all([
         dns.resolve4(hostname).catch(() => [] as string[]),
-        dns.resolve6(hostname).catch(() => [] as string[])
-      ])
+        dns.resolve6(hostname).catch(() => [] as string[]),
+      ]);
 
-      const revalidationAddresses = [...revalidationIPv4, ...revalidationIPv6]
+      const revalidationAddresses = [...revalidationIPv4, ...revalidationIPv6];
 
       if (!revalidationAddresses.includes(primaryIP)) {
         return {
           safe: false,
-          error: `DNS rebinding detected for ${hostname}`
-        }
+          error: `DNS rebinding detected for ${hostname}`,
+        };
       }
 
       return {
         safe: true,
-        resolvedIP: primaryIP
-      }
+        resolvedIP: primaryIP,
+      };
     } catch {
       return {
         safe: false,
-        error: `DNS resolution failed for ${hostname}`
-      }
+        error: `DNS resolution failed for ${hostname}`,
+      };
     }
   } catch (error) {
     return {
       safe: false,
-      error: `Invalid URL format: ${error instanceof Error ? error.message : 'Unknown error'}`
-    }
+      error: `Invalid URL format: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
   }
 }
 
@@ -272,51 +266,51 @@ export async function validateURL(
 export async function safeFetch(
   url: string,
   options: RequestInit & {
-    allowedHosts?: string[]
-    allowPrivateIPs?: boolean
-    validateSSRF?: boolean
-  } = {}
+    allowedHosts?: string[];
+    allowPrivateIPs?: boolean;
+    validateSSRF?: boolean;
+  } = {},
 ): Promise<Response> {
   if (options.validateSSRF !== false) {
     const validation = await validateURL(url, {
       allowedHosts: options.allowedHosts,
-      allowPrivateIPs: options.allowPrivateIPs
-    })
+      allowPrivateIPs: options.allowPrivateIPs,
+    });
 
     if (!validation.safe) {
-      throw new Error(`SSRF validation failed: ${validation.error}`)
+      throw new Error(`SSRF validation failed: ${validation.error}`);
     }
   }
 
-  const { ...fetchOptions } = options
+  const { ...fetchOptions } = options;
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30000)
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
     const response = await fetch(url, {
       ...fetchOptions,
       signal: controller.signal,
-      redirect: 'manual'
-    })
+      redirect: 'manual',
+    });
 
     if (response.status >= 300 && response.status < 400) {
-      const location = response.headers.get('location')
+      const location = response.headers.get('location');
       if (location) {
         const validation = await validateURL(location, {
           allowedHosts: options.allowedHosts,
-          allowPrivateIPs: options.allowPrivateIPs
-        })
+          allowPrivateIPs: options.allowPrivateIPs,
+        });
 
         if (!validation.safe) {
-          throw new Error(`Redirect validation failed: ${validation.error}`)
+          throw new Error(`Redirect validation failed: ${validation.error}`);
         }
       }
     }
 
-    return response
+    return response;
   } finally {
-    clearTimeout(timeout)
+    clearTimeout(timeout);
   }
 }
 
@@ -331,24 +325,24 @@ export async function safeFetch(
  */
 export function isURLSafeQuick(url: string): boolean {
   try {
-    const parsedUrl = new URL(url)
+    const parsedUrl = new URL(url);
 
     if (!ALLOWED_PROTOCOLS.includes(parsedUrl.protocol)) {
-      return false
+      return false;
     }
 
-    const hostname = parsedUrl.hostname.toLowerCase()
+    const hostname = parsedUrl.hostname.toLowerCase();
 
     if (BLOCKED_HOSTS.includes(hostname)) {
-      return false
+      return false;
     }
 
     if (net.isIP(hostname) && isPrivateIP(hostname)) {
-      return false
+      return false;
     }
 
-    return true
+    return true;
   } catch {
-    return false
+    return false;
   }
 }

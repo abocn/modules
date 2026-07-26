@@ -1,11 +1,17 @@
-"use client"
+'use client';
 
-import { useState, useCallback, useRef } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { JobHistory, JobHistoryRef } from "@/components/features/admin/jobs/job-history"
-import { useJobStats, useJobActions } from "@/hooks/use-jobs"
+import { useState, useCallback, useRef } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { JobHistory, JobHistoryRef } from '@/components/features/admin/jobs/job-history';
+import { useJobStats, useJobActions } from '@/hooks/use-jobs';
 import {
   Play,
   Clock,
@@ -15,52 +21,55 @@ import {
   Users,
   Database,
   RefreshCw,
-  Mail
-} from "lucide-react"
-import { toast } from "sonner"
-import { Input } from "@/components/ui/input"
+  Mail,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 
 export function AdminJobs() {
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [isLoading, setIsLoading] = useState(false)
-  const [testEmailOpen, setTestEmailOpen] = useState(false)
-  const [testEmailAddress, setTestEmailAddress] = useState("")
-  const [sendingTestEmail, setSendingTestEmail] = useState(false)
-  const jobHistoryRef = useRef<JobHistoryRef | null>(null)
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+  const [testEmailOpen, setTestEmailOpen] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const jobHistoryRef = useRef<JobHistoryRef | null>(null);
 
-  const { stats, isLoading: statsLoading, refetch: refetchStats } = useJobStats()
-  const { startJob } = useJobActions()
+  const { stats, isLoading: statsLoading, refetch: refetchStats } = useJobStats();
+  const { startJob } = useJobActions();
 
-  const handleStartJob = useCallback(async (type: string, name: string, parameters?: Record<string, unknown>) => {
-    setIsLoading(true)
-    try {
-      await startJob(type, name, parameters)
-      toast.success(`${name} job has been queued successfully.`)
-      refetchStats()
-      jobHistoryRef.current?.refetchJobs()
-    } catch (error) {
-      console.error('Error starting job:', error)
-      toast.error("Failed to start job. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [startJob, refetchStats])
+  const handleStartJob = useCallback(
+    async (type: string, name: string, parameters?: Record<string, unknown>) => {
+      setIsLoading(true);
+      try {
+        await startJob(type, name, parameters);
+        toast.success(`${name} job has been queued successfully.`);
+        refetchStats();
+        jobHistoryRef.current?.refetchJobs();
+      } catch (error) {
+        console.error('Error starting job:', error);
+        toast.error('Failed to start job. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [startJob, refetchStats],
+  );
 
   const handleSendTestEmail = useCallback(async () => {
     if (!testEmailAddress || !testEmailAddress.includes('@')) {
-      toast.error("Please enter a valid email address")
-      return
+      toast.error('Please enter a valid email address');
+      return;
     }
 
-    setSendingTestEmail(true)
+    setSendingTestEmail(true);
     try {
       const response = await fetch('/api/admin/jobs/test-email', {
         method: 'POST',
@@ -68,76 +77,76 @@ export function AdminJobs() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: testEmailAddress }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send test email')
+        throw new Error(data.error || 'Failed to send test email');
       }
 
-      toast.success(`Test email sent successfully to ${testEmailAddress}`)
-      setTestEmailOpen(false)
-      setTestEmailAddress("")
+      toast.success(`Test email sent successfully to ${testEmailAddress}`);
+      setTestEmailOpen(false);
+      setTestEmailAddress('');
     } catch (error) {
-      console.error('Error sending test email:', error)
-      toast.error(error instanceof Error ? error.message : "Failed to send test email")
+      console.error('Error sending test email:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send test email');
     } finally {
-      setSendingTestEmail(false)
+      setSendingTestEmail(false);
     }
-  }, [testEmailAddress])
+  }, [testEmailAddress]);
 
   const quickJobs = [
     {
-      id: "scrape_all_releases",
-      name: "Scrape All Releases",
-      description: "Scrape releases for all modules with GitHub repositories",
-      type: "scrape_releases",
+      id: 'scrape_all_releases',
+      name: 'Scrape All Releases',
+      description: 'Scrape releases for all modules with GitHub repositories',
+      type: 'scrape_releases',
       icon: Download,
-      parameters: { scope: "all" }
+      parameters: { scope: 'all' },
     },
     {
-      id: "scrape_outdated_releases",
-      name: "Scrape Outdated Releases",
+      id: 'scrape_outdated_releases',
+      name: 'Scrape Outdated Releases',
       description: "Scrape releases for modules that haven't been updated in 24+ hours",
-      type: "scrape_releases",
+      type: 'scrape_releases',
       icon: Clock,
-      parameters: { scope: "outdated" }
+      parameters: { scope: 'outdated' },
     },
     {
-      id: "sync_github_configs",
-      name: "Sync GitHub Configs",
-      description: "Ensure GitHub sync settings match published module status",
-      type: "sync_github_configs",
+      id: 'sync_github_configs',
+      name: 'Sync GitHub Configs',
+      description: 'Ensure GitHub sync settings match published module status',
+      type: 'sync_github_configs',
       icon: Users,
-      parameters: {}
+      parameters: {},
     },
     {
-      id: "generate_slugs",
-      name: "Generate Module Slugs",
+      id: 'generate_slugs',
+      name: 'Generate Module Slugs',
       description: "Generate SEO-friendly slugs for modules that don't have them",
-      type: "generate_slugs",
+      type: 'generate_slugs',
       icon: RefreshCw,
-      parameters: {}
+      parameters: {},
     },
     {
-      id: "cleanup_failed_jobs",
-      name: "Cleanup Failed Jobs",
-      description: "Remove old failed job records older than 30 days",
-      type: "cleanup",
+      id: 'cleanup_failed_jobs',
+      name: 'Cleanup Failed Jobs',
+      description: 'Remove old failed job records older than 30 days',
+      type: 'cleanup',
       icon: Database,
-      parameters: { target: "failed_jobs", days: 30 }
+      parameters: { target: 'failed_jobs', days: 30 },
     },
     {
-      id: "test_email",
-      name: "Test Email",
-      description: "Send a test email to verify email configuration",
-      type: "test_email",
+      id: 'test_email',
+      name: 'Test Email',
+      description: 'Send a test email to verify email configuration',
+      type: 'test_email',
       icon: Mail,
       parameters: {},
-      isDialog: true
-    }
-  ]
+      isDialog: true,
+    },
+  ];
 
   return (
     <div className="h-[calc(100vh-3.5rem)] overflow-auto">
@@ -148,8 +157,8 @@ export function AdminJobs() {
             variant="outline"
             size="sm"
             onClick={() => {
-              refetchStats()
-              jobHistoryRef.current?.refetchJobs()
+              refetchStats();
+              jobHistoryRef.current?.refetchJobs();
             }}
             disabled={statsLoading}
             className="self-start sm:self-auto"
@@ -166,7 +175,9 @@ export function AdminJobs() {
               <Database className="md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="px-4 md:px-6">
-              <div className="text-xl md:text-2xl font-bold">{stats?.total.toLocaleString() || 0}</div>
+              <div className="text-xl md:text-2xl font-bold">
+                {stats?.total.toLocaleString() || 0}
+              </div>
             </CardContent>
           </Card>
 
@@ -222,17 +233,21 @@ export function AdminJobs() {
                   <CardHeader className="pb-3 px-4">
                     <div className="flex items-start gap-2">
                       <job.icon className="h-4 w-4 md:h-5 md:w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <CardTitle className="text-sm md:text-base leading-tight">{job.name}</CardTitle>
+                      <CardTitle className="text-sm md:text-base leading-tight">
+                        {job.name}
+                      </CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3 px-4">
-                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{job.description}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                      {job.description}
+                    </p>
                     <Button
                       onClick={() => {
                         if (job.isDialog) {
-                          setTestEmailOpen(true)
+                          setTestEmailOpen(true);
                         } else {
-                          handleStartJob(job.type, job.name, job.parameters)
+                          handleStartJob(job.type, job.name, job.parameters);
                         }
                       }}
                       disabled={isLoading}
@@ -240,7 +255,7 @@ export function AdminJobs() {
                       size="sm"
                     >
                       <Play className="md:h-4 md:w-4 mr-1.5" />
-                      {job.id === "test_email" ? "Send Test" : "Start Job"}
+                      {job.id === 'test_email' ? 'Send Test' : 'Start Job'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -321,17 +336,14 @@ export function AdminJobs() {
             <Button
               variant="outline"
               onClick={() => {
-                setTestEmailOpen(false)
-                setTestEmailAddress("")
+                setTestEmailOpen(false);
+                setTestEmailAddress('');
               }}
               disabled={sendingTestEmail}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSendTestEmail}
-              disabled={sendingTestEmail || !testEmailAddress}
-            >
+            <Button onClick={handleSendTestEmail} disabled={sendingTestEmail || !testEmailAddress}>
               {sendingTestEmail ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -348,5 +360,5 @@ export function AdminJobs() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

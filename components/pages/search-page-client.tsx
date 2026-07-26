@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { AdvancedSearch } from "@/components/features/search/advanced-search"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { AdvancedSearch } from '@/components/features/search/advanced-search';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function SearchPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation();
 
   return (
     <SharedLayout
@@ -19,5 +19,5 @@ export function SearchPageClient() {
     >
       <AdvancedSearch onModuleSelect={handleModuleSelect} />
     </SharedLayout>
-  )
+  );
 }

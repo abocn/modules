@@ -1,54 +1,60 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Edit } from "lucide-react"
-import type { UserWithStats } from "@/types/admin"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Edit } from 'lucide-react';
+import type { UserWithStats } from '@/types/admin';
 
 interface EditUserDialogProps {
-  user: UserWithStats
-  onUserUpdated: (updatedUser: UserWithStats) => void
+  user: UserWithStats;
+  onUserUpdated: (updatedUser: UserWithStats) => void;
 }
 
 export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: user.name,
-    email: user.email
-  })
-  const [errors, setErrors] = useState<{ name?: string; email?: string }>({})
-  const [loading, setLoading] = useState(false)
+    email: user.email,
+  });
+  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
-    const newErrors: { name?: string; email?: string } = {}
+    const newErrors: { name?: string; email?: string } = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required"
+      newErrors.name = 'Name is required';
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters"
+      newErrors.name = 'Name must be at least 2 characters';
     } else if (formData.name.trim().length > 100) {
-      newErrors.name = "Name must be less than 100 characters"
+      newErrors.name = 'Name must be less than 100 characters';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address"
+      newErrors.email = 'Please enter a valid email address';
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`/api/admin/users/${user.id}`, {
         method: 'PATCH',
@@ -56,19 +62,19 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
         body: JSON.stringify({
           action: 'editUser',
           name: formData.name.trim(),
-          email: formData.email.trim()
+          email: formData.email.trim(),
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
         if (result.error?.includes('Email is already taken')) {
-          setErrors({ email: 'This email is already in use by another user' })
+          setErrors({ email: 'This email is already in use by another user' });
         } else {
-          setErrors({ email: result.error || 'Failed to update user' })
+          setErrors({ email: result.error || 'Failed to update user' });
         }
-        return
+        return;
       }
 
       onUserUpdated({
@@ -78,25 +84,25 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
         joinDate: user.joinDate,
         lastActive: user.lastActive,
         modulesSubmitted: user.modulesSubmitted,
-        reviewsWritten: user.reviewsWritten
-      })
+        reviewsWritten: user.reviewsWritten,
+      });
 
-      setOpen(false)
-      setErrors({})
+      setOpen(false);
+      setErrors({});
     } catch (error) {
-      console.error('[!] Error updating user:', error)
-      setErrors({ email: 'Failed to update user. Please try again.' })
+      console.error('[!] Error updating user:', error);
+      setErrors({ email: 'Failed to update user. Please try again.' });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (field: 'name' | 'email', value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -118,7 +124,7 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Enter user name"
               disabled={loading}
-              className={errors.name ? "border-red-500" : ""}
+              className={errors.name ? 'border-red-500' : ''}
             />
             {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
           </div>
@@ -132,7 +138,7 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="Enter email address"
               disabled={loading}
-              className={errors.email ? "border-red-500" : ""}
+              className={errors.email ? 'border-red-500' : ''}
             />
             {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
           </div>
@@ -142,20 +148,20 @@ export function EditUserDialog({ user, onUserUpdated }: EditUserDialogProps) {
               type="button"
               variant="outline"
               onClick={() => {
-                setOpen(false)
-                setFormData({ name: user.name, email: user.email })
-                setErrors({})
+                setOpen(false);
+                setFormData({ name: user.name, email: user.email });
+                setErrors({});
               }}
               disabled={loading}
             >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Updating..." : "Update User"}
+              {loading ? 'Updating...' : 'Update User'}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

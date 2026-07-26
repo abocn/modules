@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { StatCard } from "./stat-card"
-import { MessageCircle, Users, ExternalLink } from "lucide-react"
-import { RiTelegram2Line } from "react-icons/ri"
+import { StatCard } from './stat-card';
+import { MessageCircle, Users, ExternalLink } from 'lucide-react';
+import { RiTelegram2Line } from 'react-icons/ri';
 
 export function TelegramCard() {
-  const telegramChannel = process.env.TELEGRAM_CHANNEL || "https://t.me/pontushub"
-  const telegramChat = process.env.TELEGRAM_CHAT || "https://t.me/pontushubchat"
+  const telegramChannel = process.env.TELEGRAM_CHANNEL || 'https://t.me/pontushub';
+  const telegramChat = process.env.TELEGRAM_CHAT || 'https://t.me/pontushubchat';
 
   return (
     <StatCard className="group">
@@ -64,5 +64,5 @@ export function TelegramCard() {
         </div>
       </div>
     </StatCard>
-  )
+  );
 }

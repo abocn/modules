@@ -1,17 +1,13 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import * as React from 'react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
  * @interface ComboboxOption
@@ -20,8 +16,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
  * @property {string} label - The display label for the option
  */
 interface ComboboxOption {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 /**
@@ -41,18 +37,18 @@ interface ComboboxOption {
  * @property {string} [customPlaceholder] - Placeholder for custom input field
  */
 interface ComboboxProps {
-  options: ComboboxOption[]
-  value?: string
-  onValueChange?: (value: string) => void
-  placeholder?: string
-  searchPlaceholder?: string
-  emptyText?: string
-  className?: string
-  disabled?: boolean
-  allowCustom?: boolean
-  customValue?: string
-  onCustomValueChange?: (value: string) => void
-  customPlaceholder?: string
+  options: ComboboxOption[];
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  className?: string;
+  disabled?: boolean;
+  allowCustom?: boolean;
+  customValue?: string;
+  onCustomValueChange?: (value: string) => void;
+  customPlaceholder?: string;
 }
 
 /**
@@ -77,29 +73,30 @@ export function Combobox({
   options,
   value,
   onValueChange,
-  placeholder = "Select option...",
-  searchPlaceholder = "Search options...",
-  emptyText = "No option found.",
+  placeholder = 'Select option...',
+  searchPlaceholder = 'Search options...',
+  emptyText = 'No option found.',
   className,
   disabled,
   allowCustom = false,
-  customValue = "",
+  customValue = '',
   onCustomValueChange,
-  customPlaceholder = "Enter custom value...",
+  customPlaceholder = 'Enter custom value...',
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
+  const [open, setOpen] = React.useState(false);
+  const [search, setSearch] = React.useState('');
 
-  const selectedOption = options.find((option) => option.value === value)
-  const isCustomSelected = value === "Custom" && allowCustom
+  const selectedOption = options.find((option) => option.value === value);
+  const isCustomSelected = value === 'Custom' && allowCustom;
 
   const filteredOptions = React.useMemo(() => {
-    if (!search) return options
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(search.toLowerCase()) ||
-      option.value.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [options, search])
+    if (!search) return options;
+    return options.filter(
+      (option) =>
+        option.label.toLowerCase().includes(search.toLowerCase()) ||
+        option.value.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [options, search]);
 
   /**
    * @function handleSelect
@@ -107,11 +104,11 @@ export function Combobox({
    * @param {string} selectedValue - The selected option value
    */
   const handleSelect = (selectedValue: string) => {
-    const newValue = selectedValue === value ? "" : selectedValue
-    onValueChange?.(newValue)
-    setOpen(false)
-    setSearch("")
-  }
+    const newValue = selectedValue === value ? '' : selectedValue;
+    onValueChange?.(newValue);
+    setOpen(false);
+    setSearch('');
+  };
 
   /**
    * @function handleClear
@@ -119,13 +116,13 @@ export function Combobox({
    * @param {React.MouseEvent} e - The mouse event
    */
   const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onValueChange?.("")
+    e.stopPropagation();
+    onValueChange?.('');
     if (allowCustom && onCustomValueChange) {
-      onCustomValueChange("")
+      onCustomValueChange('');
     }
-    setSearch("")
-  }
+    setSearch('');
+  };
 
   return (
     <div className="space-y-2">
@@ -136,19 +133,21 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-between h-auto min-h-[2.5rem] px-3 py-2",
-              "border-input bg-background hover:bg-accent hover:text-accent-foreground",
-              "focus:ring-2 focus:ring-ring focus:ring-offset-2",
-              "data-[state=open]:border-ring",
-              disabled && "cursor-not-allowed opacity-50",
-              className
+              'w-full justify-between h-auto min-h-[2.5rem] px-3 py-2',
+              'border-input bg-background hover:bg-accent hover:text-accent-foreground',
+              'focus:ring-2 focus:ring-ring focus:ring-offset-2',
+              'data-[state=open]:border-ring',
+              disabled && 'cursor-not-allowed opacity-50',
+              className,
             )}
             disabled={disabled}
           >
-            <span className={cn(
-              "flex-1 text-left truncate",
-              selectedOption ? "text-foreground" : "text-muted-foreground"
-            )}>
+            <span
+              className={cn(
+                'flex-1 text-left truncate',
+                selectedOption ? 'text-foreground' : 'text-muted-foreground',
+              )}
+            >
               {selectedOption ? selectedOption.label : placeholder}
             </span>
             <div className="flex items-center gap-1 ml-2">
@@ -176,25 +175,23 @@ export function Combobox({
           </div>
           <ScrollArea className="max-h-60">
             {filteredOptions.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                {emptyText}
-              </div>
+              <div className="py-8 text-center text-sm text-muted-foreground">{emptyText}</div>
             ) : (
               <div className="p-1">
                 {filteredOptions.map((option) => (
                   <div
                     key={option.value}
                     className={cn(
-                      "relative flex cursor-pointer select-none items-center rounded-md px-3 py-2.5 text-sm outline-none transition-colors",
-                      "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      value === option.value && "bg-accent text-accent-foreground font-medium"
+                      'relative flex cursor-pointer select-none items-center rounded-md px-3 py-2.5 text-sm outline-none transition-colors',
+                      'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+                      value === option.value && 'bg-accent text-accent-foreground font-medium',
                     )}
                     onClick={() => handleSelect(option.value)}
                   >
                     <Check
                       className={cn(
-                        "mr-3 h-4 w-4 flex-shrink-0",
-                        value === option.value ? "opacity-100" : "opacity-0"
+                        'mr-3 h-4 w-4 flex-shrink-0',
+                        value === option.value ? 'opacity-100' : 'opacity-0',
                       )}
                     />
                     <span className="truncate">{option.label}</span>
@@ -220,5 +217,5 @@ export function Combobox({
         </div>
       )}
     </div>
-  )
+  );
 }

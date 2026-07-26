@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 import {
   getAllModules,
   searchModules,
@@ -6,9 +6,9 @@ import {
   getRecommendedModules,
   getRecentlyUpdatedModules,
   getModulesByCategory,
-  getTrendingModules
-} from '@/lib/db-utils'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
+  getTrendingModules,
+} from '@/lib/db-utils';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
 
 /**
  * List modules
@@ -48,54 +48,52 @@ import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
  * @openapi
  */
 export async function GET(request: NextRequest) {
-  const { user } = await getAuthenticatedUser(request)
+  const { user } = await getAuthenticatedUser(request);
 
-  if (user?.authMethod === "api-key") {
+  if (user?.authMethod === 'api-key') {
     try {
-      requireScope(user, "read")
+      requireScope(user, 'read');
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Insufficient permissions" },
-        { status: 403 }
-      )
+        { error: err instanceof Error ? err.message : 'Insufficient permissions' },
+        { status: 403 },
+      );
     }
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get('category')
-    const search = searchParams.get('search')
-    const filter = searchParams.get('filter') // featured, recommended, recent, trending
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const search = searchParams.get('search');
+    const filter = searchParams.get('filter'); // featured, recommended, recent, trending
 
-    let modules
+    let modules;
 
     if (search) {
-      modules = await searchModules(search)
+      modules = await searchModules(search);
     } else if (filter === 'featured') {
-      modules = await getFeaturedModules()
+      modules = await getFeaturedModules();
     } else if (filter === 'recommended') {
-      modules = await getRecommendedModules()
+      modules = await getRecommendedModules();
     } else if (filter === 'recent') {
-      modules = await getRecentlyUpdatedModules()
+      modules = await getRecentlyUpdatedModules();
     } else if (filter === 'trending') {
-      const algorithm = searchParams.get('algorithm') as 'downloads' | 'rating' | 'recent' | 'combined' | null
-      const range = searchParams.get('range') as '7d' | '30d' | 'all' | null
+      const algorithm = searchParams.get('algorithm') as
+        'downloads' | 'rating' | 'recent' | 'combined' | null;
+      const range = searchParams.get('range') as '7d' | '30d' | 'all' | null;
       modules = await getTrendingModules({
         algorithm: algorithm || 'downloads',
-        range: range || '7d'
-      })
+        range: range || '7d',
+      });
     } else if (category) {
-      modules = await getModulesByCategory(category)
+      modules = await getModulesByCategory(category);
     } else {
-      modules = await getAllModules()
+      modules = await getAllModules();
     }
 
-    return NextResponse.json({ modules })
+    return NextResponse.json({ modules });
   } catch (error) {
-    console.error('[! /api/modules] Error fetching modules:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch modules' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules] Error fetching modules:', error);
+    return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 });
   }
 }

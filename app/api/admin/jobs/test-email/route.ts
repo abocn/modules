@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { sendTestEmail, isEmailConfigured } from "@/lib/email";
-import { headers } from "next/headers";
-import { z } from "zod";
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { sendTestEmail, isEmailConfigured } from '@/lib/email';
+import { headers } from 'next/headers';
+import { z } from 'zod';
 
 /**
  * @openapi
@@ -38,7 +38,7 @@ import { z } from "zod";
  */
 
 const testEmailSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email('Invalid email address'),
 });
 
 export async function POST(request: Request) {
@@ -48,26 +48,20 @@ export async function POST(request: Request) {
     });
 
     if (!session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden - Admin access required" },
-        { status: 403 }
-      );
+    if (session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 
     if (!isEmailConfigured()) {
       return NextResponse.json(
         {
-          error: "Email service not configured",
-          details: "Missing MAILGUN_API_KEY or MAILGUN_DOMAIN environment variables"
+          error: 'Email service not configured',
+          details: 'Missing MAILGUN_API_KEY or MAILGUN_DOMAIN environment variables',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -77,10 +71,10 @@ export async function POST(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         {
-          error: "Invalid request",
-          details: validation.error.issues
+          error: 'Invalid request',
+          details: validation.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -93,16 +87,15 @@ export async function POST(request: Request) {
       message: `Test email sent successfully to ${email}`,
       messageId: result.id,
     });
-
   } catch (error) {
-    console.error("Failed to send test email:", error);
+    console.error('Failed to send test email:', error);
 
     return NextResponse.json(
       {
-        error: "Failed to send test email",
-        details: error instanceof Error ? error.message : "Unknown error"
+        error: 'Failed to send test email',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

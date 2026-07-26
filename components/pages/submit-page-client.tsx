@@ -1,16 +1,16 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { SubmitModule } from "@/components/features/submissions/submit-module"
-import { useModuleNavigation } from "@/lib/navigation"
-import { useSession } from "@/lib/auth-client"
-import { LoadingState } from "@/components/shared/loading-state"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { SubmitModule } from '@/components/features/submissions/submit-module';
+import { useModuleNavigation } from '@/lib/navigation';
+import { useSession } from '@/lib/auth-client';
+import { LoadingState } from '@/components/shared/loading-state';
 
 export function SubmitPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect } = useModuleNavigation()
-  const { data: session, isPending } = useSession()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect } = useModuleNavigation();
+  const { data: session, isPending } = useSession();
 
   if (isPending) {
     return (
@@ -28,7 +28,7 @@ export function SubmitPageClient() {
           <LoadingState status="Loading..." />
         </div>
       </SharedLayout>
-    )
+    );
   }
 
   return (
@@ -39,9 +39,7 @@ export function SubmitPageClient() {
       searchQuery={searchQuery}
       onSearchChange={setSearchQuery}
     >
-      <SubmitModule
-        userId={session?.user?.id}
-      />
+      <SubmitModule userId={session?.user?.id} />
     </SharedLayout>
-  )
+  );
 }

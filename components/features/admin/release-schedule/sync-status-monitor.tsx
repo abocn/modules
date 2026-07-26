@@ -1,14 +1,22 @@
-"use client"
+'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { BarChart, CheckCircle, XCircle, Clock, RefreshCw, TrendingUp, Activity } from "lucide-react"
-import { useSyncStats } from "@/hooks/use-release-schedule"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import {
+  BarChart,
+  CheckCircle,
+  XCircle,
+  Clock,
+  RefreshCw,
+  TrendingUp,
+  Activity,
+} from 'lucide-react';
+import { useSyncStats } from '@/hooks/use-release-schedule';
 
 export function SyncStatusMonitor() {
-  const { stats, isLoading, refetch } = useSyncStats()
+  const { stats, isLoading, refetch } = useSyncStats();
 
   if (isLoading) {
     return (
@@ -19,7 +27,7 @@ export function SyncStatusMonitor() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (!stats) {
@@ -31,12 +39,13 @@ export function SyncStatusMonitor() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const successRate = stats.totalModules > 0 
-    ? Math.round((stats.successfulSyncs / (stats.successfulSyncs + stats.failedSyncs)) * 100) 
-    : 0
+  const successRate =
+    stats.totalModules > 0
+      ? Math.round((stats.successfulSyncs / (stats.successfulSyncs + stats.failedSyncs)) * 100)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -96,9 +105,7 @@ export function SyncStatusMonitor() {
             <BarChart className="h-5 w-5" />
             Sync Performance
           </CardTitle>
-          <CardDescription>
-            Overall sync success rate and performance metrics.
-          </CardDescription>
+          <CardDescription>Overall sync success rate and performance metrics.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -125,9 +132,7 @@ export function SyncStatusMonitor() {
             <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
               <XCircle className="h-4 w-4 text-red-600" />
               <div>
-                <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                  Failed Syncs
-                </p>
+                <p className="text-sm font-medium text-red-800 dark:text-red-200">Failed Syncs</p>
                 <p className="text-lg font-bold text-red-900 dark:text-red-100">
                   {stats.failedSyncs}
                 </p>
@@ -140,9 +145,7 @@ export function SyncStatusMonitor() {
       <Card>
         <CardHeader>
           <CardTitle>Schedule Status</CardTitle>
-          <CardDescription>
-            Current scheduling information and timing.
-          </CardDescription>
+          <CardDescription>Current scheduling information and timing.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -166,9 +169,7 @@ export function SyncStatusMonitor() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest sync attempts and their results.
-            </CardDescription>
+            <CardDescription>Latest sync attempts and their results.</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" />
@@ -177,13 +178,14 @@ export function SyncStatusMonitor() {
         </CardHeader>
         <CardContent>
           {stats.recentActivity.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No recent sync activity.
-            </p>
+            <p className="text-center text-muted-foreground py-4">No recent sync activity.</p>
           ) : (
             <div className="space-y-3">
               {stats.recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     {activity.status === 'success' ? (
                       <CheckCircle className="h-4 w-4 text-green-500" />
@@ -193,9 +195,7 @@ export function SyncStatusMonitor() {
                     <div>
                       <p className="font-medium">{activity.moduleName}</p>
                       {activity.error && (
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          {activity.error}
-                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400">{activity.error}</p>
                       )}
                     </div>
                   </div>
@@ -214,5 +214,5 @@ export function SyncStatusMonitor() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

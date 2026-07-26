@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
 /**
  * Error response structure for API endpoints
  * @interface ErrorResponse
  */
 export interface ErrorResponse {
-  error: string
-  code?: string
-  details?: unknown
-  timestamp?: string
+  error: string;
+  code?: string;
+  details?: unknown;
+  timestamp?: string;
 }
 
 /**
@@ -23,39 +23,39 @@ export interface ErrorResponse {
  */
 export function sanitizeErrorMessage(error: unknown, isDevelopment = false): string {
   if (isDevelopment && error instanceof Error) {
-    return error.message
+    return error.message;
   }
 
   if (error instanceof Error) {
-    const message = error.message.toLowerCase()
+    const message = error.message.toLowerCase();
 
     if (message.includes('unique constraint') || message.includes('duplicate')) {
-      return 'This resource already exists'
+      return 'This resource already exists';
     }
     if (message.includes('foreign key') || message.includes('constraint')) {
-      return 'Related resource not found or cannot be modified'
+      return 'Related resource not found or cannot be modified';
     }
     if (message.includes('not found')) {
-      return 'Resource not found'
+      return 'Resource not found';
     }
     if (message.includes('unauthorized') || message.includes('authentication')) {
-      return 'Authentication required'
+      return 'Authentication required';
     }
     if (message.includes('forbidden') || message.includes('permission')) {
-      return 'Insufficient permissions'
+      return 'Insufficient permissions';
     }
     if (message.includes('validation') || message.includes('invalid')) {
-      return 'Invalid input provided'
+      return 'Invalid input provided';
     }
     if (message.includes('timeout')) {
-      return 'Request timeout'
+      return 'Request timeout';
     }
     if (message.includes('rate limit')) {
-      return 'Too many requests'
+      return 'Too many requests';
     }
   }
 
-  return 'An unexpected error occurred'
+  return 'An unexpected error occurred';
 }
 
 /**
@@ -74,36 +74,36 @@ export function createErrorResponse(
   error: unknown,
   status = 500,
   code?: string,
-  isDevelopment = process.env.NODE_ENV === 'development'
+  isDevelopment = process.env.NODE_ENV === 'development',
 ): NextResponse {
-  const sanitizedMessage = sanitizeErrorMessage(error, isDevelopment)
+  const sanitizedMessage = sanitizeErrorMessage(error, isDevelopment);
 
   if (error instanceof Error && !isDevelopment) {
     console.error('[API Error]', {
       message: error.message,
       stack: error.stack,
       code,
-      status
-    })
+      status,
+    });
   }
 
   const response: ErrorResponse = {
     error: sanitizedMessage,
-    timestamp: new Date().toISOString()
-  }
+    timestamp: new Date().toISOString(),
+  };
 
   if (code) {
-    response.code = code
+    response.code = code;
   }
 
   if (isDevelopment && error instanceof Error) {
     response.details = {
       message: error.message,
-      name: error.name
-    }
+      name: error.name,
+    };
   }
 
-  return NextResponse.json(response, { status })
+  return NextResponse.json(response, { status });
 }
 
 /**
@@ -124,15 +124,15 @@ export function createErrorResponse(
  * ```
  */
 export function withErrorHandling<T extends unknown[]>(
-  handler: (...args: T) => Promise<NextResponse>
+  handler: (...args: T) => Promise<NextResponse>,
 ) {
   return async (...args: T): Promise<NextResponse> => {
     try {
-      return await handler(...args)
+      return await handler(...args);
     } catch (error) {
-      return createErrorResponse(error)
+      return createErrorResponse(error);
     }
-  }
+  };
 }
 
 /**
@@ -148,22 +148,22 @@ export function withErrorHandling<T extends unknown[]>(
 export function logSecureError(
   context: string,
   error: unknown,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): void {
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
 
   if (error instanceof Error) {
     console.error(`[${context}] ${timestamp}`, {
       message: error.message,
       name: error.name,
       stack: error.stack,
-      ...metadata
-    })
+      ...metadata,
+    });
   } else {
     console.error(`[${context}] ${timestamp}`, {
       error,
-      ...metadata
-    })
+      ...metadata,
+    });
   }
 }
 
@@ -179,23 +179,23 @@ export function logSecureError(
  */
 export function getErrorStatusCode(error: unknown, defaultStatus = 500): number {
   if (error instanceof Error) {
-    const message = error.message.toLowerCase()
+    const message = error.message.toLowerCase();
 
-    if (message.includes('not found')) return 404
-    if (message.includes('unauthorized') || message.includes('authentication')) return 401
-    if (message.includes('forbidden') || message.includes('permission')) return 403
-    if (message.includes('validation') || message.includes('invalid')) return 400
-    if (message.includes('conflict') || message.includes('duplicate')) return 409
-    if (message.includes('rate limit')) return 429
-    if (message.includes('timeout')) return 408
+    if (message.includes('not found')) return 404;
+    if (message.includes('unauthorized') || message.includes('authentication')) return 401;
+    if (message.includes('forbidden') || message.includes('permission')) return 403;
+    if (message.includes('validation') || message.includes('invalid')) return 400;
+    if (message.includes('conflict') || message.includes('duplicate')) return 409;
+    if (message.includes('rate limit')) return 429;
+    if (message.includes('timeout')) return 408;
   }
 
   if (typeof error === 'object' && error !== null && 'status' in error) {
-    const status = (error as { status: unknown }).status
+    const status = (error as { status: unknown }).status;
     if (typeof status === 'number' && status >= 100 && status < 600) {
-      return status
+      return status;
     }
   }
 
-  return defaultStatus
+  return defaultStatus;
 }

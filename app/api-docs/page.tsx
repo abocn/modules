@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { ApiReferenceReact } from '@scalar/api-reference-react';
 import '@scalar/api-reference-react/style.css';
@@ -13,17 +13,17 @@ export default function ApiDocsPage() {
 
   useEffect(() => {
     fetch('/openapi.json')
-      .then(res => {
+      .then((res) => {
         if (!res.ok) {
           throw new Error(`Failed to load OpenAPI spec: ${res.status}`);
         }
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setSpec(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Failed to load OpenAPI spec:', err);
         setError(err.message);
         setLoading(false);
@@ -47,8 +47,8 @@ export default function ApiDocsPage() {
         <div className="text-center text-red-600">
           <p className="text-lg font-semibold mb-2">Failed to load API documentation</p>
           <p className="text-sm">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Retry
@@ -81,22 +81,24 @@ export default function ApiDocsPage() {
           hideTestRequestButton: false,
           servers: [
             {
-              url: process.env.NEXT_PUBLIC_API_URL || `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/api`,
-              description: 'API Server'
-            }
+              url:
+                process.env.NEXT_PUBLIC_API_URL ||
+                `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/api`,
+              description: 'API Server',
+            },
           ],
           authentication: {
             preferredSecurityScheme: 'BearerAuth',
             securitySchemes: {
               BearerAuth: {
-                token: ''
+                token: '',
               },
               ApiKeyAuth: {
                 name: 'X-API-Key',
                 in: 'header',
-                value: ''
-              }
-            }
+                value: '',
+              },
+            },
           },
           metaData: {
             title: 'modules Repository API',
@@ -107,7 +109,7 @@ export default function ApiDocsPage() {
           hiddenClients: [],
           defaultHttpClient: {
             targetKey: 'js',
-            clientKey: 'fetch'
+            clientKey: 'fetch',
           },
         }}
       />

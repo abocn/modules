@@ -1,11 +1,11 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useMemo } from "react"
-import { useSession } from "@/lib/auth-client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect, useMemo } from 'react';
+import { useSession } from '@/lib/auth-client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   User,
   Mail,
@@ -20,171 +20,171 @@ import {
   Trophy,
   Download,
   MessageCircle,
-  Package
-} from "lucide-react"
-import { format } from "date-fns"
+  Package,
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 interface UserProfileData {
   user: {
-    id: string
-    name: string | null
-    image: string | null
-    role: string
-    joinedAt: string
-    isOwnProfile: boolean
-  }
+    id: string;
+    name: string | null;
+    image: string | null;
+    role: string;
+    joinedAt: string;
+    isOwnProfile: boolean;
+  };
   stats: {
-    totalModules: number
-    publishedModules: number
-    featuredModules: number
-    totalDownloads: number
-    totalRatings: number
-    avgRatingGiven: number
-  }
+    totalModules: number;
+    publishedModules: number;
+    featuredModules: number;
+    totalDownloads: number;
+    totalRatings: number;
+    avgRatingGiven: number;
+  };
   modules: Array<{
-    id: string
-    name: string
-    shortDescription: string
-    category: string
-    icon: string | null
-    isFeatured: boolean
-    isRecommended: boolean
-    lastUpdated: string
-    createdAt: string
-    totalDownloads: number
-    avgRating: number
-    reviewCount: number
-  }> | null
+    id: string;
+    name: string;
+    shortDescription: string;
+    category: string;
+    icon: string | null;
+    isFeatured: boolean;
+    isRecommended: boolean;
+    lastUpdated: string;
+    createdAt: string;
+    totalDownloads: number;
+    avgRating: number;
+    reviewCount: number;
+  }> | null;
   recentActivity: Array<{
-    type: string
-    moduleId: string
-    moduleName: string
-    createdAt: string
-    rating?: number
-    comment?: string
-    action?: string
-  }> | null
+    type: string;
+    moduleId: string;
+    moduleName: string;
+    createdAt: string;
+    rating?: number;
+    comment?: string;
+    action?: string;
+  }> | null;
   achievements: Array<{
-    id: string
-    name: string
-    description: string
-    unlockedAt: string | null
-  }>
+    id: string;
+    name: string;
+    description: string;
+    unlockedAt: string | null;
+  }>;
   meta: {
-    generatedAt: string
-    includeModules: boolean
-    includeActivity: boolean
-    limit: number
-  }
+    generatedAt: string;
+    includeModules: boolean;
+    includeActivity: boolean;
+    limit: number;
+  };
 }
 
 interface ApiKeysInfo {
-  hasApiKeys: boolean
-  count: number
-  isLoading: boolean
+  hasApiKeys: boolean;
+  count: number;
+  isLoading: boolean;
 }
 
 interface GitHubInfo {
-  hasGitHubPAT: boolean
-  isLoading: boolean
+  hasGitHubPAT: boolean;
+  isLoading: boolean;
 }
 
 export function UserProfile() {
-  const { data: session } = useSession()
-  const [profileData, setProfileData] = useState<UserProfileData | null>(null)
+  const { data: session } = useSession();
+  const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [apiKeysInfo, setApiKeysInfo] = useState<ApiKeysInfo>({
     hasApiKeys: false,
     count: 0,
-    isLoading: true
-  })
+    isLoading: true,
+  });
   const [gitHubInfo, setGitHubInfo] = useState<GitHubInfo>({
     hasGitHubPAT: false,
-    isLoading: true
-  })
-  const [isLoading, setIsLoading] = useState(true)
+    isLoading: true,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(false)
-  }, [session])
+    setIsLoading(false);
+  }, [session]);
 
   useEffect(() => {
     if (session?.user?.id) {
-      setIsLoading(true)
+      setIsLoading(true);
       fetch(`/api/user/profile/${session.user.id}`, {
-        credentials: 'include'
+        credentials: 'include',
       })
-        .then(res => {
+        .then((res) => {
           if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
           }
-          return res.json()
+          return res.json();
         })
-        .then(data => {
-          console.log('Profile data received:', data)
-          setProfileData(data.data || data)
-          setIsLoading(false)
+        .then((data) => {
+          console.log('Profile data received:', data);
+          setProfileData(data.data || data);
+          setIsLoading(false);
         })
-        .catch(err => {
-          console.error('Failed to fetch profile data:', err)
-          setIsLoading(false)
-        })
+        .catch((err) => {
+          console.error('Failed to fetch profile data:', err);
+          setIsLoading(false);
+        });
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (session?.user?.id) {
-      setApiKeysInfo(prev => ({ ...prev, isLoading: true }))
+      setApiKeysInfo((prev) => ({ ...prev, isLoading: true }));
       fetch('/api/user/api-keys', {
-        credentials: 'include'
+        credentials: 'include',
       })
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setApiKeysInfo({
             hasApiKeys: data.apiKeys?.length > 0,
             count: data.apiKeys?.length || 0,
-            isLoading: false
-          })
+            isLoading: false,
+          });
         })
-        .catch(err => {
-          console.error('Failed to fetch API keys:', err)
-          setApiKeysInfo(prev => ({ ...prev, isLoading: false }))
-        })
+        .catch((err) => {
+          console.error('Failed to fetch API keys:', err);
+          setApiKeysInfo((prev) => ({ ...prev, isLoading: false }));
+        });
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (session?.user?.id) {
-      setGitHubInfo(prev => ({ ...prev, isLoading: true }))
+      setGitHubInfo((prev) => ({ ...prev, isLoading: true }));
       fetch('/api/settings/github-pat', {
-        credentials: 'include'
+        credentials: 'include',
       })
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setGitHubInfo({
             hasGitHubPAT: data.hasToken || false,
-            isLoading: false
-          })
+            isLoading: false,
+          });
         })
-        .catch(err => {
-          console.error('Failed to fetch GitHub info:', err)
-          setGitHubInfo(prev => ({ ...prev, isLoading: false }))
-        })
+        .catch((err) => {
+          console.error('Failed to fetch GitHub info:', err);
+          setGitHubInfo((prev) => ({ ...prev, isLoading: false }));
+        });
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   const getRoleColor = useMemo(() => {
-    if (profileData?.user.role === 'admin') return 'destructive'
-    return 'secondary'
-  }, [profileData?.user.role])
+    if (profileData?.user.role === 'admin') return 'destructive';
+    return 'secondary';
+  }, [profileData?.user.role]);
 
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map(word => word[0])
+      .map((word) => word[0])
       .join('')
       .toUpperCase()
-      .slice(0, 2)
-  }
+      .slice(0, 2);
+  };
 
   if (isLoading || !profileData) {
     return (
@@ -281,7 +281,7 @@ export function UserProfile() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!session?.user) {
@@ -293,7 +293,7 @@ export function UserProfile() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -308,9 +308,12 @@ export function UserProfile() {
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
             <Avatar className="w-16 h-16 flex-shrink-0">
-              <AvatarImage src={profileData.user.image || ""} alt={profileData.user.name || "User"} />
+              <AvatarImage
+                src={profileData.user.image || ''}
+                alt={profileData.user.name || 'User'}
+              />
               <AvatarFallback className="text-lg font-semibold">
-                {getInitials(profileData.user.name || "User")}
+                {getInitials(profileData.user.name || 'User')}
               </AvatarFallback>
             </Avatar>
             <div className="text-center sm:text-left min-w-0 flex-1">
@@ -338,9 +341,7 @@ export function UserProfile() {
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Joined:</span>
               </div>
-              <span>
-                {format(new Date(profileData.user.joinedAt), 'MMMM dd, yyyy')}
-              </span>
+              <span>{format(new Date(profileData.user.joinedAt), 'MMMM dd, yyyy')}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm">
@@ -386,7 +387,9 @@ export function UserProfile() {
                 <Download className="w-4 h-4 text-purple-500" />
                 <span className="text-sm font-medium">Downloads</span>
               </div>
-              <span className="text-lg font-bold">{profileData.stats.totalDownloads.toLocaleString()}</span>
+              <span className="text-lg font-bold">
+                {profileData.stats.totalDownloads.toLocaleString()}
+              </span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-muted/50 rounded-lg">
@@ -414,7 +417,10 @@ export function UserProfile() {
             </p>
           ) : (
             profileData.achievements.map((achievement) => (
-              <div key={achievement.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+              <div
+                key={achievement.id}
+                className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg"
+              >
                 <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Trophy className="w-4 h-4 text-yellow-600" />
                 </div>
@@ -444,7 +450,7 @@ export function UserProfile() {
             {apiKeysInfo.isLoading ? (
               <Skeleton className="h-5 w-20" />
             ) : (
-              <Badge variant={apiKeysInfo.hasApiKeys ? "default" : "secondary"} className="w-fit">
+              <Badge variant={apiKeysInfo.hasApiKeys ? 'default' : 'secondary'} className="w-fit">
                 {apiKeysInfo.hasApiKeys ? `${apiKeysInfo.count} Active` : 'None'}
               </Badge>
             )}
@@ -458,7 +464,7 @@ export function UserProfile() {
             {gitHubInfo.isLoading ? (
               <Skeleton className="h-5 w-20" />
             ) : (
-              <Badge variant={gitHubInfo.hasGitHubPAT ? "default" : "secondary"} className="w-fit">
+              <Badge variant={gitHubInfo.hasGitHubPAT ? 'default' : 'secondary'} className="w-fit">
                 {gitHubInfo.hasGitHubPAT ? 'Connected' : 'Not Connected'}
               </Badge>
             )}
@@ -495,7 +501,8 @@ export function UserProfile() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {activity.type === 'rating' ? 'Left a review' : `Module ${activity.action}`} • {format(new Date(activity.createdAt), 'MMM dd, yyyy')}
+                    {activity.type === 'rating' ? 'Left a review' : `Module ${activity.action}`} •{' '}
+                    {format(new Date(activity.createdAt), 'MMM dd, yyyy')}
                   </p>
                   {activity.comment && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -509,5 +516,5 @@ export function UserProfile() {
         </Card>
       )}
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getUserHelpfulVotes } from '@/lib/db-utils'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { getUserHelpfulVotes } from '@/lib/db-utils';
+import { auth } from '@/lib/auth';
 
 /**
  * Get user's helpful votes for module
@@ -27,32 +27,24 @@ import { auth } from '@/lib/auth'
  * }
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({
-      headers: request.headers
-    })
+      headers: request.headers,
+    });
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { ratings: [], replies: [] }
-      )
+      return NextResponse.json({ ratings: [], replies: [] });
     }
 
-    const resolvedParams = await params
-    const moduleId = resolvedParams.id
+    const resolvedParams = await params;
+    const moduleId = resolvedParams.id;
 
-    const helpfulVotes = await getUserHelpfulVotes(session.user.id, moduleId)
+    const helpfulVotes = await getUserHelpfulVotes(session.user.id, moduleId);
 
-    return NextResponse.json(helpfulVotes)
+    return NextResponse.json(helpfulVotes);
   } catch (error) {
-    console.error('[! /api/modules/[id]/helpful-votes] Error fetching helpful votes:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch helpful votes' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules/[id]/helpful-votes] Error fetching helpful votes:', error);
+    return NextResponse.json({ error: 'Failed to fetch helpful votes' }, { status: 500 });
   }
 }

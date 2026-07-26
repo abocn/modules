@@ -1,39 +1,45 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserManagement } from "@/components/features/admin/users/user-management"
-import { Filters, FilterField, FilterValues } from "@/components/features/admin/filters"
-import { Search, Users, Shield } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { UserManagement } from '@/components/features/admin/users/user-management';
+import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
+import { Search, Users, Shield } from 'lucide-react';
 
 export function AdminUsers() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [userStats, setUserStats] = useState({
     total: 0,
     admins: 0,
-  })
+  });
   const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
-    query: "",
-    roleFilter: "all",
-    providerFilter: "all",
-    emailVerified: "all",
+    query: '',
+    roleFilter: 'all',
+    providerFilter: 'all',
+    emailVerified: 'all',
     joinDateFrom: undefined,
     joinDateTo: undefined,
     lastActiveFrom: undefined,
     lastActiveTo: undefined,
     minModules: 0,
-    minReviews: 0
-  })
+    minReviews: 0,
+  });
 
   const filterFields: FilterField[] = [
     {
       type: 'text',
       key: 'query',
       label: 'Search Users',
-      placeholder: 'Search by name or email...'
+      placeholder: 'Search by name or email...',
     },
     {
       type: 'select',
@@ -41,8 +47,8 @@ export function AdminUsers() {
       label: 'Role',
       options: [
         { value: 'user', label: 'User' },
-        { value: 'admin', label: 'Admin' }
-      ]
+        { value: 'admin', label: 'Admin' },
+      ],
     },
     {
       type: 'select',
@@ -50,8 +56,8 @@ export function AdminUsers() {
       label: 'Auth Provider',
       options: [
         { value: 'github', label: 'GitHub' },
-        { value: 'google', label: 'Google' }
-      ]
+        { value: 'google', label: 'Google' },
+      ],
     },
     {
       type: 'select',
@@ -59,77 +65,77 @@ export function AdminUsers() {
       label: 'Email Verified',
       options: [
         { value: 'true', label: 'Verified' },
-        { value: 'false', label: 'Not Verified' }
-      ]
+        { value: 'false', label: 'Not Verified' },
+      ],
     },
     {
       type: 'date',
       key: 'joinDateFrom',
-      label: 'Join Date From'
+      label: 'Join Date From',
     },
     {
       type: 'date',
       key: 'joinDateTo',
-      label: 'Join Date To'
+      label: 'Join Date To',
     },
     {
       type: 'date',
       key: 'lastActiveFrom',
-      label: 'Last Active From'
+      label: 'Last Active From',
     },
     {
       type: 'date',
       key: 'lastActiveTo',
-      label: 'Last Active To'
+      label: 'Last Active To',
     },
     {
       type: 'number',
       key: 'minModules',
       label: 'Minimum Modules Submitted',
       placeholder: '0',
-      min: 0
+      min: 0,
     },
     {
       type: 'number',
       key: 'minReviews',
       label: 'Minimum Reviews Written',
       placeholder: '0',
-      min: 0
-    }
-  ]
+      min: 0,
+    },
+  ];
 
   const resetAdvancedFilters = () => {
     setAdvancedFilters({
-      query: "",
-      roleFilter: "all",
-      providerFilter: "all",
-      emailVerified: "all",
+      query: '',
+      roleFilter: 'all',
+      providerFilter: 'all',
+      emailVerified: 'all',
       joinDateFrom: undefined,
       joinDateTo: undefined,
       lastActiveFrom: undefined,
       lastActiveTo: undefined,
       minModules: 0,
-      minReviews: 0
-    })
-    setSearchQuery("")
-    setRoleFilter("all")
-  }
+      minReviews: 0,
+    });
+    setSearchQuery('');
+    setRoleFilter('all');
+  };
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/users')
+      const response = await fetch('/api/admin/users');
       if (response.ok) {
-        const data = await response.json()
-        setUserStats(data.stats)
+        const data = await response.json();
+        setUserStats(data.stats);
       }
     } catch (error) {
-      console.error('Error fetching user stats:', error)
+      console.error('Error fetching user stats:', error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   return (
     <div className="h-[calc(100vh-3.5rem)] overflow-auto">
@@ -167,16 +173,19 @@ export function AdminUsers() {
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setAdvancedFilters(prev => ({ ...prev, query: e.target.value }))
+                setSearchQuery(e.target.value);
+                setAdvancedFilters((prev) => ({ ...prev, query: e.target.value }));
               }}
               className="pl-10"
             />
           </div>
-          <Select value={roleFilter} onValueChange={(value) => {
-            setRoleFilter(value)
-            setAdvancedFilters(prev => ({ ...prev, roleFilter: value }))
-          }}>
+          <Select
+            value={roleFilter}
+            onValueChange={(value) => {
+              setRoleFilter(value);
+              setAdvancedFilters((prev) => ({ ...prev, roleFilter: value }));
+            }}
+          >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filter by role" />
             </SelectTrigger>
@@ -197,5 +206,5 @@ export function AdminUsers() {
         <UserManagement advancedFilters={advancedFilters} onUserUpdated={fetchStats} />
       </div>
     </div>
-  )
+  );
 }

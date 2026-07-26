@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { db } from '@/db'
-import { modules, moduleGithubSync } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { db } from '@/db';
+import { modules, moduleGithubSync } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * GET /api/admin/module-sync
@@ -34,10 +34,10 @@ export async function GET() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
-    })
+    });
 
     if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const moduleSyncs = await db
@@ -54,18 +54,15 @@ export async function GET() {
           name: modules.name,
           author: modules.author,
           status: modules.status,
-        }
+        },
       })
       .from(moduleGithubSync)
       .innerJoin(modules, eq(moduleGithubSync.moduleId, modules.id))
-      .orderBy(modules.name)
+      .orderBy(modules.name);
 
-    return NextResponse.json(moduleSyncs)
+    return NextResponse.json(moduleSyncs);
   } catch (error) {
-    console.error("[! /api/admin/module-sync] Error fetching module syncs:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch module syncs" },
-      { status: 500 }
-    )
+    console.error('[! /api/admin/module-sync] Error fetching module syncs:', error);
+    return NextResponse.json({ error: 'Failed to fetch module syncs' }, { status: 500 });
   }
 }

@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { AdminGuard } from "@/components/features/admin/guards/admin-guard"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { AdminReleaseSchedule } from "@/components/features/admin/release-schedule/admin-release-schedule"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { AdminGuard } from '@/components/features/admin/guards/admin-guard';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { AdminReleaseSchedule } from '@/components/features/admin/release-schedule/admin-release-schedule';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function AdminReleaseSchedulePageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect } = useModuleNavigation();
 
   return (
     <AdminGuard>
@@ -22,5 +22,5 @@ export function AdminReleaseSchedulePageClient() {
         <AdminReleaseSchedule />
       </SharedLayout>
     </AdminGuard>
-  )
+  );
 }

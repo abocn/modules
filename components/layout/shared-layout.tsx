@@ -1,19 +1,19 @@
-"use client"
+'use client';
 
-import { ReactNode, memo } from "react"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { TopNavBar } from "@/components/layout/top-nav-bar"
+import { ReactNode, memo } from 'react';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/layout/app-sidebar';
+import { TopNavBar } from '@/components/layout/top-nav-bar';
 
 interface SharedLayoutProps {
-  children: ReactNode
-  currentPage: string
-  showBackButton?: boolean
-  onBack?: () => void
-  selectedCategory?: string
-  onCategorySelect?: (category: string) => void
-  searchQuery?: string
-  onSearchChange?: (query: string) => void
+  children: ReactNode;
+  currentPage: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  selectedCategory?: string;
+  onCategorySelect?: (category: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
 const SharedLayoutComponent = function SharedLayout({
@@ -21,9 +21,9 @@ const SharedLayoutComponent = function SharedLayout({
   currentPage,
   showBackButton = false,
   onBack,
-  selectedCategory = "home",
+  selectedCategory = 'home',
   onCategorySelect = () => {},
-  searchQuery = "",
+  searchQuery = '',
   onSearchChange = () => {},
 }: SharedLayoutProps) {
   return (
@@ -36,18 +36,14 @@ const SharedLayoutComponent = function SharedLayout({
           onSearchChange={onSearchChange}
         />
         <div className="flex-1 flex flex-col min-w-0 w-full min-h-screen">
-          <TopNavBar
-            currentPage={currentPage}
-            showBackButton={showBackButton}
-            onBack={onBack}
-          />
+          <TopNavBar currentPage={currentPage} showBackButton={showBackButton} onBack={onBack} />
           <main className="flex-1 w-full overflow-x-hidden overflow-y-auto -webkit-overflow-scrolling-touch overscroll-behavior-y-contain">
             {children}
           </main>
         </div>
       </div>
     </SidebarProvider>
-  )
-}
+  );
+};
 
-export const SharedLayout = memo(SharedLayoutComponent)
+export const SharedLayout = memo(SharedLayoutComponent);

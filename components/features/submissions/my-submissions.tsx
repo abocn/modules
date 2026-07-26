@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import {
   AlertTriangle,
   Clock,
@@ -19,186 +19,193 @@ import {
   CalendarDays,
   Package,
   Info,
-  Search
-} from "lucide-react"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Turnstile, TurnstileRef } from "@/components/shared/turnstile"
-import { EditSubmissionDialog } from "@/components/features/submissions/edit-submission-dialog"
-import { Filters, FilterField } from "@/components/features/admin/filters"
-import { MODULE_CATEGORIES } from "@/lib/constants/categories"
-import type { SubmissionAdvancedFilters } from "@/types/admin"
+  Search,
+} from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Turnstile, TurnstileRef } from '@/components/shared/turnstile';
+import { EditSubmissionDialog } from '@/components/features/submissions/edit-submission-dialog';
+import { Filters, FilterField } from '@/components/features/admin/filters';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
+import type { SubmissionAdvancedFilters } from '@/types/admin';
 
 interface Submission {
-  id: string
-  name: string
-  shortDescription: string
-  description: string
-  author: string
-  category: string
-  icon?: string
-  isPublished: boolean
-  status: "pending" | "approved" | "declined"
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+  author: string;
+  category: string;
+  icon?: string;
+  isPublished: boolean;
+  status: 'pending' | 'approved' | 'declined';
+  createdAt: string;
+  updatedAt: string;
   warnings: {
-    type: "malware" | "closed-source" | "stolen-code"
-    message: string
-  }[]
+    type: 'malware' | 'closed-source' | 'stolen-code';
+    message: string;
+  }[];
   reviewNotes: {
-    type: "approved" | "rejected" | "changes-requested"
-    message: string
-    reviewedBy?: string
-    reviewedAt?: string
-  }[]
+    type: 'approved' | 'rejected' | 'changes-requested';
+    message: string;
+    reviewedBy?: string;
+    reviewedAt?: string;
+  }[];
   compatibility: {
-    androidVersions: string[]
-    rootMethods: ("Magisk" | "KernelSU" | "KernelSU-Next")[]
-  }
-  features: string[]
-  isOpenSource: boolean
-  sourceUrl?: string
-  communityUrl?: string
-  images?: string[]
-  license: string
+    androidVersions: string[];
+    rootMethods: ('Magisk' | 'KernelSU' | 'KernelSU-Next')[];
+  };
+  features: string[];
+  isOpenSource: boolean;
+  sourceUrl?: string;
+  communityUrl?: string;
+  images?: string[];
+  license: string;
 }
 
 interface MySubmissionsProps {
-  userId?: string
+  userId?: string;
 }
 
 export function MySubmissions({ userId }: MySubmissionsProps) {
-  const router = useRouter()
-  const [submissions, setSubmissions] = useState<Submission[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
-  const [editingSubmission, setEditingSubmission] = useState<Submission | null>(null)
-  const [resubmittingSubmission, setResubmittingSubmission] = useState<Submission | null>(null)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [isResubmitting, setIsResubmitting] = useState(false)
-  const [resubmitError, setResubmitError] = useState<string | null>(null)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const turnstileRef = useRef<TurnstileRef>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter();
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [editingSubmission, setEditingSubmission] = useState<Submission | null>(null);
+  const [resubmittingSubmission, setResubmittingSubmission] = useState<Submission | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
+  const [resubmitError, setResubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileRef>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [advancedFilters, setAdvancedFilters] = useState<SubmissionAdvancedFilters>({
-    query: "",
-    category: "all",
-    status: "all",
-    reviewStatus: "all",
-    isOpenSource: "all",
-    hasWarnings: "all",
+    query: '',
+    category: 'all',
+    status: 'all',
+    reviewStatus: 'all',
+    isOpenSource: 'all',
+    hasWarnings: 'all',
     submittedDateRange: {},
     updatedDateRange: {},
-    hasReviewNotes: "all"
-  })
+    hasReviewNotes: 'all',
+  });
 
   useEffect(() => {
     if (userId) {
-      fetchSubmissions()
+      fetchSubmissions();
     } else {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [userId])
+  }, [userId]);
 
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch("/api/modules/my-submissions")
+      const response = await fetch('/api/modules/my-submissions');
       if (!response.ok) {
-        throw new Error("Failed to fetch submissions")
+        throw new Error('Failed to fetch submissions');
       }
-      const data = await response.json()
-      setSubmissions(data.submissions)
+      const data = await response.json();
+      setSubmissions(data.submissions);
     } catch (err) {
-      console.error("Error fetching submissions:", err)
-      setError(err instanceof Error ? err.message : "Failed to load submissions")
+      console.error('Error fetching submissions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load submissions');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEdit = (submission: Submission) => {
-    setEditingSubmission(submission)
-  }
+    setEditingSubmission(submission);
+  };
 
   const handleSaveEdit = async (updatedData: Partial<Submission>) => {
     try {
       const response = await fetch(`/api/modules/update/${editingSubmission?.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatedData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to update module")
+        throw new Error('Failed to update module');
       }
 
-      await fetchSubmissions()
-      setEditingSubmission(null)
+      await fetchSubmissions();
+      setEditingSubmission(null);
     } catch (err) {
-      console.error("Error updating submission:", err)
-      setError(err instanceof Error ? err.message : "Failed to update submission")
+      console.error('Error updating submission:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update submission');
     }
-  }
+  };
 
   const handleResubmitForReview = async (submission: Submission) => {
     if (!turnstileToken) {
-      setResubmitError("Please complete the captcha verification")
-      return
+      setResubmitError('Please complete the captcha verification');
+      return;
     }
 
-    setIsResubmitting(true)
-    setResubmitError(null)
+    setIsResubmitting(true);
+    setResubmitError(null);
 
     try {
       const response = await fetch(`/api/modules/update/${submission.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          status: "pending",
-          turnstileToken
+          status: 'pending',
+          turnstileToken,
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to resubmit module for review")
+        throw new Error('Failed to resubmit module for review');
       }
 
-      setShowSuccessMessage(true)
-      setTurnstileToken(null)
-      turnstileRef.current?.reset()
+      setShowSuccessMessage(true);
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
 
       setTimeout(() => {
-        setShowSuccessMessage(false)
-        setResubmittingSubmission(null)
-      }, 2000)
+        setShowSuccessMessage(false);
+        setResubmittingSubmission(null);
+      }, 2000);
 
-      await fetchSubmissions()
+      await fetchSubmissions();
     } catch (err) {
-      console.error("Error resubmitting for review:", err)
-      const errorMessage = err instanceof Error ? err.message : "Failed to resubmit for review"
-      setResubmitError(errorMessage)
-      setTurnstileToken(null)
-      turnstileRef.current?.reset()
+      console.error('Error resubmitting for review:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to resubmit for review';
+      setResubmitError(errorMessage);
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
     } finally {
-      setIsResubmitting(false)
+      setIsResubmitting(false);
     }
-  }
+  };
 
   const filterFields: FilterField[] = [
     {
       type: 'text',
       key: 'query',
       label: 'Search Submissions',
-      placeholder: 'Search by name, description, author...'
+      placeholder: 'Search by name, description, author...',
     },
     {
       type: 'select',
@@ -211,8 +218,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
         { value: 'system', label: 'System' },
         { value: 'media', label: 'Media' },
         { value: 'development', label: 'Development' },
-        { value: 'gaming', label: 'Gaming' }
-      ]
+        { value: 'gaming', label: 'Gaming' },
+      ],
     },
     {
       type: 'select',
@@ -223,8 +230,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
         { value: 'approved', label: 'Approved' },
         { value: 'declined', label: 'Rejected' },
         { value: 'rereviewing', label: 'Re-reviewing' },
-        { value: 'changes-requested', label: 'Changes Requested' }
-      ]
+        { value: 'changes-requested', label: 'Changes Requested' },
+      ],
     },
     {
       type: 'select',
@@ -235,8 +242,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
         { value: 'reviewing', label: 'Reviewing' },
         { value: 'rereviewing', label: 'Rereviewing' },
         { value: 'denied', label: 'Denied' },
-        { value: 'changes-requested', label: 'Changes Requested' }
-      ]
+        { value: 'changes-requested', label: 'Changes Requested' },
+      ],
     },
     {
       type: 'select',
@@ -244,8 +251,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
       label: 'Open Source',
       options: [
         { value: 'true', label: 'Open Source' },
-        { value: 'false', label: 'Closed Source' }
-      ]
+        { value: 'false', label: 'Closed Source' },
+      ],
     },
     {
       type: 'select',
@@ -253,8 +260,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
       label: 'Warnings',
       options: [
         { value: 'true', label: 'Has Warnings' },
-        { value: 'false', label: 'No Warnings' }
-      ]
+        { value: 'false', label: 'No Warnings' },
+      ],
     },
     {
       type: 'select',
@@ -262,220 +269,274 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
       label: 'Review Notes',
       options: [
         { value: 'true', label: 'Has Review Notes' },
-        { value: 'false', label: 'No Review Notes' }
-      ]
+        { value: 'false', label: 'No Review Notes' },
+      ],
     },
     {
       type: 'daterange',
       key: 'submittedDateRange',
-      label: 'Submitted Date Range'
+      label: 'Submitted Date Range',
     },
     {
       type: 'daterange',
       key: 'updatedDateRange',
-      label: 'Last Updated Range'
-    }
-  ]
+      label: 'Last Updated Range',
+    },
+  ];
 
   const resetAdvancedFilters = () => {
     setAdvancedFilters({
-      query: "",
-      category: "all",
-      status: "all",
-      reviewStatus: "all",
-      isOpenSource: "all",
-      hasWarnings: "all",
+      query: '',
+      category: 'all',
+      status: 'all',
+      reviewStatus: 'all',
+      isOpenSource: 'all',
+      hasWarnings: 'all',
       submittedDateRange: {},
       updatedDateRange: {},
-      hasReviewNotes: "all"
-    })
-    setSearchQuery("")
-  }
+      hasReviewNotes: 'all',
+    });
+    setSearchQuery('');
+  };
 
   // Apply filters to submissions
   const filteredSubmissions = submissions.filter((submission) => {
     // Text search
-    if (advancedFilters.query && typeof advancedFilters.query === 'string' && advancedFilters.query.trim()) {
-      const query = advancedFilters.query.toLowerCase()
+    if (
+      advancedFilters.query &&
+      typeof advancedFilters.query === 'string' &&
+      advancedFilters.query.trim()
+    ) {
+      const query = advancedFilters.query.toLowerCase();
       if (!(
         submission.name.toLowerCase().includes(query) ||
         submission.author.toLowerCase().includes(query) ||
         submission.description.toLowerCase().includes(query) ||
         submission.shortDescription.toLowerCase().includes(query)
       )) {
-        return false
+        return false;
       }
     }
 
     // Category filter
-    if (advancedFilters.category && typeof advancedFilters.category === 'string' && advancedFilters.category !== 'all') {
+    if (
+      advancedFilters.category &&
+      typeof advancedFilters.category === 'string' &&
+      advancedFilters.category !== 'all'
+    ) {
       if (submission.category !== advancedFilters.category) {
-        return false
+        return false;
       }
     }
 
     // Status filter
-    if (advancedFilters.status && typeof advancedFilters.status === 'string' && advancedFilters.status !== 'all') {
-      const rejectedNote = submission.reviewNotes?.find(n => n.type === "rejected")
-      const changesNote = submission.reviewNotes?.find(n => n.type === "changes-requested")
-      const hasBeenRejectedOrChanges = rejectedNote || changesNote
-      
-      if (advancedFilters.status === 'approved' && !(submission.status === "approved" || submission.isPublished)) {
-        return false
+    if (
+      advancedFilters.status &&
+      typeof advancedFilters.status === 'string' &&
+      advancedFilters.status !== 'all'
+    ) {
+      const rejectedNote = submission.reviewNotes?.find((n) => n.type === 'rejected');
+      const changesNote = submission.reviewNotes?.find((n) => n.type === 'changes-requested');
+      const hasBeenRejectedOrChanges = rejectedNote || changesNote;
+
+      if (
+        advancedFilters.status === 'approved' &&
+        !(submission.status === 'approved' || submission.isPublished)
+      ) {
+        return false;
       }
-      if (advancedFilters.status === 'pending' && !(submission.status === "pending" && !hasBeenRejectedOrChanges)) {
-        return false
+      if (
+        advancedFilters.status === 'pending' &&
+        !(submission.status === 'pending' && !hasBeenRejectedOrChanges)
+      ) {
+        return false;
       }
-      if (advancedFilters.status === 'declined' && !(submission.status === "declined" || rejectedNote)) {
-        return false
+      if (
+        advancedFilters.status === 'declined' &&
+        !(submission.status === 'declined' || rejectedNote)
+      ) {
+        return false;
       }
-      if (advancedFilters.status === 'rereviewing' && !(submission.status === "pending" && hasBeenRejectedOrChanges)) {
-        return false
+      if (
+        advancedFilters.status === 'rereviewing' &&
+        !(submission.status === 'pending' && hasBeenRejectedOrChanges)
+      ) {
+        return false;
       }
       if (advancedFilters.status === 'changes-requested' && !changesNote) {
-        return false
+        return false;
       }
     }
 
     // Review Status filter
-    if (advancedFilters.reviewStatus && typeof advancedFilters.reviewStatus === 'string' && advancedFilters.reviewStatus !== 'all') {
-      const rejectedNote = submission.reviewNotes?.find(n => n.type === "rejected")
-      const changesNote = submission.reviewNotes?.find(n => n.type === "changes-requested")
-      const hasBeenRejectedOrChanges = rejectedNote || changesNote
+    if (
+      advancedFilters.reviewStatus &&
+      typeof advancedFilters.reviewStatus === 'string' &&
+      advancedFilters.reviewStatus !== 'all'
+    ) {
+      const rejectedNote = submission.reviewNotes?.find((n) => n.type === 'rejected');
+      const changesNote = submission.reviewNotes?.find((n) => n.type === 'changes-requested');
+      const hasBeenRejectedOrChanges = rejectedNote || changesNote;
 
-      if (advancedFilters.reviewStatus === 'accepted' && !(submission.status === "approved" || submission.isPublished)) {
-        return false
+      if (
+        advancedFilters.reviewStatus === 'accepted' &&
+        !(submission.status === 'approved' || submission.isPublished)
+      ) {
+        return false;
       }
-      if (advancedFilters.reviewStatus === 'reviewing' && !(submission.status === "pending" && !hasBeenRejectedOrChanges)) {
-        return false
+      if (
+        advancedFilters.reviewStatus === 'reviewing' &&
+        !(submission.status === 'pending' && !hasBeenRejectedOrChanges)
+      ) {
+        return false;
       }
-      if (advancedFilters.reviewStatus === 'rereviewing' && !(submission.status === "pending" && hasBeenRejectedOrChanges)) {
-        return false
+      if (
+        advancedFilters.reviewStatus === 'rereviewing' &&
+        !(submission.status === 'pending' && hasBeenRejectedOrChanges)
+      ) {
+        return false;
       }
-      if (advancedFilters.reviewStatus === 'denied' && !(submission.status === "declined" || rejectedNote)) {
-        return false
+      if (
+        advancedFilters.reviewStatus === 'denied' &&
+        !(submission.status === 'declined' || rejectedNote)
+      ) {
+        return false;
       }
       if (advancedFilters.reviewStatus === 'changes-requested' && !changesNote) {
-        return false
+        return false;
       }
     }
 
     // Open source filter
-    if (advancedFilters.isOpenSource && typeof advancedFilters.isOpenSource === 'string' && advancedFilters.isOpenSource !== 'all') {
+    if (
+      advancedFilters.isOpenSource &&
+      typeof advancedFilters.isOpenSource === 'string' &&
+      advancedFilters.isOpenSource !== 'all'
+    ) {
       if (advancedFilters.isOpenSource === 'true' && !submission.isOpenSource) {
-        return false
+        return false;
       }
       if (advancedFilters.isOpenSource === 'false' && submission.isOpenSource) {
-        return false
+        return false;
       }
     }
 
     // Warnings filter
-    if (advancedFilters.hasWarnings && typeof advancedFilters.hasWarnings === 'string' && advancedFilters.hasWarnings !== 'all') {
-      const hasWarnings = submission.warnings && submission.warnings.length > 0
+    if (
+      advancedFilters.hasWarnings &&
+      typeof advancedFilters.hasWarnings === 'string' &&
+      advancedFilters.hasWarnings !== 'all'
+    ) {
+      const hasWarnings = submission.warnings && submission.warnings.length > 0;
       if (advancedFilters.hasWarnings === 'true' && !hasWarnings) {
-        return false
+        return false;
       }
       if (advancedFilters.hasWarnings === 'false' && hasWarnings) {
-        return false
+        return false;
       }
     }
 
     // Review notes filter
-    if (advancedFilters.hasReviewNotes && typeof advancedFilters.hasReviewNotes === 'string' && advancedFilters.hasReviewNotes !== 'all') {
-      const hasReviewNotes = submission.reviewNotes && submission.reviewNotes.length > 0
+    if (
+      advancedFilters.hasReviewNotes &&
+      typeof advancedFilters.hasReviewNotes === 'string' &&
+      advancedFilters.hasReviewNotes !== 'all'
+    ) {
+      const hasReviewNotes = submission.reviewNotes && submission.reviewNotes.length > 0;
       if (advancedFilters.hasReviewNotes === 'true' && !hasReviewNotes) {
-        return false
+        return false;
       }
       if (advancedFilters.hasReviewNotes === 'false' && hasReviewNotes) {
-        return false
+        return false;
       }
     }
 
     // Date range filters
-    const submittedDateRange = advancedFilters.submittedDateRange as { from?: string; to?: string } | undefined
+    const submittedDateRange = advancedFilters.submittedDateRange as
+      { from?: string; to?: string } | undefined;
     if (submittedDateRange?.from || submittedDateRange?.to) {
-      const submittedDate = new Date(submission.createdAt)
+      const submittedDate = new Date(submission.createdAt);
       if (submittedDateRange.from) {
-        const fromDate = new Date(submittedDateRange.from)
+        const fromDate = new Date(submittedDateRange.from);
         if (submittedDate < fromDate) {
-          return false
+          return false;
         }
       }
       if (submittedDateRange.to) {
-        const toDate = new Date(submittedDateRange.to)
+        const toDate = new Date(submittedDateRange.to);
         if (submittedDate > toDate) {
-          return false
+          return false;
         }
       }
     }
 
-    const updatedDateRange = advancedFilters.updatedDateRange as { from?: string; to?: string } | undefined
+    const updatedDateRange = advancedFilters.updatedDateRange as
+      { from?: string; to?: string } | undefined;
     if (updatedDateRange?.from || updatedDateRange?.to) {
-      const updatedDate = new Date(submission.updatedAt)
+      const updatedDate = new Date(submission.updatedAt);
       if (updatedDateRange.from) {
-        const fromDate = new Date(updatedDateRange.from)
+        const fromDate = new Date(updatedDateRange.from);
         if (updatedDate < fromDate) {
-          return false
+          return false;
         }
       }
       if (updatedDateRange.to) {
-        const toDate = new Date(updatedDateRange.to)
+        const toDate = new Date(updatedDateRange.to);
         if (updatedDate > toDate) {
-          return false
+          return false;
         }
       }
     }
 
-    return true
-  })
+    return true;
+  });
 
   const getStatusBadge = (submission: Submission) => {
-    const rejectedNote = submission.reviewNotes?.find(n => n.type === "rejected")
-    const changesNote = submission.reviewNotes?.find(n => n.type === "changes-requested")
-    const hasBeenRejectedOrChanges = rejectedNote || changesNote
+    const rejectedNote = submission.reviewNotes?.find((n) => n.type === 'rejected');
+    const changesNote = submission.reviewNotes?.find((n) => n.type === 'changes-requested');
+    const hasBeenRejectedOrChanges = rejectedNote || changesNote;
 
-    if (submission.status === "approved" || submission.isPublished) {
+    if (submission.status === 'approved' || submission.isPublished) {
       return (
         <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
           <CheckCircle />
           Approved
         </Badge>
-      )
-    } else if (submission.status === "pending" && hasBeenRejectedOrChanges) {
+      );
+    } else if (submission.status === 'pending' && hasBeenRejectedOrChanges) {
       return (
         <Badge className="bg-purple-500/10 text-purple-500 border-purple-500/20">
           <Clock />
           Rereviewing
         </Badge>
-      )
-    } else if (submission.status === "declined" || rejectedNote) {
+      );
+    } else if (submission.status === 'declined' || rejectedNote) {
       return (
         <Badge className="bg-red-500/10 text-red-500 border-red-500/20">
           <XCircle />
           Rejected
         </Badge>
-      )
+      );
     } else if (changesNote) {
       return (
         <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
           <AlertTriangle />
           Changes Requested
         </Badge>
-      )
+      );
     } else {
       return (
         <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">
           <Clock />
           Pending Review
         </Badge>
-      )
+      );
     }
-  }
+  };
 
   if (!userId) {
-    router.push("/")
-    return null
+    router.push('/');
+    return null;
   }
 
   if (loading) {
@@ -491,7 +552,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           </CardHeader>
         </Card>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -512,14 +573,16 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Submissions</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Manage and track your submitted modules</p>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Manage and track your submitted modules
+        </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -541,7 +604,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {submissions.filter(s => s.status === "approved" || s.isPublished).length}
+              {submissions.filter((s) => s.status === 'approved' || s.isPublished).length}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">Published modules</p>
           </CardContent>
@@ -554,7 +617,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {submissions.filter(s => s.status === "pending").length}
+              {submissions.filter((s) => s.status === 'pending').length}
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">Awaiting review</p>
           </CardContent>
@@ -567,10 +630,15 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-xl sm:text-2xl font-bold">
-              {submissions.filter(s =>
-                s.status === "declined" ||
-                s.reviewNotes?.some(n => n.type === "rejected" || n.type === "changes-requested")
-              ).length}
+              {
+                submissions.filter(
+                  (s) =>
+                    s.status === 'declined' ||
+                    s.reviewNotes?.some(
+                      (n) => n.type === 'rejected' || n.type === 'changes-requested',
+                    ),
+                ).length
+              }
             </div>
             <p className="text-xs text-muted-foreground hidden sm:block">Requires action</p>
           </CardContent>
@@ -584,8 +652,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
             placeholder="Search submissions..."
             value={searchQuery}
             onChange={(e) => {
-              setSearchQuery(e.target.value)
-              setAdvancedFilters(prev => ({ ...prev, query: e.target.value }))
+              setSearchQuery(e.target.value);
+              setAdvancedFilters((prev) => ({ ...prev, query: e.target.value }));
             }}
             className="pl-10"
           />
@@ -604,10 +672,9 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
             <div>
               <CardTitle className="text-lg">Your Submissions</CardTitle>
               <CardDescription>
-                {filteredSubmissions.length === submissions.length 
+                {filteredSubmissions.length === submissions.length
                   ? `Showing all ${submissions.length} submission${submissions.length !== 1 ? 's' : ''}`
-                  : `Showing ${filteredSubmissions.length} of ${submissions.length} submission${submissions.length !== 1 ? 's' : ''}`
-                }
+                  : `Showing ${filteredSubmissions.length} of ${submissions.length} submission${submissions.length !== 1 ? 's' : ''}`}
               </CardDescription>
             </div>
           </div>
@@ -620,9 +687,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
               <p className="text-muted-foreground mb-4">
                 You haven&apos;t submitted any modules yet.
               </p>
-              <Button onClick={() => router.push("/submit")}>
-                Submit Your First Module
-              </Button>
+              <Button onClick={() => router.push('/submit')}>Submit Your First Module</Button>
             </div>
           ) : filteredSubmissions.length === 0 ? (
             <div className="text-center py-12">
@@ -649,8 +714,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                             alt={submission.name}
                             className="w-16 h-16 rounded-lg object-cover"
                             onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
                             }}
                           />
                         )}
@@ -661,7 +726,10 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                           </CardDescription>
                           <div className="flex items-center gap-2 flex-wrap">
                             {getStatusBadge(submission)}
-                            <Badge variant="outline">{MODULE_CATEGORIES.find(cat => cat.id === submission.category)?.shortLabel || submission.category}</Badge>
+                            <Badge variant="outline">
+                              {MODULE_CATEGORIES.find((cat) => cat.id === submission.category)
+                                ?.shortLabel || submission.category}
+                            </Badge>
                             {submission.isOpenSource && (
                               <Badge variant="outline" className="text-green-600">
                                 Open Source
@@ -684,14 +752,20 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                       </div>
                     </div>
 
-                    {(submission.reviewNotes?.some(n => n.type === "rejected" || n.type === "changes-requested")) && (
+                    {submission.reviewNotes?.some(
+                      (n) => n.type === 'rejected' || n.type === 'changes-requested',
+                    ) && (
                       <Alert className="mb-4">
                         <MessageSquare className="h-4 w-4" />
                         <AlertDescription>
                           <strong>Review Notes:</strong>
-                          {submission.reviewNotes?.filter(n => n.type === "rejected" || n.type === "changes-requested").map((note, index) => (
-                            <p key={index} className="mt-1 whitespace-pre-wrap">{note.message}</p>
-                          ))}
+                          {submission.reviewNotes
+                            ?.filter((n) => n.type === 'rejected' || n.type === 'changes-requested')
+                            .map((note, index) => (
+                              <p key={index} className="mt-1 whitespace-pre-wrap">
+                                {note.message}
+                              </p>
+                            ))}
                         </AlertDescription>
                       </Alert>
                     )}
@@ -716,7 +790,11 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                         <Edit className="h-4 w-4" />
                         Edit
                       </Button>
-                      {(submission.status === "declined" || (submission.status !== "pending" && submission.reviewNotes?.some(n => n.type === "rejected" || n.type === "changes-requested"))) && (
+                      {(submission.status === 'declined' ||
+                        (submission.status !== 'pending' &&
+                          submission.reviewNotes?.some(
+                            (n) => n.type === 'rejected' || n.type === 'changes-requested',
+                          ))) && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -746,7 +824,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                 <div>
                   <h4 className="font-semibold mb-2">Description</h4>
                   <div className="text-sm text-muted-foreground [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-3 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                    <ReactMarkdown 
+                    <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeRaw, rehypeSanitize]}
                     >
@@ -764,7 +842,10 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Category</h4>
-                    <p className="text-sm text-muted-foreground">{MODULE_CATEGORIES.find(cat => cat.id === selectedSubmission.category)?.shortLabel || selectedSubmission.category}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {MODULE_CATEGORIES.find((cat) => cat.id === selectedSubmission.category)
+                        ?.shortLabel || selectedSubmission.category}
+                    </p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">License</h4>
@@ -837,8 +918,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                             alt={`Screenshot ${index + 1}`}
                             className="rounded-lg border"
                             onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
                             }}
                           />
                         ))}
@@ -866,7 +947,8 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
           <DialogHeader>
             <DialogTitle>Resubmit for Review</DialogTitle>
             <DialogDescription>
-              Are you sure you want to resubmit &quot;{resubmittingSubmission?.name}&quot; for review?
+              Are you sure you want to resubmit &quot;{resubmittingSubmission?.name}&quot; for
+              review?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 my-4">
@@ -879,14 +961,23 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                 <li>• Verified all provided links and information</li>
               </ul>
             </div>
-            {resubmittingSubmission?.reviewNotes?.some(n => n.type === "rejected" || n.type === "changes-requested") && (
+            {resubmittingSubmission?.reviewNotes?.some(
+              (n) => n.type === 'rejected' || n.type === 'changes-requested',
+            ) && (
               <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                <h4 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">Previous Review Notes:</h4>
-                {resubmittingSubmission.reviewNotes?.filter(n => n.type === "rejected" || n.type === "changes-requested").map((note, index) => (
-                  <p key={index} className="text-sm text-yellow-700 dark:text-yellow-400 whitespace-pre-wrap mb-2">
-                    {note.message}
-                  </p>
-                ))}
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">
+                  Previous Review Notes:
+                </h4>
+                {resubmittingSubmission.reviewNotes
+                  ?.filter((n) => n.type === 'rejected' || n.type === 'changes-requested')
+                  .map((note, index) => (
+                    <p
+                      key={index}
+                      className="text-sm text-yellow-700 dark:text-yellow-400 whitespace-pre-wrap mb-2"
+                    >
+                      {note.message}
+                    </p>
+                  ))}
               </div>
             )}
 
@@ -897,17 +988,17 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                   ref={turnstileRef}
                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
                   onSuccess={(token) => {
-                    setTurnstileToken(token)
-                    setResubmitError(null)
+                    setTurnstileToken(token);
+                    setResubmitError(null);
                   }}
                   onError={(error) => {
-                    console.error("Turnstile error:", error)
-                    setTurnstileToken(null)
-                    setResubmitError("Captcha verification failed. Please try again.")
+                    console.error('Turnstile error:', error);
+                    setTurnstileToken(null);
+                    setResubmitError('Captcha verification failed. Please try again.');
                   }}
                   onExpire={() => {
-                    setTurnstileToken(null)
-                    setResubmitError("Captcha has expired. Please verify again.")
+                    setTurnstileToken(null);
+                    setResubmitError('Captcha has expired. Please verify again.');
                   }}
                   theme="auto"
                   size="normal"
@@ -921,7 +1012,7 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
                 </Alert>
               )}
             </div>
-            
+
             {resubmitError && (
               <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
@@ -936,25 +1027,30 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
             </div>
           ) : (
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setResubmittingSubmission(null)
-                setTurnstileToken(null)
-                setResubmitError(null)
-                turnstileRef.current?.reset()
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setResubmittingSubmission(null);
+                  setTurnstileToken(null);
+                  setResubmitError(null);
+                  turnstileRef.current?.reset();
+                }}
+              >
                 Cancel
               </Button>
               <Button
-                onClick={() => resubmittingSubmission && handleResubmitForReview(resubmittingSubmission)}
+                onClick={() =>
+                  resubmittingSubmission && handleResubmitForReview(resubmittingSubmission)
+                }
                 disabled={!turnstileToken || isResubmitting}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {isResubmitting ? "Resubmitting..." : "Confirm Resubmission"}
+                {isResubmitting ? 'Resubmitting...' : 'Confirm Resubmission'}
               </Button>
             </DialogFooter>
           )}
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

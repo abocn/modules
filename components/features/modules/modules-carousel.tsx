@@ -1,59 +1,59 @@
-"use client"
+'use client';
 
-import type { Module } from "@/types/module"
-import { ModuleCard } from "@/components/features/modules/module-card"
+import type { Module } from '@/types/module';
+import { ModuleCard } from '@/components/features/modules/module-card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
-import { useState, useEffect } from "react"
+} from '@/components/ui/carousel';
+import { useState, useEffect } from 'react';
 
 interface ModulesCarouselProps {
-  modules: Module[]
-  onModuleSelect: (module: Module) => void
+  modules: Module[];
+  onModuleSelect: (module: Module) => void;
 }
 
 export function ModulesCarousel({ modules, onModuleSelect }: ModulesCarouselProps) {
-  const [slidesToShow, setSlidesToShow] = useState(4)
+  const [slidesToShow, setSlidesToShow] = useState(4);
 
   useEffect(() => {
     const updateSlidesToShow = () => {
-      const width = window.innerWidth
+      const width = window.innerWidth;
       if (width < 640) {
-        setSlidesToShow(1)
+        setSlidesToShow(1);
       } else if (width < 768) {
-        setSlidesToShow(2)
+        setSlidesToShow(2);
       } else if (width < 1024) {
-        setSlidesToShow(1)
+        setSlidesToShow(1);
       } else if (width < 1280) {
-        setSlidesToShow(3)
+        setSlidesToShow(3);
       } else {
-        setSlidesToShow(4)
+        setSlidesToShow(4);
       }
-    }
+    };
 
-    updateSlidesToShow()
-    window.addEventListener('resize', updateSlidesToShow)
-    return () => window.removeEventListener('resize', updateSlidesToShow)
-  }, [])
+    updateSlidesToShow();
+    window.addEventListener('resize', updateSlidesToShow);
+    return () => window.removeEventListener('resize', updateSlidesToShow);
+  }, []);
 
   if (modules.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">No modules available</p>
       </div>
-    )
+    );
   }
 
-  const showNavigation = modules.length > slidesToShow
+  const showNavigation = modules.length > slidesToShow;
 
   return (
     <Carousel
       opts={{
-        align: "start",
+        align: 'start',
         loop: false,
       }}
       className="w-full relative"
@@ -75,5 +75,5 @@ export function ModulesCarousel({ modules, onModuleSelect }: ModulesCarouselProp
         </>
       )}
     </Carousel>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import { LICENSES } from "@/lib/validations/module"
+import { LICENSES } from '@/lib/validations/module';
 
 /**
  * @constant LICENSE_LABELS
@@ -6,26 +6,26 @@ import { LICENSES } from "@/lib/validations/module"
  * @type {Record<string, string>}
  */
 export const LICENSE_LABELS: Record<string, string> = {
-  "MIT": "MIT License",
-  "Apache-2.0": "Apache License 2.0",
-  "GPL-3.0": "GNU GPL v3.0",
-  "GPL-2.0": "GNU GPL v2.0",
-  "LGPL-3.0": "GNU LGPL v3.0",
-  "LGPL-2.1": "GNU LGPL v2.1",
-  "BSD-3-Clause": "BSD 3-Clause License",
-  "BSD-2-Clause": "BSD 2-Clause License",
-  "MPL-2.0": "Mozilla Public License 2.0",
-  "ISC": "ISC License",
-  "CC0-1.0": "Creative Commons CC0 1.0",
-  "CC-BY-4.0": "Creative Commons Attribution 4.0",
-  "CC-BY-SA-4.0": "Creative Commons Attribution-ShareAlike 4.0",
-  "AGPL-3.0": "GNU Affero GPL v3.0",
-  "Unlicense": "The Unlicense",
-  "WTFPL": "Do What The F*ck You Want To Public License",
-  "Proprietary": "Proprietary License",
-  "Custom": "Custom License",
-  "Other": "Other License"
-}
+  MIT: 'MIT License',
+  'Apache-2.0': 'Apache License 2.0',
+  'GPL-3.0': 'GNU GPL v3.0',
+  'GPL-2.0': 'GNU GPL v2.0',
+  'LGPL-3.0': 'GNU LGPL v3.0',
+  'LGPL-2.1': 'GNU LGPL v2.1',
+  'BSD-3-Clause': 'BSD 3-Clause License',
+  'BSD-2-Clause': 'BSD 2-Clause License',
+  'MPL-2.0': 'Mozilla Public License 2.0',
+  ISC: 'ISC License',
+  'CC0-1.0': 'Creative Commons CC0 1.0',
+  'CC-BY-4.0': 'Creative Commons Attribution 4.0',
+  'CC-BY-SA-4.0': 'Creative Commons Attribution-ShareAlike 4.0',
+  'AGPL-3.0': 'GNU Affero GPL v3.0',
+  Unlicense: 'The Unlicense',
+  WTFPL: 'Do What The F*ck You Want To Public License',
+  Proprietary: 'Proprietary License',
+  Custom: 'Custom License',
+  Other: 'Other License',
+};
 
 /**
  * @function getLicenseLabel
@@ -40,8 +40,8 @@ export const LICENSE_LABELS: Record<string, string> = {
  * ```
  */
 export const getLicenseLabel = (license: string): string => {
-  return LICENSE_LABELS[license] || license
-}
+  return LICENSE_LABELS[license] || license;
+};
 
 /**
  * @interface LicenseOption
@@ -50,8 +50,8 @@ export const getLicenseLabel = (license: string): string => {
  * @property {string} label - The human-readable label
  */
 export interface LicenseOption {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 /**
@@ -66,11 +66,11 @@ export interface LicenseOption {
  * ```
  */
 export const getLicenseOptions = (): LicenseOption[] => {
-  return LICENSES.map(license => ({
+  return LICENSES.map((license) => ({
     value: license,
-    label: getLicenseLabel(license)
-  }))
-}
+    label: getLicenseLabel(license),
+  }));
+};
 
 /**
  * @function getLicenseOptionsWithAll
@@ -84,11 +84,8 @@ export const getLicenseOptions = (): LicenseOption[] => {
  * ```
  */
 export const getLicenseOptionsWithAll = (): LicenseOption[] => {
-  return [
-    { value: "all", label: "All Licenses" },
-    ...getLicenseOptions()
-  ]
-}
+  return [{ value: 'all', label: 'All Licenses' }, ...getLicenseOptions()];
+};
 
 /**
  * @function formatCustomLicense
@@ -103,5 +100,5 @@ export const getLicenseOptionsWithAll = (): LicenseOption[] => {
  * ```
  */
 export const formatCustomLicense = (customValue: string): string => {
-  return customValue.trim() ? `Custom: ${customValue.trim()}` : "Custom License"
-}
+  return customValue.trim() ? `Custom: ${customValue.trim()}` : 'Custom License';
+};

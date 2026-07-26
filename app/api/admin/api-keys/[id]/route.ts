@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server"
-import { db } from "@/db"
-import { apiKeys, adminActions, user as userTable } from "@/db/schema"
-import { eq } from "drizzle-orm"
-import { withAdminAuth } from "@/lib/middleware/admin-auth"
-import { withErrorHandling } from "@/lib/middleware/error-handler"
+import { NextResponse } from 'next/server';
+import { db } from '@/db';
+import { apiKeys, adminActions, user as userTable } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { withAdminAuth } from '@/lib/middleware/admin-auth';
+import { withErrorHandling } from '@/lib/middleware/error-handler';
 
 /**
  * Get API key details
@@ -36,53 +36,46 @@ import { withErrorHandling } from "@/lib/middleware/error-handler"
  * }
  * @openapi
  */
-export const GET = withErrorHandling(withAdminAuth(async (_request, context) => {
-  const { id } = await context.params as { id: string }
+export const GET = withErrorHandling(
+  withAdminAuth(async (_request, context) => {
+    const { id } = (await context.params) as { id: string };
 
-  if (!id) {
-    return NextResponse.json(
-      { error: "API key ID is required" },
-      { status: 400 }
-    )
-  }
-
-  try {
-    const keyDetails = await db
-      .select({
-        id: apiKeys.id,
-        name: apiKeys.name,
-        keyPrefix: apiKeys.keyPrefix,
-        scopes: apiKeys.scopes,
-        lastUsedAt: apiKeys.lastUsedAt,
-        lastUsedIp: apiKeys.lastUsedIp,
-        expiresAt: apiKeys.expiresAt,
-        revokedAt: apiKeys.revokedAt,
-        createdAt: apiKeys.createdAt,
-        userId: apiKeys.userId,
-        userName: userTable.name,
-        userEmail: userTable.email,
-      })
-      .from(apiKeys)
-      .leftJoin(userTable, eq(apiKeys.userId, userTable.id))
-      .where(eq(apiKeys.id, id))
-      .limit(1)
-
-    if (!keyDetails.length) {
-      return NextResponse.json(
-        { error: "API key not found" },
-        { status: 404 }
-      )
+    if (!id) {
+      return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });
     }
 
-    return NextResponse.json({ key: keyDetails[0] })
-  } catch (error) {
-    console.error("Failed to fetch API key details:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch API key details" },
-      { status: 500 }
-    )
-  }
-}))
+    try {
+      const keyDetails = await db
+        .select({
+          id: apiKeys.id,
+          name: apiKeys.name,
+          keyPrefix: apiKeys.keyPrefix,
+          scopes: apiKeys.scopes,
+          lastUsedAt: apiKeys.lastUsedAt,
+          lastUsedIp: apiKeys.lastUsedIp,
+          expiresAt: apiKeys.expiresAt,
+          revokedAt: apiKeys.revokedAt,
+          createdAt: apiKeys.createdAt,
+          userId: apiKeys.userId,
+          userName: userTable.name,
+          userEmail: userTable.email,
+        })
+        .from(apiKeys)
+        .leftJoin(userTable, eq(apiKeys.userId, userTable.id))
+        .where(eq(apiKeys.id, id))
+        .limit(1);
+
+      if (!keyDetails.length) {
+        return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ key: keyDetails[0] });
+    } catch (error) {
+      console.error('Failed to fetch API key details:', error);
+      return NextResponse.json({ error: 'Failed to fetch API key details' }, { status: 500 });
+    }
+  }),
+);
 
 /**
  * Revoke an API key
@@ -108,67 +101,60 @@ export const GET = withErrorHandling(withAdminAuth(async (_request, context) => 
  * }
  * @openapi
  */
-export const DELETE = withErrorHandling(withAdminAuth(async (_request, context, user) => {
-  const { id } = await context.params as { id: string }
-  
-  if (!id) {
-    return NextResponse.json(
-      { error: "API key ID is required" },
-      { status: 400 }
-    )
-  }
+export const DELETE = withErrorHandling(
+  withAdminAuth(async (_request, context, user) => {
+    const { id } = (await context.params) as { id: string };
 
-  try {
-    const key = await db
-      .select({
-        id: apiKeys.id,
-        name: apiKeys.name,
-        userId: apiKeys.userId,
-        keyPrefix: apiKeys.keyPrefix,
-      })
-      .from(apiKeys)
-      .where(eq(apiKeys.id, id))
-      .limit(1)
-
-    if (!key.length) {
-      return NextResponse.json(
-        { error: "API key not found" },
-        { status: 404 }
-      )
+    if (!id) {
+      return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });
     }
 
-    await db
-      .update(apiKeys)
-      .set({
-        revokedAt: new Date(),
-        revokedBy: user.id,
-        updatedAt: new Date(),
-      })
-      .where(eq(apiKeys.id, id))
+    try {
+      const key = await db
+        .select({
+          id: apiKeys.id,
+          name: apiKeys.name,
+          userId: apiKeys.userId,
+          keyPrefix: apiKeys.keyPrefix,
+        })
+        .from(apiKeys)
+        .where(eq(apiKeys.id, id))
+        .limit(1);
 
-    await db.insert(adminActions).values({
-      adminId: user.id,
-      action: "revoke_api_key",
-      details: `Revoked API key "${key[0].name}" (${key[0].keyPrefix}...) for user ${key[0].userId}`,
-      targetType: "api_key",
-      targetId: id,
-      oldValues: { status: "active" },
-      newValues: { status: "revoked" },
-    })
-
-    return NextResponse.json({
-      message: "API key revoked successfully",
-      revokedKey: {
-        id: key[0].id,
-        name: key[0].name,
-        keyPrefix: key[0].keyPrefix,
+      if (!key.length) {
+        return NextResponse.json({ error: 'API key not found' }, { status: 404 });
       }
-    })
-  } catch (error) {
-    console.error("Failed to revoke API key:", error)
-    return NextResponse.json(
-      { error: "Failed to revoke API key" },
-      { status: 500 }
-    )
-  }
-}))
+
+      await db
+        .update(apiKeys)
+        .set({
+          revokedAt: new Date(),
+          revokedBy: user.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(apiKeys.id, id));
+
+      await db.insert(adminActions).values({
+        adminId: user.id,
+        action: 'revoke_api_key',
+        details: `Revoked API key "${key[0].name}" (${key[0].keyPrefix}...) for user ${key[0].userId}`,
+        targetType: 'api_key',
+        targetId: id,
+        oldValues: { status: 'active' },
+        newValues: { status: 'revoked' },
+      });
+
+      return NextResponse.json({
+        message: 'API key revoked successfully',
+        revokedKey: {
+          id: key[0].id,
+          name: key[0].name,
+          keyPrefix: key[0].keyPrefix,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to revoke API key:', error);
+      return NextResponse.json({ error: 'Failed to revoke API key' }, { status: 500 });
+    }
+  }),
+);

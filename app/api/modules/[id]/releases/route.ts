@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getModuleReleases, getLatestRelease } from '@/lib/db-utils'
+import { NextRequest, NextResponse } from 'next/server';
+import { getModuleReleases, getLatestRelease } from '@/lib/db-utils';
 
 /**
  * Get module releases
@@ -36,33 +36,24 @@ import { getModuleReleases, getLatestRelease } from '@/lib/db-utils'
  * }
  * @openapi
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const { searchParams } = new URL(request.url)
-    const latest = searchParams.get('latest')
+    const { searchParams } = new URL(request.url);
+    const latest = searchParams.get('latest');
 
     if (latest === 'true') {
-      const release = await getLatestRelease(id)
+      const release = await getLatestRelease(id);
       if (!release) {
-        return NextResponse.json(
-          { error: 'No releases found' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'No releases found' }, { status: 404 });
       }
-      return NextResponse.json({ release })
+      return NextResponse.json({ release });
     } else {
-      const releases = await getModuleReleases(id)
-      return NextResponse.json({ releases })
+      const releases = await getModuleReleases(id);
+      return NextResponse.json({ releases });
     }
   } catch (error) {
-    console.error('[! /api/modules/[id]/releases] Error fetching releases:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch releases' },
-      { status: 500 }
-    )
+    console.error('[! /api/modules/[id]/releases] Error fetching releases:', error);
+    return NextResponse.json({ error: 'Failed to fetch releases' }, { status: 500 });
   }
 }

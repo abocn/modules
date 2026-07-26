@@ -1,40 +1,46 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Filter, ChevronDown, ChevronUp } from "lucide-react"
-import { ModuleCardSkeleton } from "@/components/features/modules/skeletons/module-card-skeleton"
+import { useState, useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { ModuleCardSkeleton } from '@/components/features/modules/skeletons/module-card-skeleton';
 
 export function AdvancedSearchSkeleton() {
-  const [showFilters, setShowFilters] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [showFilters, setShowFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     categories: true,
     rootMethods: true,
     androidVersions: false,
     preferences: false,
     status: false,
-    additional: false
-  })
+    additional: false,
+  });
 
   useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 768)
-    checkIsMobile()
-    window.addEventListener('resize', checkIsMobile)
-    return () => window.removeEventListener('resize', checkIsMobile)
-  }, [])
+    const checkIsMobile = () => setIsMobile(window.innerWidth < 768);
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
-    }))
-  }
+      [section]: !prev[section],
+    }));
+  };
 
-  const FilterSectionSkeleton = ({ section, itemCount = 4 }: { section: string; itemCount?: number }) => {
-    const isExpanded = expandedSections[section]
+  const FilterSectionSkeleton = ({
+    section,
+    itemCount = 4,
+  }: {
+    section: string;
+    itemCount?: number;
+  }) => {
+    const isExpanded = expandedSections[section];
     return (
       <div className="space-y-3">
         <button
@@ -56,11 +62,11 @@ export function AdvancedSearchSkeleton() {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   const FilterSectionWithSliderSkeleton = ({ section }: { section: string }) => {
-    const isExpanded = expandedSections[section]
+    const isExpanded = expandedSections[section];
     return (
       <div className="space-y-3">
         <button
@@ -92,26 +98,31 @@ export function AdvancedSearchSkeleton() {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex relative">
-      <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out ${
-        showFilters && isMobile ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`} onClick={() => setShowFilters(false)} />
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out ${
+          showFilters && isMobile ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setShowFilters(false)}
+      />
 
-      <div className={`${
-        isMobile
-          ? `fixed inset-y-0 left-0 w-80 bg-background border-r z-50 shadow-lg transform transition-transform duration-300 ease-in-out ${
-              showFilters ? "translate-x-0" : "-translate-x-full"
-            }`
-          : `transition-all duration-300 ease-in-out ${
-              showFilters
-                ? "w-80 border-r bg-muted/30 opacity-100"
-                : "w-0 border-r-0 opacity-0 overflow-hidden"
-            }`
-      }`}>
+      <div
+        className={`${
+          isMobile
+            ? `fixed inset-y-0 left-0 w-80 bg-background border-r z-50 shadow-lg transform transition-transform duration-300 ease-in-out ${
+                showFilters ? 'translate-x-0' : '-translate-x-full'
+              }`
+            : `transition-all duration-300 ease-in-out ${
+                showFilters
+                  ? 'w-80 border-r bg-muted/30 opacity-100'
+                  : 'w-0 border-r-0 opacity-0 overflow-hidden'
+              }`
+        }`}
+      >
         {isMobile && showFilters && (
           <div className="flex items-center justify-between p-4 border-b">
             <Skeleton className="h-5 w-16" />
@@ -119,7 +130,9 @@ export function AdvancedSearchSkeleton() {
           </div>
         )}
 
-        <div className={`${isMobile ? "h-[calc(100vh-4rem)]" : "h-[calc(100vh-3.5rem)]"} overflow-auto`}>
+        <div
+          className={`${isMobile ? 'h-[calc(100vh-4rem)]' : 'h-[calc(100vh-3.5rem)]'} overflow-auto`}
+        >
           <div className="p-4 space-y-6">
             {!isMobile && showFilters && (
               <div className="flex items-center justify-between">
@@ -138,12 +151,16 @@ export function AdvancedSearchSkeleton() {
 
             <div className="space-y-3">
               <button
-                onClick={() => toggleSection("androidVersions")}
+                onClick={() => toggleSection('androidVersions')}
                 className="flex items-center justify-between w-full text-left"
                 type="button"
               >
                 <Skeleton className="h-4 w-32" />
-                {expandedSections.androidVersions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {expandedSections.androidVersions ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </button>
               {expandedSections.androidVersions && (
                 <div className="grid grid-cols-2 gap-1">
@@ -160,15 +177,19 @@ export function AdvancedSearchSkeleton() {
             <Separator />
             <FilterSectionWithSliderSkeleton section="preferences" />
             <Separator />
-            
+
             <div className="space-y-3">
               <button
-                onClick={() => toggleSection("status")}
+                onClick={() => toggleSection('status')}
                 className="flex items-center justify-between w-full text-left"
                 type="button"
               >
                 <Skeleton className="h-4 w-28" />
-                {expandedSections.status ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {expandedSections.status ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </button>
               {expandedSections.status && (
                 <div className="space-y-3">
@@ -233,7 +254,7 @@ export function AdvancedSearchSkeleton() {
                 className="relative"
               >
                 <Filter className="w-4 h-4" />
-                {showFilters ? "Hide" : "Show"} Filters
+                {showFilters ? 'Hide' : 'Show'} Filters
               </Button>
             </div>
           </div>
@@ -270,11 +291,13 @@ export function AdvancedSearchSkeleton() {
               </div>
             </div>
 
-            <div className={`grid gap-4 ${
-              showFilters && !isMobile
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-            }`}>
+            <div
+              className={`grid gap-4 ${
+                showFilters && !isMobile
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
+              }`}
+            >
               {[...Array(10)].map((_, i) => (
                 <ModuleCardSkeleton key={i} />
               ))}
@@ -293,5 +316,5 @@ export function AdvancedSearchSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }

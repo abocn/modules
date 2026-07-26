@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { SWRConfig } from 'swr'
-import { ReactNode } from 'react'
+import { SWRConfig } from 'swr';
+import { ReactNode } from 'react';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json())
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface SWRProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function SWRProvider({ children }: SWRProviderProps) {
@@ -21,11 +21,11 @@ export function SWRProvider({ children }: SWRProviderProps) {
         errorRetryCount: 3,
         errorRetryInterval: 5000,
         onError: (error) => {
-          console.error('SWR Error:', error)
-        }
+          console.error('SWR Error:', error);
+        },
       }}
     >
       {children}
     </SWRConfig>
-  )
+  );
 }

@@ -1,16 +1,16 @@
-import { db } from '@/db'
-import { modules, releases, ratings } from '@/db/schema'
-import { eq, desc, sql, and } from 'drizzle-orm'
-import { MODULE_CATEGORIES } from '@/lib/constants/categories'
+import { db } from '@/db';
+import { modules, releases, ratings } from '@/db/schema';
+import { eq, desc, sql, and } from 'drizzle-orm';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
 import {
   generateNavigationSection,
   getAPIEndpoints,
   generateAPISection,
   generateModuleSubmissionSection,
-} from '@/lib/llm-content-generator'
+} from '@/lib/llm-content-generator';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000';
 
   const allModules = await db
     .select({
@@ -25,13 +25,8 @@ export async function GET() {
       lastUpdated: modules.lastUpdated,
     })
     .from(modules)
-    .where(
-      and(
-        eq(modules.status, 'approved'),
-        eq(modules.isPublished, true)
-      )
-    )
-    .orderBy(desc(modules.isFeatured), desc(modules.isRecommended), desc(modules.lastUpdated))
+    .where(and(eq(modules.status, 'approved'), eq(modules.isPublished, true)))
+    .orderBy(desc(modules.isFeatured), desc(modules.isRecommended), desc(modules.lastUpdated));
 
   const moduleStats = await db
     .select({
@@ -43,39 +38,37 @@ export async function GET() {
       avgRating: sql<number>`(select avg(rating) from ${ratings})`,
     })
     .from(modules)
-    .where(
-      and(
-        eq(modules.status, 'approved'),
-        eq(modules.isPublished, true)
-      )
-    )
+    .where(and(eq(modules.status, 'approved'), eq(modules.isPublished, true)));
 
   const totalDownloads = await db
     .select({
       downloads: sql<number>`sum(${releases.downloads})`,
     })
-    .from(releases)
+    .from(releases);
 
-  const recentModules = allModules.slice(0, 10)
+  const recentModules = allModules.slice(0, 10);
   const stats = moduleStats[0] || {
     totalModules: 0,
     featuredCount: 0,
     recommendedCount: 0,
     openSourceCount: 0,
     totalRatings: 0,
-    avgRating: 0
-  }
-  const totalDownloadCount = totalDownloads[0]?.downloads || 0
+    avgRating: 0,
+  };
+  const totalDownloadCount = totalDownloads[0]?.downloads || 0;
 
-  const modulesByCategory = MODULE_CATEGORIES.reduce((acc, category) => {
-    acc[category.id] = allModules.filter(mod => mod.category === category.id)
-    return acc
-  }, {} as Record<string, typeof allModules>)
+  const modulesByCategory = MODULE_CATEGORIES.reduce(
+    (acc, category) => {
+      acc[category.id] = allModules.filter((mod) => mod.category === category.id);
+      return acc;
+    },
+    {} as Record<string, typeof allModules>,
+  );
 
-  const featuredModules = allModules.filter(mod => mod.isFeatured)
-  const recommendedModules = allModules.filter(mod => mod.isRecommended && !mod.isFeatured)
+  const featuredModules = allModules.filter((mod) => mod.isFeatured);
+  const recommendedModules = allModules.filter((mod) => mod.isRecommended && !mod.isFeatured);
 
-  const apiEndpoints = await getAPIEndpoints()
+  const apiEndpoints = await getAPIEndpoints();
 
   const llmsTxt = `# modules
 
@@ -111,47 +104,70 @@ ${generateNavigationSection(baseUrl)}
 
 Our admins-choice modules:
 
-${featuredModules.length > 0 ? featuredModules.map(mod =>
-  `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`
-).join('\n') : '- No featured modules at this time'}
+${
+  featuredModules.length > 0
+    ? featuredModules
+        .map((mod) => `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`)
+        .join('\n')
+    : '- No featured modules at this time'
+}
 
 ## Recommended Modules
 
 Admin-recommended modules:
 
-${recommendedModules.length > 0 ? recommendedModules.map(mod =>
-  `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`
-).join('\n') : '- No recommended modules at this time'}
+${
+  recommendedModules.length > 0
+    ? recommendedModules
+        .map((mod) => `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`)
+        .join('\n')
+    : '- No recommended modules at this time'
+}
 
 ## Recently Updated Modules
 
 Latest modules with recent updates:
 
-${recentModules.length > 0 ? recentModules.map(mod =>
-  `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription} (Updated: ${mod.lastUpdated ? new Date(mod.lastUpdated).toLocaleDateString() : 'N/A'})`
-).join('\n') : '- No recent updates'}
+${
+  recentModules.length > 0
+    ? recentModules
+        .map(
+          (mod) =>
+            `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription} (Updated: ${mod.lastUpdated ? new Date(mod.lastUpdated).toLocaleDateString() : 'N/A'})`,
+        )
+        .join('\n')
+    : '- No recent updates'
+}
 
 ## Modules by Category
 
-${MODULE_CATEGORIES.map(category => {
-  const categoryMods = modulesByCategory[category.id]
-  if (!categoryMods || categoryMods.length === 0) return null
+${MODULE_CATEGORIES.map((category) => {
+  const categoryMods = modulesByCategory[category.id];
+  if (!categoryMods || categoryMods.length === 0) return null;
 
   return `### ${category.label} (${categoryMods.length} modules)
 
 Top modules in this category:
-${categoryMods.slice(0, 5).map(mod =>
-  `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`
-).join('\n')}${categoryMods.length > 5 ? `\n- [View all ${category.label} modules](${baseUrl}/category/${category.id})` : ''}`
-}).filter(Boolean).join('\n\n')}
+${categoryMods
+  .slice(0, 5)
+  .map((mod) => `- [${mod.name}](${baseUrl}/module/${mod.slug}): ${mod.shortDescription}`)
+  .join(
+    '\n',
+  )}${categoryMods.length > 5 ? `\n- [View all ${category.label} modules](${baseUrl}/category/${category.id})` : ''}`;
+})
+  .filter(Boolean)
+  .join('\n\n')}
 
 ## Module Index
 
 Browse all ${stats.totalModules} modules alphabetically:
 
-${allModules.slice(0, 50).map(mod =>
-  `- [${mod.name}](${baseUrl}/module/${mod.slug}) by ${mod.author}`
-).join('\n')}${allModules.length > 50 ? `\n\n[View complete module list](${baseUrl}/llms-full.txt)` : ''}
+${allModules
+  .slice(0, 50)
+  .map((mod) => `- [${mod.name}](${baseUrl}/module/${mod.slug}) by ${mod.author}`)
+  .join(
+    '\n',
+  )}${allModules.length > 50 ? `\n\n[View complete module list](${baseUrl}/llms-full.txt)` : ''}
 
 ${generateAPISection(apiEndpoints, false)}
 
@@ -187,12 +203,12 @@ The modules platform and its data is available under the Unlicense, and in the p
 ---
 
 Last updated: ${new Date().toISOString().split('T')[0]}
-Total modules: ${stats.totalModules} | Total downloads: ${totalDownloadCount.toLocaleString()}`
+Total modules: ${stats.totalModules} | Total downloads: ${totalDownloadCount.toLocaleString()}`;
 
   return new Response(llmsTxt, {
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=3600',
     },
-  })
+  });
 }

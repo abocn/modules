@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db"
-import { modules, releases, ratings, adminActions } from "@/db/schema"
-import { user as userTable } from "@/db/schema"
-import { desc, eq, like, or, sql } from "drizzle-orm"
-import { getAuthenticatedUser, requireAdmin } from "@/lib/unified-auth"
-import { createSuccessResponse, createErrorResponse } from "@/lib/api-middleware"
-import { applyRateLimit } from "@/lib/rate-limit-enhanced"
-import { nanoid } from "nanoid"
-import { moduleSubmissionSchema } from "@/lib/validations/module"
-import { generateSlug } from "@/lib/slug-utils"
-import { createModuleGithubSync } from "@/lib/db-utils"
-import { jobExecutionService } from "@/lib/job-execution-service"
-import { adminJobs } from "@/db/schema"
-import * as z from "zod"
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { modules, releases, ratings, adminActions } from '@/db/schema';
+import { user as userTable } from '@/db/schema';
+import { desc, eq, like, or, sql } from 'drizzle-orm';
+import { getAuthenticatedUser, requireAdmin } from '@/lib/unified-auth';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { nanoid } from 'nanoid';
+import { moduleSubmissionSchema } from '@/lib/validations/module';
+import { generateSlug } from '@/lib/slug-utils';
+import { createModuleGithubSync } from '@/lib/db-utils';
+import { jobExecutionService } from '@/lib/job-execution-service';
+import { adminJobs } from '@/db/schema';
+import * as z from 'zod';
 
 /**
  * Extract GitHub repository from a source URL
@@ -20,17 +20,17 @@ import * as z from "zod"
  * @returns GitHub repo in format "owner/repo" or null if not a valid GitHub URL
  */
 function extractGithubRepo(sourceUrl: string | null): string | null {
-  if (!sourceUrl) return null
+  if (!sourceUrl) return null;
   try {
-    const url = new URL(sourceUrl)
-    if (url.hostname !== 'github.com') return null
+    const url = new URL(sourceUrl);
+    if (url.hostname !== 'github.com') return null;
 
-    const pathParts = url.pathname.split('/').filter(part => part.length > 0)
-    if (pathParts.length < 2) return null
+    const pathParts = url.pathname.split('/').filter((part) => part.length > 0);
+    if (pathParts.length < 2) return null;
 
-    return `${pathParts[0]}/${pathParts[1]}`
+    return `${pathParts[0]}/${pathParts[1]}`;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -49,37 +49,33 @@ function extractGithubRepo(sourceUrl: string | null): string | null {
  * @openapi
  */
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'ADMIN_OPERATIONS')
+  const rateLimitResult = await applyRateLimit(request, 'ADMIN_OPERATIONS');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "200",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '200',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error || !user) {
-      return createErrorResponse(error || "Authentication required", 401)
+      return createErrorResponse(error || 'Authentication required', 401);
     }
 
     try {
-      requireAdmin(user)
+      requireAdmin(user);
     } catch (err) {
-      return createErrorResponse(err instanceof Error ? err.message : "Admin access required", 403)
+      return createErrorResponse(err instanceof Error ? err.message : 'Admin access required', 403);
     }
 
-    const { searchParams } = new URL(request.url)
-    const search = searchParams.get('search')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     const baseQuery = db
       .select({
@@ -149,37 +145,37 @@ export async function GET(request: NextRequest) {
       .leftJoin(releases, eq(modules.id, releases.moduleId))
       .leftJoin(ratings, eq(modules.id, ratings.moduleId))
       .leftJoin(userTable, eq(modules.submittedBy, userTable.id))
-      .$dynamic()
+      .$dynamic();
 
     const queryWithFilters = search
       ? baseQuery.where(
           or(
             like(modules.name, `%${search}%`),
             like(modules.author, `%${search}%`),
-            like(modules.description, `%${search}%`)
-          )
+            like(modules.description, `%${search}%`),
+          ),
         )
-      : baseQuery
+      : baseQuery;
 
     const modulesList = await queryWithFilters
       .groupBy(modules.id, userTable.name)
       .orderBy(desc(modules.createdAt))
       .limit(limit)
-      .offset(offset)
+      .offset(offset);
 
-    const transformedModules = modulesList.map(module => ({
+    const transformedModules = modulesList.map((module) => ({
       id: module.id,
       name: module.name,
       description: module.description,
       shortDescription: module.shortDescription,
-      version: module.latestVersion || "1.0.0",
+      version: module.latestVersion || '1.0.0',
       author: module.author,
       category: module.category,
       downloads: Number(module.downloads),
       rating: Number(module.averageRating) || 0,
       reviewCount: Number(module.reviewCount) || 0,
       lastUpdated: module.lastUpdated.toISOString(),
-      size: module.latestSize || "Unknown",
+      size: module.latestSize || 'Unknown',
       icon: module.icon,
       images: module.images || [],
       isOpenSource: module.isOpenSource,
@@ -191,22 +187,24 @@ export async function GET(request: NextRequest) {
       warnings: module.warnings || [],
       reviewNotes: module.reviewNotes || [],
       features: module.features || [],
-      changelog: module.latestChangelog || "",
-      downloadUrl: module.latestDownloadUrl || "",
+      changelog: module.latestChangelog || '',
+      downloadUrl: module.latestDownloadUrl || '',
       sourceUrl: module.sourceUrl,
       communityUrl: module.communityUrl,
       isFeatured: module.isFeatured,
-      isRecentlyUpdated: module.lastUpdated && new Date(module.lastUpdated).getTime() > (Date.now() - 7 * 24 * 60 * 60 * 1000),
+      isRecentlyUpdated:
+        module.lastUpdated &&
+        new Date(module.lastUpdated).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000,
       isRecommended: module.isRecommended,
       submittedBy: module.submittedBy,
       submittedByUsername: module.submittedByUsername,
       hasRejectionAction: Boolean(module.hasRejectionAction),
-    }))
+    }));
 
-    return createSuccessResponse({ modules: transformedModules })
+    return createSuccessResponse({ modules: transformedModules });
   } catch (error) {
-    console.error("[! /api/admin/modules] Error fetching admin modules:", error)
-    return createErrorResponse("Internal server error", 500)
+    console.error('[! /api/admin/modules] Error fetching admin modules:', error);
+    return createErrorResponse('Internal server error', 500);
   }
 }
 
@@ -226,34 +224,30 @@ export async function GET(request: NextRequest) {
  * @openapi
  */
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'ADMIN_OPERATIONS')
+  const rateLimitResult = await applyRateLimit(request, 'ADMIN_OPERATIONS');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "200",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '200',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error || !user) {
-      return createErrorResponse(error || "Authentication required", 401)
+      return createErrorResponse(error || 'Authentication required', 401);
     }
 
     try {
-      requireAdmin(user)
+      requireAdmin(user);
     } catch (err) {
-      return createErrorResponse(err instanceof Error ? err.message : "Admin access required", 403)
+      return createErrorResponse(err instanceof Error ? err.message : 'Admin access required', 403);
     }
 
-    const body = await request.json()
+    const body = await request.json();
 
     const createModuleSchema = moduleSubmissionSchema.extend({
       manualReleaseVersion: z.string().optional(),
@@ -261,29 +255,29 @@ export async function POST(request: NextRequest) {
       manualReleaseChangelog: z.string().optional(),
       isFeatured: z.boolean().optional(),
       isRecommended: z.boolean().optional(),
-    })
+    });
 
-    const parsed = createModuleSchema.safeParse(body)
+    const parsed = createModuleSchema.safeParse(body);
     if (!parsed.success) {
-      const errors = parsed.error.issues.map(issue => ({
+      const errors = parsed.error.issues.map((issue) => ({
         field: issue.path.join('.'),
-        message: issue.message
-      }))
-      console.error('[Create Module Validation Error]:', errors)
+        message: issue.message,
+      }));
+      console.error('[Create Module Validation Error]:', errors);
       return NextResponse.json(
         {
           error: 'Validation failed. Please check your input.',
           errors,
-          message: errors[0]?.message || 'Validation failed. Please check your input.'
+          message: errors[0]?.message || 'Validation failed. Please check your input.',
         },
-        { status: 400 }
-      )
+        { status: 400 },
+      );
     }
 
-    const moduleData = parsed.data
-    const id = nanoid(12)
-    const now = new Date()
-    const moduleSlug = generateSlug(moduleData.name, moduleData.author)
+    const moduleData = parsed.data;
+    const id = nanoid(12);
+    const now = new Date();
+    const moduleSlug = generateSlug(moduleData.name, moduleData.author);
 
     await db.transaction(async (tx) => {
       await tx.insert(modules).values({
@@ -298,7 +292,7 @@ export async function POST(request: NextRequest) {
         icon: moduleData.icon || null,
         images: moduleData.images?.length ? moduleData.images : null,
         isOpenSource: moduleData.isOpenSource,
-        license: moduleData.license || (moduleData.isOpenSource ? "GPL-3.0" : "Proprietary"),
+        license: moduleData.license || (moduleData.isOpenSource ? 'GPL-3.0' : 'Proprietary'),
         compatibility: moduleData.compatibility,
         warnings: [],
         features: moduleData.features,
@@ -310,8 +304,8 @@ export async function POST(request: NextRequest) {
         status: 'approved',
         createdAt: now,
         updatedAt: now,
-        submittedBy: user.id
-      })
+        submittedBy: user.id,
+      });
 
       if (!moduleData.isOpenSource && body.manualReleaseVersion && body.manualReleaseUrl) {
         await tx.insert(releases).values({
@@ -323,69 +317,77 @@ export async function POST(request: NextRequest) {
           downloads: 0,
           isLatest: true,
           createdAt: now,
-          updatedAt: now
-        })
+          updatedAt: now,
+        });
       }
-    })
+    });
 
     if (moduleData.sourceUrl) {
-      const githubRepo = extractGithubRepo(moduleData.sourceUrl)
+      const githubRepo = extractGithubRepo(moduleData.sourceUrl);
       if (githubRepo) {
         try {
           await createModuleGithubSync({
             moduleId: id,
             githubRepo,
-            enabled: true
-          })
+            enabled: true,
+          });
 
           const [job] = await db
             .insert(adminJobs)
             .values({
-              type: "scrape_releases",
+              type: 'scrape_releases',
               name: `Auto Sync - New Module ${moduleData.name}`,
               description: `Automatically triggered GitHub release sync for newly created module ${moduleData.name}`,
-              status: "pending",
+              status: 'pending',
               progress: 0,
               startedBy: user.id,
               parameters: {
                 moduleId: id,
-                scope: "single",
+                scope: 'single',
                 manual: false,
-                autoTriggered: true
+                autoTriggered: true,
               },
-              logs: []
+              logs: [],
             })
-            .returning()
+            .returning();
 
-          console.log(`[Admin Module Created] Created sync job ${job.id} for module ${id} from repo ${githubRepo}`)
+          console.log(
+            `[Admin Module Created] Created sync job ${job.id} for module ${id} from repo ${githubRepo}`,
+          );
 
-          jobExecutionService.executeJob(job.id).catch(error => {
-            console.error(`[Admin Module Created] Failed to execute sync job ${job.id} for module ${id}:`, error)
-          })
-
+          jobExecutionService.executeJob(job.id).catch((error) => {
+            console.error(
+              `[Admin Module Created] Failed to execute sync job ${job.id} for module ${id}:`,
+              error,
+            );
+          });
         } catch (syncError) {
-          console.error(`[Admin Module Created] Failed to set up GitHub sync for module ${id}:`, syncError)
+          console.error(
+            `[Admin Module Created] Failed to set up GitHub sync for module ${id}:`,
+            syncError,
+          );
         }
       }
     }
 
-    console.log(`[Admin Module Created] ID: ${id}, Name: ${moduleData.name}, User: ${user.id}`)
+    console.log(`[Admin Module Created] ID: ${id}, Name: ${moduleData.name}, User: ${user.id}`);
 
     return createSuccessResponse(
       {
         id,
         message: 'Module created successfully!',
-        success: true
+        success: true,
       },
-      201
-    )
+      201,
+    );
   } catch (error) {
-    console.error("[! /api/admin/modules] Error creating module:", error)
+    console.error('[! /api/admin/modules] Error creating module:', error);
 
-    const message = error instanceof Error && error.message.includes('duplicate')
-      ? 'A module with this name may already exist.'
-      : 'An error occurred while creating the module. Please try again.'
+    const message =
+      error instanceof Error && error.message.includes('duplicate')
+        ? 'A module with this name may already exist.'
+        : 'An error occurred while creating the module. Please try again.';
 
-    return createErrorResponse(message, 500)
+    return createErrorResponse(message, 500);
   }
 }

@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { Spinner } from "@/components/ui/spinner"
+import { Spinner } from '@/components/ui/spinner';
 
 interface LoadingStateProps {
-  status: string
-  className?: string
+  status: string;
+  className?: string;
 }
 
 export function LoadingState({ status, className }: LoadingStateProps) {
@@ -13,5 +13,5 @@ export function LoadingState({ status, className }: LoadingStateProps) {
       <Spinner className="h-8 w-8" />
       <p className="text-sm text-muted-foreground">{status}</p>
     </div>
-  )
+  );
 }

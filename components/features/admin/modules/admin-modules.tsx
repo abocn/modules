@@ -1,40 +1,45 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ModuleManagement } from "@/components/features/admin/modules/module-management"
-import { Filters, FilterField, FilterValues } from "@/components/features/admin/filters"
-import { useAdminModules, useAdminModulesList } from "@/hooks/use-admin"
-import { Plus, Search, Star, AlertTriangle, Package, Clock } from "lucide-react"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ModuleManagement } from '@/components/features/admin/modules/module-management';
+import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
+import { useAdminModules, useAdminModulesList } from '@/hooks/use-admin';
+import { Plus, Search, Star, AlertTriangle, Package, Clock } from 'lucide-react';
 
 export function AdminModules() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const { modules, isLoading, error, refetch } = useAdminModulesList(searchQuery)
-  const { deleteModule, updateFeaturedStatus, updateModuleStatus, error: adminError } = useAdminModules()
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { modules, isLoading, error, refetch } = useAdminModulesList(searchQuery);
+  const {
+    deleteModule,
+    updateFeaturedStatus,
+    updateModuleStatus,
+    error: adminError,
+  } = useAdminModules();
   const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
-    query: "",
-    category: "all",
-    status: "all",
-    featured: "all",
-    recommended: "all",
-    hasWarnings: "all",
-    isOpenSource: "all",
+    query: '',
+    category: 'all',
+    status: 'all',
+    featured: 'all',
+    recommended: 'all',
+    hasWarnings: 'all',
+    isOpenSource: 'all',
     createdDateRange: {},
     updatedDateRange: {},
     minDownloads: 0,
-    minRating: 0
-  })
+    minRating: 0,
+  });
 
   const filterFields: FilterField[] = [
     {
       type: 'text',
       key: 'query',
       label: 'Search Modules',
-      placeholder: 'Search by name, description, author...'
+      placeholder: 'Search by name, description, author...',
     },
     {
       type: 'select',
@@ -47,8 +52,8 @@ export function AdminModules() {
         { value: 'system', label: 'System' },
         { value: 'media', label: 'Media' },
         { value: 'development', label: 'Development' },
-        { value: 'gaming', label: 'Gaming' }
-      ]
+        { value: 'gaming', label: 'Gaming' },
+      ],
     },
     {
       type: 'select',
@@ -57,8 +62,8 @@ export function AdminModules() {
       options: [
         { value: 'published', label: 'Published' },
         { value: 'pending', label: 'Pending Approval' },
-        { value: 'declined', label: 'Declined/Rejected' }
-      ]
+        { value: 'declined', label: 'Declined/Rejected' },
+      ],
     },
     {
       type: 'select',
@@ -66,8 +71,8 @@ export function AdminModules() {
       label: 'Featured Status',
       options: [
         { value: 'true', label: 'Featured' },
-        { value: 'false', label: 'Not Featured' }
-      ]
+        { value: 'false', label: 'Not Featured' },
+      ],
     },
     {
       type: 'select',
@@ -75,8 +80,8 @@ export function AdminModules() {
       label: 'Recommended Status',
       options: [
         { value: 'true', label: 'Recommended' },
-        { value: 'false', label: 'Not Recommended' }
-      ]
+        { value: 'false', label: 'Not Recommended' },
+      ],
     },
     {
       type: 'select',
@@ -84,8 +89,8 @@ export function AdminModules() {
       label: 'Security Warnings',
       options: [
         { value: 'true', label: 'Has Warnings' },
-        { value: 'false', label: 'No Warnings' }
-      ]
+        { value: 'false', label: 'No Warnings' },
+      ],
     },
     {
       type: 'select',
@@ -93,18 +98,18 @@ export function AdminModules() {
       label: 'Open Source',
       options: [
         { value: 'true', label: 'Open Source' },
-        { value: 'false', label: 'Closed Source' }
-      ]
+        { value: 'false', label: 'Closed Source' },
+      ],
     },
     {
       type: 'daterange',
       key: 'createdDateRange',
-      label: 'Created Date Range'
+      label: 'Created Date Range',
     },
     {
       type: 'daterange',
       key: 'updatedDateRange',
-      label: 'Last Updated Range'
+      label: 'Last Updated Range',
     },
     {
       type: 'slider',
@@ -112,7 +117,7 @@ export function AdminModules() {
       label: 'Minimum Downloads',
       min: 0,
       max: 10000,
-      step: 100
+      step: 100,
     },
     {
       type: 'slider',
@@ -120,186 +125,231 @@ export function AdminModules() {
       label: 'Minimum Rating',
       min: 0,
       max: 5,
-      step: 0.1
-    }
-  ]
+      step: 0.1,
+    },
+  ];
 
   const resetAdvancedFilters = () => {
     setAdvancedFilters({
-      query: "",
-      category: "all",
-      status: "all",
-      featured: "all",
-      recommended: "all",
-      hasWarnings: "all",
-      isOpenSource: "all",
+      query: '',
+      category: 'all',
+      status: 'all',
+      featured: 'all',
+      recommended: 'all',
+      hasWarnings: 'all',
+      isOpenSource: 'all',
       createdDateRange: {},
       updatedDateRange: {},
       minDownloads: 0,
-      minRating: 0
-    })
-    setSearchQuery("")
-  }
+      minRating: 0,
+    });
+    setSearchQuery('');
+  };
 
-  const filteredModules = modules?.filter((module) => {
-    // Text search
-    if (advancedFilters.query && typeof advancedFilters.query === 'string' && advancedFilters.query.trim()) {
-      const query = advancedFilters.query.toLowerCase()
-      if (!(
-        module.name.toLowerCase().includes(query) ||
-        module.author.toLowerCase().includes(query) ||
-        module.description.toLowerCase().includes(query) ||
-        module.submittedByUsername?.toLowerCase().includes(query)
-      )) {
-        return false
-      }
-    }
-
-    // Category filter
-    if (advancedFilters.category && typeof advancedFilters.category === 'string' && advancedFilters.category !== 'all') {
-      if (module.category !== advancedFilters.category) {
-        return false
-      }
-    }
-
-    // Status filter
-    if (advancedFilters.status && typeof advancedFilters.status === 'string' && advancedFilters.status !== 'all') {
-      if (advancedFilters.status === 'published' && !module.isPublished) {
-        return false
-      }
-      if (advancedFilters.status === 'pending' && (module.isPublished || module.hasRejectionAction)) {
-        return false
-      }
-      if (advancedFilters.status === 'declined' && (!module.hasRejectionAction || module.isPublished)) {
-        return false
-      }
-    }
-
-    // Featured filter
-    if (advancedFilters.featured && typeof advancedFilters.featured === 'string' && advancedFilters.featured !== 'all') {
-      if (advancedFilters.featured === 'true' && !module.isFeatured) {
-        return false
-      }
-      if (advancedFilters.featured === 'false' && module.isFeatured) {
-        return false
-      }
-    }
-
-    // Recommended filter
-    if (advancedFilters.recommended && typeof advancedFilters.recommended === 'string' && advancedFilters.recommended !== 'all') {
-      if (advancedFilters.recommended === 'true' && !module.isRecommended) {
-        return false
-      }
-      if (advancedFilters.recommended === 'false' && module.isRecommended) {
-        return false
-      }
-    }
-
-    // Warnings filter
-    if (advancedFilters.hasWarnings && typeof advancedFilters.hasWarnings === 'string' && advancedFilters.hasWarnings !== 'all') {
-      const hasWarnings = module.warnings && module.warnings.length > 0
-      if (advancedFilters.hasWarnings === 'true' && !hasWarnings) {
-        return false
-      }
-      if (advancedFilters.hasWarnings === 'false' && hasWarnings) {
-        return false
-      }
-    }
-
-    // Open source filter
-    if (advancedFilters.isOpenSource && typeof advancedFilters.isOpenSource === 'string' && advancedFilters.isOpenSource !== 'all') {
-      if (advancedFilters.isOpenSource === 'true' && !module.isOpenSource) {
-        return false
-      }
-      if (advancedFilters.isOpenSource === 'false' && module.isOpenSource) {
-        return false
-      }
-    }
-
-    // Minimum downloads filter
-    if (advancedFilters.minDownloads && typeof advancedFilters.minDownloads === 'number' && advancedFilters.minDownloads > 0) {
-      if (module.downloads < advancedFilters.minDownloads) {
-        return false
-      }
-    }
-
-    // Minimum rating filter
-    if (advancedFilters.minRating && typeof advancedFilters.minRating === 'number' && advancedFilters.minRating > 0) {
-      if (module.rating < advancedFilters.minRating) {
-        return false
-      }
-    }
-
-    // Date range filters
-    const createdDateRange = advancedFilters.createdDateRange as { from?: string; to?: string } | undefined
-    if (createdDateRange?.from || createdDateRange?.to) {
-      const createdDate = new Date(module.createdAt)
-      if (createdDateRange.from) {
-        const fromDate = new Date(createdDateRange.from)
-        if (createdDate < fromDate) {
-          return false
+  const filteredModules =
+    modules?.filter((module) => {
+      // Text search
+      if (
+        advancedFilters.query &&
+        typeof advancedFilters.query === 'string' &&
+        advancedFilters.query.trim()
+      ) {
+        const query = advancedFilters.query.toLowerCase();
+        if (!(
+          module.name.toLowerCase().includes(query) ||
+          module.author.toLowerCase().includes(query) ||
+          module.description.toLowerCase().includes(query) ||
+          module.submittedByUsername?.toLowerCase().includes(query)
+        )) {
+          return false;
         }
       }
-      if (createdDateRange.to) {
-        const toDate = new Date(createdDateRange.to)
-        if (createdDate > toDate) {
-          return false
-        }
-      }
-    }
 
-    // Updated date range filters
-    const updatedDateRange = advancedFilters.updatedDateRange as { from?: string; to?: string } | undefined
-    if (updatedDateRange?.from || updatedDateRange?.to) {
-      const updatedDate = new Date(module.lastUpdated)
-      if (updatedDateRange.from) {
-        const fromDate = new Date(updatedDateRange.from)
-        if (updatedDate < fromDate) {
-          return false
+      // Category filter
+      if (
+        advancedFilters.category &&
+        typeof advancedFilters.category === 'string' &&
+        advancedFilters.category !== 'all'
+      ) {
+        if (module.category !== advancedFilters.category) {
+          return false;
         }
       }
-      if (updatedDateRange.to) {
-        const toDate = new Date(updatedDateRange.to)
-        if (updatedDate > toDate) {
-          return false
-        }
-      }
-    }
 
-    return true
-  }) || []
+      // Status filter
+      if (
+        advancedFilters.status &&
+        typeof advancedFilters.status === 'string' &&
+        advancedFilters.status !== 'all'
+      ) {
+        if (advancedFilters.status === 'published' && !module.isPublished) {
+          return false;
+        }
+        if (
+          advancedFilters.status === 'pending' &&
+          (module.isPublished || module.hasRejectionAction)
+        ) {
+          return false;
+        }
+        if (
+          advancedFilters.status === 'declined' &&
+          (!module.hasRejectionAction || module.isPublished)
+        ) {
+          return false;
+        }
+      }
+
+      // Featured filter
+      if (
+        advancedFilters.featured &&
+        typeof advancedFilters.featured === 'string' &&
+        advancedFilters.featured !== 'all'
+      ) {
+        if (advancedFilters.featured === 'true' && !module.isFeatured) {
+          return false;
+        }
+        if (advancedFilters.featured === 'false' && module.isFeatured) {
+          return false;
+        }
+      }
+
+      // Recommended filter
+      if (
+        advancedFilters.recommended &&
+        typeof advancedFilters.recommended === 'string' &&
+        advancedFilters.recommended !== 'all'
+      ) {
+        if (advancedFilters.recommended === 'true' && !module.isRecommended) {
+          return false;
+        }
+        if (advancedFilters.recommended === 'false' && module.isRecommended) {
+          return false;
+        }
+      }
+
+      // Warnings filter
+      if (
+        advancedFilters.hasWarnings &&
+        typeof advancedFilters.hasWarnings === 'string' &&
+        advancedFilters.hasWarnings !== 'all'
+      ) {
+        const hasWarnings = module.warnings && module.warnings.length > 0;
+        if (advancedFilters.hasWarnings === 'true' && !hasWarnings) {
+          return false;
+        }
+        if (advancedFilters.hasWarnings === 'false' && hasWarnings) {
+          return false;
+        }
+      }
+
+      // Open source filter
+      if (
+        advancedFilters.isOpenSource &&
+        typeof advancedFilters.isOpenSource === 'string' &&
+        advancedFilters.isOpenSource !== 'all'
+      ) {
+        if (advancedFilters.isOpenSource === 'true' && !module.isOpenSource) {
+          return false;
+        }
+        if (advancedFilters.isOpenSource === 'false' && module.isOpenSource) {
+          return false;
+        }
+      }
+
+      // Minimum downloads filter
+      if (
+        advancedFilters.minDownloads &&
+        typeof advancedFilters.minDownloads === 'number' &&
+        advancedFilters.minDownloads > 0
+      ) {
+        if (module.downloads < advancedFilters.minDownloads) {
+          return false;
+        }
+      }
+
+      // Minimum rating filter
+      if (
+        advancedFilters.minRating &&
+        typeof advancedFilters.minRating === 'number' &&
+        advancedFilters.minRating > 0
+      ) {
+        if (module.rating < advancedFilters.minRating) {
+          return false;
+        }
+      }
+
+      // Date range filters
+      const createdDateRange = advancedFilters.createdDateRange as
+        { from?: string; to?: string } | undefined;
+      if (createdDateRange?.from || createdDateRange?.to) {
+        const createdDate = new Date(module.createdAt);
+        if (createdDateRange.from) {
+          const fromDate = new Date(createdDateRange.from);
+          if (createdDate < fromDate) {
+            return false;
+          }
+        }
+        if (createdDateRange.to) {
+          const toDate = new Date(createdDateRange.to);
+          if (createdDate > toDate) {
+            return false;
+          }
+        }
+      }
+
+      // Updated date range filters
+      const updatedDateRange = advancedFilters.updatedDateRange as
+        { from?: string; to?: string } | undefined;
+      if (updatedDateRange?.from || updatedDateRange?.to) {
+        const updatedDate = new Date(module.lastUpdated);
+        if (updatedDateRange.from) {
+          const fromDate = new Date(updatedDateRange.from);
+          if (updatedDate < fromDate) {
+            return false;
+          }
+        }
+        if (updatedDateRange.to) {
+          const toDate = new Date(updatedDateRange.to);
+          if (updatedDate > toDate) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }) || [];
 
   const handleDeleteModule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this module? This action cannot be undone.')) {
-      return
+      return;
     }
 
-    const success = await deleteModule(id)
+    const success = await deleteModule(id);
     if (success) {
-      refetch?.()
+      refetch?.();
     }
-  }
+  };
 
   const handleToggleFeatured = async (id: string) => {
-    const targetModule = modules?.find(m => m.id === id)
-    if (!targetModule) return
+    const targetModule = modules?.find((m) => m.id === id);
+    if (!targetModule) return;
 
-    const success = await updateFeaturedStatus(id, !targetModule.isFeatured)
+    const success = await updateFeaturedStatus(id, !targetModule.isFeatured);
     if (success) {
-      refetch?.()
+      refetch?.();
     }
-  }
+  };
 
   const handleTogglePublished = async (id: string) => {
-    const targetModule = modules?.find(m => m.id === id)
-    if (!targetModule) return
+    const targetModule = modules?.find((m) => m.id === id);
+    if (!targetModule) return;
 
-    const newPublishedStatus = !targetModule.isPublished
-    const success = await updateModuleStatus(id, newPublishedStatus)
+    const newPublishedStatus = !targetModule.isPublished;
+    const success = await updateModuleStatus(id, newPublishedStatus);
     if (success) {
-      refetch?.()
+      refetch?.();
     }
-  }
+  };
 
   const moduleStats = {
     total: modules?.length || 0,
@@ -307,7 +357,7 @@ export function AdminModules() {
     withWarnings: modules?.filter((m) => m.warnings && m.warnings.length > 0).length || 0,
     pending: modules?.filter((m) => !m.isPublished && !m.hasRejectionAction).length || 0,
     declined: modules?.filter((m) => !m.isPublished && m.hasRejectionAction).length || 0,
-  }
+  };
 
   if (isLoading) {
     return (
@@ -317,7 +367,7 @@ export function AdminModules() {
           <p className="text-muted-foreground">Loading modules...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -330,7 +380,7 @@ export function AdminModules() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -338,15 +388,13 @@ export function AdminModules() {
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         {adminError && (
           <div className="bg-destructive/15 border border-destructive/20 rounded-lg p-4">
-            <p className="text-destructive text-sm">
-              Admin operation failed: {adminError}
-            </p>
+            <p className="text-destructive text-sm">Admin operation failed: {adminError}</p>
           </div>
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold">Module Management</h1>
-          <Button onClick={() => router.push("/admin/modules/create")} className="w-full sm:w-auto">
+          <Button onClick={() => router.push('/admin/modules/create')} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             Add Module
           </Button>
@@ -416,8 +464,8 @@ export function AdminModules() {
               placeholder="Search modules..."
               value={searchQuery}
               onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setAdvancedFilters(prev => ({ ...prev, query: e.target.value }))
+                setSearchQuery(e.target.value);
+                setAdvancedFilters((prev) => ({ ...prev, query: e.target.value }));
               }}
               className="pl-10"
             />
@@ -440,5 +488,5 @@ export function AdminModules() {
         />
       </div>
     </div>
-  )
+  );
 }

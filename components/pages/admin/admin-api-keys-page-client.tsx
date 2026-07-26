@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { AdminApiKeys } from "@/components/features/admin/api-keys/admin-api-keys"
-import { AdminGuard } from "@/components/features/admin/guards/admin-guard"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { AdminApiKeys } from '@/components/features/admin/api-keys/admin-api-keys';
+import { AdminGuard } from '@/components/features/admin/guards/admin-guard';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function AdminApiKeysPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect } = useModuleNavigation();
 
   return (
     <AdminGuard>
@@ -22,5 +22,5 @@ export function AdminApiKeysPageClient() {
         <AdminApiKeys searchQuery={searchQuery} />
       </SharedLayout>
     </AdminGuard>
-  )
+  );
 }

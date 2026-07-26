@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '../auth'
-import { headers } from 'next/headers'
-import { db } from '../../db'
-import { user } from '../../db/schema'
-import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '../auth';
+import { headers } from 'next/headers';
+import { db } from '../../db';
+import { user } from '../../db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Unified admin authorization result
  * @interface AdminAuthResult
  */
 export interface AdminAuthResult {
-  isAdmin: boolean
+  isAdmin: boolean;
   user?: {
-    id: string
-    email: string
-    name: string
-    role: string
-  }
-  error?: string
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
+  error?: string;
 }
 
 /**
@@ -42,21 +42,21 @@ export interface AdminAuthResult {
 export async function verifyAdminAuth(_request: NextRequest): Promise<AdminAuthResult> {
   try {
     const session = await auth.api.getSession({
-      headers: await headers()
-    })
+      headers: await headers(),
+    });
 
     if (!session?.user) {
       return {
         isAdmin: false,
-        error: 'Authentication required'
-      }
+        error: 'Authentication required',
+      };
     }
 
     if (session.user.role !== 'admin') {
       return {
         isAdmin: false,
-        error: 'Admin access required'
-      }
+        error: 'Admin access required',
+      };
     }
 
     const userRecord = await db
@@ -64,39 +64,41 @@ export async function verifyAdminAuth(_request: NextRequest): Promise<AdminAuthR
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
       })
       .from(user)
       .where(eq(user.id, session.user.id))
-      .limit(1)
+      .limit(1);
 
     if (!userRecord[0]) {
-      console.error(`[Admin Auth] User not found in database: ${session.user.id}`)
+      console.error(`[Admin Auth] User not found in database: ${session.user.id}`);
       return {
         isAdmin: false,
-        error: 'User not found'
-      }
+        error: 'User not found',
+      };
     }
 
     if (userRecord[0].role !== 'admin') {
-      console.warn(`[Admin Auth] Session role mismatch for user ${session.user.id}: session=${session.user.role}, db=${userRecord[0].role}`)
+      console.warn(
+        `[Admin Auth] Session role mismatch for user ${session.user.id}: session=${session.user.role}, db=${userRecord[0].role}`,
+      );
       return {
         isAdmin: false,
-        error: 'Insufficient privileges'
-      }
+        error: 'Insufficient privileges',
+      };
     }
 
     // All checks passed
     return {
       isAdmin: true,
-      user: userRecord[0]
-    }
+      user: userRecord[0],
+    };
   } catch (error) {
-    console.error('[Admin Auth] Error during authorization check:', error)
+    console.error('[Admin Auth] Error during authorization check:', error);
     return {
       isAdmin: false,
-      error: 'Authorization check failed'
-    }
+      error: 'Authorization check failed',
+    };
   }
 }
 
@@ -122,36 +124,30 @@ export function withAdminAuth<T extends Record<string, unknown>>(
   handler: (
     request: NextRequest,
     context: { params: Promise<T> },
-    user: NonNullable<AdminAuthResult['user']>
-  ) => Promise<NextResponse>
+    user: NonNullable<AdminAuthResult['user']>,
+  ) => Promise<NextResponse>,
 ) {
   return async (request: NextRequest, context: { params: Promise<T> }) => {
-    const authResult = await verifyAdminAuth(request)
+    const authResult = await verifyAdminAuth(request);
 
     if (!authResult.isAdmin) {
       return NextResponse.json(
         { error: authResult.error || 'Unauthorized' },
-        { status: authResult.error === 'Authentication required' ? 401 : 403 }
-      )
+        { status: authResult.error === 'Authentication required' ? 401 : 403 },
+      );
     }
 
     if (!authResult.user) {
-      return NextResponse.json(
-        { error: 'User data not available' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'User data not available' }, { status: 500 });
     }
 
     try {
-      return await handler(request, context, authResult.user)
+      return await handler(request, context, authResult.user);
     } catch (error) {
-      console.error('[Admin Route] Handler error:', error)
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      )
+      console.error('[Admin Route] Handler error:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-  }
+  };
 }
 
 /**
@@ -177,11 +173,11 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
       .select({ role: user.role })
       .from(user)
       .where(eq(user.id, userId))
-      .limit(1)
+      .limit(1);
 
-    return userResult[0]?.role === 'admin'
+    return userResult[0]?.role === 'admin';
   } catch (error) {
-    console.error('[Admin Auth] Error checking admin status:', error)
-    return false
+    console.error('[Admin Auth] Error checking admin status:', error);
+    return false;
   }
 }

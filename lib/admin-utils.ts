@@ -1,6 +1,6 @@
-import { db } from '../db'
-import { user } from '../db/schema'
-import { eq } from 'drizzle-orm'
+import { db } from '../db';
+import { user } from '../db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Check if a user has admin role by querying the database
@@ -13,12 +13,12 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
       .select({ role: user.role })
       .from(user)
       .where(eq(user.id, userId))
-      .limit(1)
+      .limit(1);
 
-    return userResult[0]?.role === 'admin'
+    return userResult[0]?.role === 'admin';
   } catch (error) {
-    console.error('Error checking admin status:', error)
-    return false
+    console.error('Error checking admin status:', error);
+    return false;
   }
 }
 
@@ -33,11 +33,11 @@ export async function getUserRole(userId: string): Promise<string | null> {
       .select({ role: user.role })
       .from(user)
       .where(eq(user.id, userId))
-      .limit(1)
+      .limit(1);
 
-    return userResult[0]?.role || null
+    return userResult[0]?.role || null;
   } catch (error) {
-    console.error('Error getting user role:', error)
-    return null
+    console.error('Error getting user role:', error);
+    return null;
   }
 }

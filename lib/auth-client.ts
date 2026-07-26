@@ -1,17 +1,17 @@
-import { createAuthClient } from "better-auth/react"
+import { createAuthClient } from 'better-auth/react';
 
 const getBaseURL = () => {
   if (process.env.NODE_ENV === 'test') {
-    return "http://localhost:3000"
+    return 'http://localhost:3000';
   }
-  return process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000"
-}
+  return process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000';
+};
 
 export const authClient = createAuthClient({
-  baseURL: getBaseURL()
-})
+  baseURL: getBaseURL(),
+});
 
-export const { useSession, signIn, signUp } = authClient
+export const { useSession, signIn, signUp } = authClient;
 
 /**
  * Sign in with GitHub OAuth provider
@@ -23,10 +23,10 @@ export const { useSession, signIn, signUp } = authClient
  */
 export const signInGithub = async () => {
   await authClient.signIn.social({
-    provider: "github",
-    callbackURL: "/"
-  })
-}
+    provider: 'github',
+    callbackURL: '/',
+  });
+};
 
 /**
  * Sign in with Google OAuth provider
@@ -38,10 +38,10 @@ export const signInGithub = async () => {
  */
 export const signInGoogle = async () => {
   await authClient.signIn.social({
-    provider: "google",
-    callbackURL: "/"
-  })
-}
+    provider: 'google',
+    callbackURL: '/',
+  });
+};
 
 /**
  * Sign up with email and password
@@ -60,22 +60,22 @@ export const signUpEmail = async ({
   password,
   name,
   image,
-  callbackURL = "/"
+  callbackURL = '/',
 }: {
-  email: string
-  password: string
-  name: string
-  image?: string
-  callbackURL?: string
+  email: string;
+  password: string;
+  name: string;
+  image?: string;
+  callbackURL?: string;
 }) => {
   return await authClient.signUp.email({
     email,
     password,
     name,
     image,
-    callbackURL
-  })
-}
+    callbackURL,
+  });
+};
 
 /**
  * Sign in with email and password
@@ -92,20 +92,20 @@ export const signInEmail = async ({
   email,
   password,
   rememberMe = true,
-  callbackURL = "/"
+  callbackURL = '/',
 }: {
-  email: string
-  password: string
-  rememberMe?: boolean
-  callbackURL?: string
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+  callbackURL?: string;
 }) => {
   return await authClient.signIn.email({
     email,
     password,
     rememberMe,
-    callbackURL
-  })
-}
+    callbackURL,
+  });
+};
 
 /**
  * Request password reset
@@ -118,16 +118,16 @@ export const signInEmail = async ({
  */
 export const requestPasswordReset = async ({
   email,
-  redirectTo = "/reset-password"
+  redirectTo = '/reset-password',
 }: {
-  email: string
-  redirectTo?: string
+  email: string;
+  redirectTo?: string;
 }) => {
   return await authClient.requestPasswordReset({
     email,
-    redirectTo
-  })
-}
+    redirectTo,
+  });
+};
 
 /**
  * Reset password with token
@@ -140,16 +140,16 @@ export const requestPasswordReset = async ({
  */
 export const resetPassword = async ({
   newPassword,
-  token
+  token,
 }: {
-  newPassword: string
-  token: string
+  newPassword: string;
+  token: string;
 }) => {
   return await authClient.resetPassword({
     newPassword,
-    token
-  })
-}
+    token,
+  });
+};
 
 /**
  * Sign out current user
@@ -158,9 +158,11 @@ export const resetPassword = async ({
  * @description End current user session
  * @returns {Promise<void>}
  */
-export const signOut = async (options?: { fetchOptions?: { onSuccess?: () => void; onError?: (error: unknown) => void } }) => {
-  return await authClient.signOut(options)
-}
+export const signOut = async (options?: {
+  fetchOptions?: { onSuccess?: () => void; onError?: (error: unknown) => void };
+}) => {
+  return await authClient.signOut(options);
+};
 
 /**
  * Get current session
@@ -170,6 +172,6 @@ export const signOut = async (options?: { fetchOptions?: { onSuccess?: () => voi
  * @returns {Promise<any>} Session data
  */
 export const getSession = async () => {
-  const data = await authClient.getSession()
-  return data
-}
+  const data = await authClient.getSession();
+  return data;
+};

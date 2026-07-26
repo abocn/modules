@@ -1,34 +1,34 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { StatCard } from "./stat-card"
-import { Clock } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { StatCard } from './stat-card';
+import { Clock } from 'lucide-react';
 
 export function ClockCard() {
-  const [time, setTime] = useState<Date | null>(null)
-  const [is24Hour, setIs24Hour] = useState(false)
+  const [time, setTime] = useState<Date | null>(null);
+  const [is24Hour, setIs24Hour] = useState(false);
 
   useEffect(() => {
     const saved = document.cookie
       .split('; ')
-      .find(row => row.startsWith('clockFormat='))
-      ?.split('=')[1]
+      .find((row) => row.startsWith('clockFormat='))
+      ?.split('=')[1];
 
-    setIs24Hour(saved === '24h')
-    setTime(new Date())
+    setIs24Hour(saved === '24h');
+    setTime(new Date());
 
     const timer = setInterval(() => {
-      setTime(new Date())
-    }, 1000)
+      setTime(new Date());
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => clearInterval(timer);
+  }, []);
 
   const toggleFormat = () => {
-    const newFormat = !is24Hour
-    setIs24Hour(newFormat)
-    document.cookie = `clockFormat=${newFormat ? '24h' : '12h'}; path=/; max-age=31536000; SameSite=Lax`
-  }
+    const newFormat = !is24Hour;
+    setIs24Hour(newFormat);
+    document.cookie = `clockFormat=${newFormat ? '24h' : '12h'}; path=/; max-age=31536000; SameSite=Lax`;
+  };
 
   if (!time) {
     return (
@@ -42,20 +42,20 @@ export function ClockCard() {
           </div>
         </div>
       </StatCard>
-    )
+    );
   }
 
-  const hours = time.getHours()
-  const minutes = time.getMinutes().toString().padStart(2, '0')
-  const seconds = time.getSeconds().toString().padStart(2, '0')
-  const period = hours >= 12 ? 'PM' : 'AM'
+  const hours = time.getHours();
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+  const seconds = time.getSeconds().toString().padStart(2, '0');
+  const period = hours >= 12 ? 'PM' : 'AM';
   const displayHours = is24Hour
     ? hours.toString().padStart(2, '0')
-    : (hours % 12 || 12).toString().padStart(2, '0')
+    : (hours % 12 || 12).toString().padStart(2, '0');
 
-  const dayName = time.toLocaleDateString('en-US', { weekday: 'short' })
-  const monthName = time.toLocaleDateString('en-US', { month: 'short' })
-  const day = time.getDate()
+  const dayName = time.toLocaleDateString('en-US', { weekday: 'short' });
+  const monthName = time.toLocaleDateString('en-US', { month: 'short' });
+  const day = time.getDate();
 
   return (
     <StatCard>
@@ -88,5 +88,5 @@ export function ClockCard() {
         </div>
       </div>
     </StatCard>
-  )
+  );
 }

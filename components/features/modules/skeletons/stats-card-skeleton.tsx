@@ -1,5 +1,5 @@
-import { StatCard } from "@/components/features/stats/stat-card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { StatCard } from '@/components/features/stats/stat-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function StatsCardSkeleton() {
   return (
@@ -22,7 +22,7 @@ export function StatsCardSkeleton() {
         </div>
       </div>
     </StatCard>
-  )
+  );
 }
 
 export function ClockCardSkeleton() {
@@ -43,7 +43,7 @@ export function ClockCardSkeleton() {
         </div>
       </div>
     </StatCard>
-  )
+  );
 }
 
 export function TelegramCardSkeleton() {
@@ -97,5 +97,5 @@ export function TelegramCardSkeleton() {
         </div>
       </div>
     </StatCard>
-  )
+  );
 }

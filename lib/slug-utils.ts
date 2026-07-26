@@ -1,11 +1,12 @@
 export function generateSlug(name: string, author: string): string {
-  const cleanText = (text: string) => text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-    .replace(/^-+|-+$/g, '');
+  const cleanText = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim()
+      .replace(/^-+|-+$/g, '');
 
   const cleanName = cleanText(name);
   const cleanAuthor = cleanText(author);

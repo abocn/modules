@@ -1,105 +1,105 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { useSession } from "@/lib/auth-client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { GitHubPATSettings } from "./github-pat-settings"
-import { ApiKeysSettings } from "./api-keys-settings"
-import { ProfilePictureUpload } from "./profile-picture-upload"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { Edit, Save, X, Mail, Shield, User } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSession } from '@/lib/auth-client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GitHubPATSettings } from './github-pat-settings';
+import { ApiKeysSettings } from './api-keys-settings';
+import { ProfilePictureUpload } from './profile-picture-upload';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Edit, Save, X, Mail, Shield, User } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface UserRole {
-  role: string | null
-  isLoading: boolean
+  role: string | null;
+  isLoading: boolean;
 }
 
 export function UserSettings() {
-  const { data: session } = useSession()
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [nameValue, setNameValue] = useState("")
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [userRole, setUserRole] = useState<UserRole>({ role: null, isLoading: true })
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: session } = useSession();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>({ role: null, isLoading: true });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (session?.user?.name && !isEditingName) {
-      setNameValue(session.user.name)
+      setNameValue(session.user.name);
     }
-  }, [session?.user?.name, isEditingName])
+  }, [session?.user?.name, isEditingName]);
 
   useEffect(() => {
-    setIsLoading(false)
-  }, [session])
+    setIsLoading(false);
+  }, [session]);
 
   useEffect(() => {
     if (session?.user?.id) {
-      setUserRole({ role: null, isLoading: true })
+      setUserRole({ role: null, isLoading: true });
       fetch(`/api/user/role`)
-        .then(res => res.json())
-        .then(data => setUserRole({ role: data.role, isLoading: false }))
-        .catch(err => {
-          console.error('Failed to fetch user role:', err)
-          setUserRole({ role: null, isLoading: false })
-        })
+        .then((res) => res.json())
+        .then((data) => setUserRole({ role: data.role, isLoading: false }))
+        .catch((err) => {
+          console.error('Failed to fetch user role:', err);
+          setUserRole({ role: null, isLoading: false });
+        });
     }
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   const handleEditName = useCallback(() => {
-    setNameValue(session?.user?.name || "")
-    setIsEditingName(true)
-  }, [session?.user?.name])
+    setNameValue(session?.user?.name || '');
+    setIsEditingName(true);
+  }, [session?.user?.name]);
 
   const handleCancelEdit = useCallback(() => {
-    setNameValue(session?.user?.name || "")
-    setIsEditingName(false)
-  }, [session?.user?.name])
+    setNameValue(session?.user?.name || '');
+    setIsEditingName(false);
+  }, [session?.user?.name]);
 
   const handleSaveName = useCallback(async () => {
     if (!nameValue.trim()) {
-      toast.error("Name cannot be empty")
-      return
+      toast.error('Name cannot be empty');
+      return;
     }
 
     if (nameValue === session?.user?.name) {
-      setIsEditingName(false)
-      return
+      setIsEditingName(false);
+      return;
     }
 
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
-      const response = await fetch("/api/settings/profile", {
-        method: "PATCH",
+      const response = await fetch('/api/settings/profile', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ name: nameValue.trim() }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to update name")
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update name');
       }
 
-      setIsEditingName(false)
-      toast.success("Name updated successfully")
-      window.location.reload()
+      setIsEditingName(false);
+      toast.success('Name updated successfully');
+      window.location.reload();
     } catch (error) {
-      console.error("Error updating name:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to update name")
+      console.error('Error updating name:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update name');
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }, [nameValue, session?.user?.name])
+  }, [nameValue, session?.user?.name]);
 
   const getRoleColor = useMemo(() => {
-    if (userRole.role === 'admin') return 'destructive'
-    return 'secondary'
-  }, [userRole.role])
+    if (userRole.role === 'admin') return 'destructive';
+    return 'secondary';
+  }, [userRole.role]);
 
   if (isLoading) {
     return (
@@ -181,7 +181,7 @@ export function UserSettings() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!session?.user) {
@@ -193,7 +193,7 @@ export function UserSettings() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -201,10 +201,7 @@ export function UserSettings() {
       <Card className="overflow-hidden">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-8">
-            <ProfilePictureUpload
-              currentImage={session.user.image}
-              userName={session.user.name}
-            />
+            <ProfilePictureUpload currentImage={session.user.image} userName={session.user.name} />
             <div className="flex-1">
               <CardTitle className="text-xl">Account Information</CardTitle>
             </div>
@@ -224,10 +221,10 @@ export function UserSettings() {
                   placeholder="Enter your display name"
                   disabled={isUpdating}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSaveName()
-                    } else if (e.key === "Escape") {
-                      handleCancelEdit()
+                    if (e.key === 'Enter') {
+                      handleSaveName();
+                    } else if (e.key === 'Escape') {
+                      handleCancelEdit();
                     }
                   }}
                   className="flex-1"
@@ -254,12 +251,7 @@ export function UserSettings() {
             ) : (
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
                 <span className="text-sm font-medium">{session.user.name}</span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleEditName}
-                  className="h-8 px-2"
-                >
+                <Button size="sm" variant="ghost" onClick={handleEditName} className="h-8 px-2">
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </Button>
@@ -304,5 +296,5 @@ export function UserSettings() {
 
       <ApiKeysSettings />
     </div>
-  )
+  );
 }

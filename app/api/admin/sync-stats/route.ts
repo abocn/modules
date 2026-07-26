@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { db } from '@/db'
-import { modules, moduleGithubSync, releaseSchedule } from '@/db/schema'
-import { eq, count, sql } from 'drizzle-orm'
+import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { db } from '@/db';
+import { modules, moduleGithubSync, releaseSchedule } from '@/db/schema';
+import { eq, count, sql } from 'drizzle-orm';
 
 /**
  * GET /api/admin/sync-stats
@@ -35,27 +35,22 @@ export async function GET() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
-    })
+    });
 
     if (!session?.user || session.user.role !== 'admin') {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const totalModulesResult = await db
-      .select({ count: count() })
-      .from(moduleGithubSync)
+    const totalModulesResult = await db.select({ count: count() }).from(moduleGithubSync);
     const enabledModulesResult = await db
       .select({ count: count() })
       .from(moduleGithubSync)
-      .where(eq(moduleGithubSync.enabled, true))
+      .where(eq(moduleGithubSync.enabled, true));
     const failedSyncsResult = await db
       .select({ count: count() })
       .from(moduleGithubSync)
-      .where(sql`jsonb_array_length(${moduleGithubSync.syncErrors}) > 0`)
-    const schedule = await db
-      .select()
-      .from(releaseSchedule)
-      .limit(1)
+      .where(sql`jsonb_array_length(${moduleGithubSync.syncErrors}) > 0`);
+    const schedule = await db.select().from(releaseSchedule).limit(1);
     const recentActivity = await db
       .select({
         moduleId: moduleGithubSync.moduleId,
@@ -67,24 +62,30 @@ export async function GET() {
       .innerJoin(modules, eq(moduleGithubSync.moduleId, modules.id))
       .where(eq(moduleGithubSync.enabled, true))
       .orderBy(sql`${moduleGithubSync.lastSyncAt} DESC NULLS LAST`)
-      .limit(10)
+      .limit(10);
 
-    const totalModules = totalModulesResult[0]?.count || 0
-    const enabledModules = enabledModulesResult[0]?.count || 0
-    const failedSyncs = failedSyncsResult[0]?.count || 0
-    const successfulSyncs = Math.max(0, enabledModules - failedSyncs)
+    const totalModules = totalModulesResult[0]?.count || 0;
+    const enabledModules = enabledModulesResult[0]?.count || 0;
+    const failedSyncs = failedSyncsResult[0]?.count || 0;
+    const successfulSyncs = Math.max(0, enabledModules - failedSyncs);
 
     const syncTimesResult = await db
       .select({
-        duration: sql<number>`EXTRACT(EPOCH FROM (${moduleGithubSync.updatedAt} - ${moduleGithubSync.lastSyncAt}))`
+        duration: sql<number>`EXTRACT(EPOCH FROM (${moduleGithubSync.updatedAt} - ${moduleGithubSync.lastSyncAt}))`,
       })
       .from(moduleGithubSync)
-      .where(sql`${moduleGithubSync.lastSyncAt} IS NOT NULL AND ${moduleGithubSync.updatedAt} > ${moduleGithubSync.lastSyncAt}`)
-      .limit(100)
+      .where(
+        sql`${moduleGithubSync.lastSyncAt} IS NOT NULL AND ${moduleGithubSync.updatedAt} > ${moduleGithubSync.lastSyncAt}`,
+      )
+      .limit(100);
 
-    const averageSyncTime = syncTimesResult.length > 0
-      ? Math.round(syncTimesResult.reduce((sum, sync) => sum + (sync.duration || 0), 0) / syncTimesResult.length)
-      : 0
+    const averageSyncTime =
+      syncTimesResult.length > 0
+        ? Math.round(
+            syncTimesResult.reduce((sum, sync) => sum + (sync.duration || 0), 0) /
+              syncTimesResult.length,
+          )
+        : 0;
 
     const stats = {
       totalModules,
@@ -94,21 +95,24 @@ export async function GET() {
       lastRunTime: schedule[0]?.lastRunAt?.toISOString(),
       nextRunTime: schedule[0]?.nextRunAt?.toISOString(),
       averageSyncTime,
-      recentActivity: recentActivity.map(activity => ({
+      recentActivity: recentActivity.map((activity) => ({
         moduleId: activity.moduleId,
         moduleName: activity.moduleName,
-        status: (activity.syncErrors as { error: string; timestamp: string; retryCount: number }[])?.length > 0 ? 'error' as const : 'success' as const,
+        status:
+          (activity.syncErrors as { error: string; timestamp: string; retryCount: number }[])
+            ?.length > 0
+            ? ('error' as const)
+            : ('success' as const),
         timestamp: activity.lastSyncAt?.toISOString() || new Date().toISOString(),
-        error: (activity.syncErrors as { error: string; timestamp: string; retryCount: number }[])?.[0]?.error
-      }))
-    }
+        error: (
+          activity.syncErrors as { error: string; timestamp: string; retryCount: number }[]
+        )?.[0]?.error,
+      })),
+    };
 
-    return NextResponse.json(stats)
+    return NextResponse.json(stats);
   } catch (error) {
-    console.error("[! /api/admin/sync-stats] Error fetching sync stats:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch sync stats" },
-      { status: 500 }
-    )
+    console.error('[! /api/admin/sync-stats] Error fetching sync stats:', error);
+    return NextResponse.json({ error: 'Failed to fetch sync stats' }, { status: 500 });
   }
 }

@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { AdminJobs } from "@/components/features/admin/jobs/admin-jobs"
-import { AdminGuard } from "@/components/features/admin/guards/admin-guard"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { AdminJobs } from '@/components/features/admin/jobs/admin-jobs';
+import { AdminGuard } from '@/components/features/admin/guards/admin-guard';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function AdminJobsPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleCategorySelect } = useModuleNavigation();
 
   return (
     <AdminGuard>
@@ -22,5 +22,5 @@ export function AdminJobsPageClient() {
         <AdminJobs />
       </SharedLayout>
     </AdminGuard>
-  )
+  );
 }

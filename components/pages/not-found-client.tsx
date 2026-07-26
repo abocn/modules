@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Home, Search, ArrowLeft } from "lucide-react"
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Home, Search, ArrowLeft } from 'lucide-react';
 
 export function NotFoundClient() {
   return (
@@ -14,7 +14,8 @@ export function NotFoundClient() {
         </CardHeader>
         <CardContent className="space-y-8 text-center">
           <p className="text-muted-foreground">
-            The page you&apos;re looking for could not be found. It might have been moved, deleted, or you entered the wrong URL.
+            The page you&apos;re looking for could not be found. It might have been moved, deleted,
+            or you entered the wrong URL.
           </p>
 
           <div className="space-y-4">
@@ -42,5 +43,5 @@ export function NotFoundClient() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

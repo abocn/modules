@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useState, memo, useCallback } from "react"
+import { useState, memo, useCallback } from 'react';
 import {
   Search,
   Home,
@@ -29,7 +29,7 @@ import {
   Flame,
   Calendar,
   Key,
-} from "lucide-react"
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -40,86 +40,98 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Input } from "@/components/ui/input"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { DialogTrigger } from "@/components/ui/dialog"
-import { useAdminAuth } from "@/hooks/use-admin-auth"
-import { MODULE_CATEGORIES } from "@/lib/constants/categories"
-import { SigninDialog } from "@/components/shared/signin-dialog"
-import { useIsMobile } from "@/hooks/use-mobile"
-import Link from "next/link"
+} from '@/components/ui/sidebar';
+import { Input } from '@/components/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DialogTrigger } from '@/components/ui/dialog';
+import { useAdminAuth } from '@/hooks/use-admin-auth';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
+import { SigninDialog } from '@/components/shared/signin-dialog';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Link from 'next/link';
 
 interface AppSidebarProps {
-  selectedCategory: string
-  onCategorySelect: (category: string) => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
+  selectedCategory: string;
+  onCategorySelect: (category: string) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 const categories = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "search", label: "Advanced Search", icon: Search },
-  { id: "trending", label: "Trending", icon: Flame },
-  { id: "featured", label: "Featured", icon: Star },
-  { id: "recent", label: "Recently Updated", icon: Clock },
-  { id: "recommended", label: "Recommended", icon: TrendingUp },
-]
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'search', label: 'Advanced Search', icon: Search },
+  { id: 'trending', label: 'Trending', icon: Flame },
+  { id: 'featured', label: 'Featured', icon: Star },
+  { id: 'recent', label: 'Recently Updated', icon: Clock },
+  { id: 'recommended', label: 'Recommended', icon: TrendingUp },
+];
 
-const moduleCategories = MODULE_CATEGORIES.map(cat => ({
+const moduleCategories = MODULE_CATEGORIES.map((cat) => ({
   id: cat.id,
   label: cat.label,
-  icon: {
-    security: Shield,
-    performance: Zap,
-    ui: Smartphone,
-    system: Settings,
-    media: Download,
-    development: Code,
-    gaming: Gamepad2,
-    miscellaneous: Layers,
-  }[cat.id] || Settings,
-}))
+  icon:
+    {
+      security: Shield,
+      performance: Zap,
+      ui: Smartphone,
+      system: Settings,
+      media: Download,
+      development: Code,
+      gaming: Gamepad2,
+      miscellaneous: Layers,
+    }[cat.id] || Settings,
+}));
 
 const accountCategories = [
-  { id: "profile", label: "Profile", icon: User },
-  { id: "submit-module", label: "Submit Module", icon: Upload },
-  { id: "my-submissions", label: "My Submissions", icon: FileText },
-  { id: "settings", label: "Settings", icon: Settings },
-]
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'submit-module', label: 'Submit Module', icon: Upload },
+  { id: 'my-submissions', label: 'My Submissions', icon: FileText },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
 
 const adminGeneralCategories = [
-  { id: "admin-overview", label: "Overview", icon: BarChart3 },
-  { id: "admin-jobs", label: "Jobs", icon: Play },
-  { id: "admin-release-schedule", label: "Release Schedule", icon: Calendar },
-  { id: "admin-api-keys", label: "API Keys", icon: Key },
-  { id: "admin-users", label: "User Management", icon: Users },
-  { id: "admin-audit", label: "Audit Log", icon: FileText },
-]
+  { id: 'admin-overview', label: 'Overview', icon: BarChart3 },
+  { id: 'admin-jobs', label: 'Jobs', icon: Play },
+  { id: 'admin-release-schedule', label: 'Release Schedule', icon: Calendar },
+  { id: 'admin-api-keys', label: 'API Keys', icon: Key },
+  { id: 'admin-users', label: 'User Management', icon: Users },
+  { id: 'admin-audit', label: 'Audit Log', icon: FileText },
+];
 
 const adminModuleCategories = [
-  { id: "admin-modules", label: "Module Management", icon: Package },
-  { id: "admin-module-submissions", label: "Module Submissions", icon: FileCheck },
-  { id: "admin-reviews", label: "Module User Reviews", icon: MessageSquare },
-]
+  { id: 'admin-modules', label: 'Module Management', icon: Package },
+  { id: 'admin-module-submissions', label: 'Module Submissions', icon: FileCheck },
+  { id: 'admin-reviews', label: 'Module User Reviews', icon: MessageSquare },
+];
 
-const AppSidebarComponent = function AppSidebar({ selectedCategory, onCategorySelect, searchQuery, onSearchChange }: AppSidebarProps) {
-  const { isAdmin, user } = useAdminAuth()
-  const isMobile = useIsMobile()
-  const [modulesCollapsed, setModulesCollapsed] = useState(false)
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
+const AppSidebarComponent = function AppSidebar({
+  selectedCategory,
+  onCategorySelect,
+  searchQuery,
+  onSearchChange,
+}: AppSidebarProps) {
+  const { isAdmin, user } = useAdminAuth();
+  const isMobile = useIsMobile();
+  const [modulesCollapsed, setModulesCollapsed] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
-  const handleCategorySelect = useCallback((categoryId: string) => {
-    onCategorySelect(categoryId)
-  }, [onCategorySelect])
+  const handleCategorySelect = useCallback(
+    (categoryId: string) => {
+      onCategorySelect(categoryId);
+    },
+    [onCategorySelect],
+  );
 
-  const handleSearchChange = useCallback((value: string) => {
-    onSearchChange(value)
-  }, [onSearchChange])
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      onSearchChange(value);
+    },
+    [onSearchChange],
+  );
 
   const handleModulesToggle = useCallback((open: boolean) => {
-    setModulesCollapsed(!open)
-  }, [])
+    setModulesCollapsed(!open);
+  }, []);
 
   return (
     <Sidebar className="border-r">
@@ -134,7 +146,10 @@ const AppSidebarComponent = function AppSidebar({ selectedCategory, onCategorySe
           </Link>
         </div>
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4"
+          />
           <Input
             placeholder="Search modules..."
             value={searchQuery}
@@ -279,7 +294,7 @@ const AppSidebarComponent = function AppSidebar({ selectedCategory, onCategorySe
         )}
       </SidebarContent>
     </Sidebar>
-  )
-}
+  );
+};
 
-export const AppSidebar = memo(AppSidebarComponent)
+export const AppSidebar = memo(AppSidebarComponent);

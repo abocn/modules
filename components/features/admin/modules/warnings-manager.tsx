@@ -1,80 +1,89 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { AlertTriangle, Plus, X, Shield, Code, Lock } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { AlertTriangle, Plus, X, Shield, Code, Lock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
-export type WarningType = "malware" | "closed-source" | "stolen-code"
+export type WarningType = 'malware' | 'closed-source' | 'stolen-code';
 
 export interface Warning {
-  type: WarningType
-  message: string
+  type: WarningType;
+  message: string;
 }
 
 interface WarningsManagerProps {
-  warnings: Warning[]
-  onChange: (warnings: Warning[]) => void
+  warnings: Warning[];
+  onChange: (warnings: Warning[]) => void;
 }
 
-const warningTypes: { value: WarningType; label: string; icon: React.ReactNode; color: string }[] = [
-  {
-    value: "malware",
-    label: "Malware",
-    icon: <Shield className="h-4 w-4" />,
-    color: "destructive"
-  },
-  {
-    value: "closed-source",
-    label: "Closed Source",
-    icon: <Lock className="h-4 w-4" />,
-    color: "warning"
-  },
-  {
-    value: "stolen-code",
-    label: "Stolen Code",
-    icon: <Code className="h-4 w-4" />,
-    color: "destructive"
-  },
-]
+const warningTypes: { value: WarningType; label: string; icon: React.ReactNode; color: string }[] =
+  [
+    {
+      value: 'malware',
+      label: 'Malware',
+      icon: <Shield className="h-4 w-4" />,
+      color: 'destructive',
+    },
+    {
+      value: 'closed-source',
+      label: 'Closed Source',
+      icon: <Lock className="h-4 w-4" />,
+      color: 'warning',
+    },
+    {
+      value: 'stolen-code',
+      label: 'Stolen Code',
+      icon: <Code className="h-4 w-4" />,
+      color: 'destructive',
+    },
+  ];
 
 export function WarningsManager({ warnings, onChange }: WarningsManagerProps) {
-  const [newWarningType, setNewWarningType] = useState<WarningType>("closed-source")
-  const [newWarningMessage, setNewWarningMessage] = useState("")
-  const [isAdding, setIsAdding] = useState(false)
+  const [newWarningType, setNewWarningType] = useState<WarningType>('closed-source');
+  const [newWarningMessage, setNewWarningMessage] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
   const addWarning = () => {
     if (newWarningMessage.trim()) {
-      onChange([...warnings, { type: newWarningType, message: newWarningMessage.trim() }])
-      setNewWarningMessage("")
-      setIsAdding(false)
+      onChange([...warnings, { type: newWarningType, message: newWarningMessage.trim() }]);
+      setNewWarningMessage('');
+      setIsAdding(false);
     }
-  }
+  };
 
   const removeWarning = (index: number) => {
-    onChange(warnings.filter((_, i) => i !== index))
-  }
+    onChange(warnings.filter((_, i) => i !== index));
+  };
 
-  const getWarningBadgeVariant = (type: WarningType): "default" | "secondary" | "destructive" | "outline" => {
+  const getWarningBadgeVariant = (
+    type: WarningType,
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (type) {
-      case "malware":
-      case "stolen-code":
-        return "destructive"
-      case "closed-source":
-        return "secondary"
+      case 'malware':
+      case 'stolen-code':
+        return 'destructive';
+      case 'closed-source':
+        return 'secondary';
       default:
-        return "default"
+        return 'default';
     }
-  }
+  };
 
   const getWarningIcon = (type: WarningType) => {
-    const warningType = warningTypes.find(w => w.value === type)
-    return warningType?.icon || <AlertTriangle className="h-4 w-4" />
-  }
+    const warningType = warningTypes.find((w) => w.value === type);
+    return warningType?.icon || <AlertTriangle className="h-4 w-4" />;
+  };
 
   return (
     <Card>
@@ -94,7 +103,7 @@ export function WarningsManager({ warnings, onChange }: WarningsManagerProps) {
                 <Badge variant={getWarningBadgeVariant(warning.type)} className="mt-0.5">
                   <span className="flex items-center gap-1">
                     {getWarningIcon(warning.type)}
-                    {warningTypes.find(w => w.value === warning.type)?.label}
+                    {warningTypes.find((w) => w.value === warning.type)?.label}
                   </span>
                 </Badge>
                 <div className="flex-1">
@@ -118,12 +127,15 @@ export function WarningsManager({ warnings, onChange }: WarningsManagerProps) {
           <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
             <div className="space-y-2">
               <Label>Warning Type</Label>
-              <Select value={newWarningType} onValueChange={(value) => setNewWarningType(value as WarningType)}>
+              <Select
+                value={newWarningType}
+                onValueChange={(value) => setNewWarningType(value as WarningType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {warningTypes.map(type => (
+                  {warningTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       <span className="flex items-center gap-2">
                         {type.icon}
@@ -149,13 +161,13 @@ export function WarningsManager({ warnings, onChange }: WarningsManagerProps) {
               <Button type="button" onClick={addWarning} size="sm">
                 Add Warning
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 size="sm"
                 onClick={() => {
-                  setIsAdding(false)
-                  setNewWarningMessage("")
+                  setIsAdding(false);
+                  setNewWarningMessage('');
                 }}
               >
                 Cancel
@@ -176,5 +188,5 @@ export function WarningsManager({ warnings, onChange }: WarningsManagerProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

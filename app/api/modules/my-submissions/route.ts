@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/db"
-import { modules } from "@/db/schema"
-import { eq } from "drizzle-orm"
-import { getAuthenticatedUser, requireScope } from "@/lib/unified-auth"
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { modules } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
 
 /**
  * Get user's module submissions
@@ -37,35 +37,32 @@ import { getAuthenticatedUser, requireScope } from "@/lib/unified-auth"
  */
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request)
+    const { user, error } = await getAuthenticatedUser(request);
 
     if (error || !user) {
-      return NextResponse.json({ error: error || "Authentication required" }, { status: 401 })
+      return NextResponse.json({ error: error || 'Authentication required' }, { status: 401 });
     }
 
-    requireScope(user, "read")
+    requireScope(user, 'read');
 
     const userSubmissions = await db
       .select()
       .from(modules)
       .where(eq(modules.submittedBy, user.id))
-      .orderBy(modules.updatedAt)
+      .orderBy(modules.updatedAt);
 
-    const submissionsWithStatus = userSubmissions.map(submission => {
+    const submissionsWithStatus = userSubmissions.map((submission) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { reviewNotes: _reviewNotes, ...safeSubmission } = submission
+      const { reviewNotes: _reviewNotes, ...safeSubmission } = submission;
       return {
         ...safeSubmission,
         warnings: submission.warnings || [],
-      }
-    })
+      };
+    });
 
-    return NextResponse.json({ submissions: submissionsWithStatus })
+    return NextResponse.json({ submissions: submissionsWithStatus });
   } catch (error) {
-    console.error("Error fetching user submissions:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch submissions" },
-      { status: 500 }
-    )
+    console.error('Error fetching user submissions:', error);
+    return NextResponse.json({ error: 'Failed to fetch submissions' }, { status: 500 });
   }
 }

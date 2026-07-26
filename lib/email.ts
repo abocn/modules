@@ -1,5 +1,5 @@
-import Mailgun from "mailgun.js";
-import formData from "form-data";
+import Mailgun from 'mailgun.js';
+import formData from 'form-data';
 
 let mg: ReturnType<Mailgun['client']> | null = null;
 
@@ -9,15 +9,15 @@ let mg: ReturnType<Mailgun['client']> | null = null;
  */
 function getMailgunClient() {
   if (!process.env.MAILGUN_API_KEY) {
-    throw new Error("MAILGUN_API_KEY environment variable is not set");
+    throw new Error('MAILGUN_API_KEY environment variable is not set');
   }
 
   if (!mg) {
     const mailgun = new Mailgun(formData);
     mg = mailgun.client({
-      username: "api",
+      username: 'api',
       key: process.env.MAILGUN_API_KEY,
-      url: process.env.MAILGUN_API_URL || "https://api.mailgun.net"
+      url: process.env.MAILGUN_API_URL || 'https://api.mailgun.net',
     });
   }
   return mg;
@@ -27,15 +27,12 @@ function getMailgunClient() {
  * Check if email service is properly configured
  */
 export function isEmailConfigured(): boolean {
-  return Boolean(
-    process.env.MAILGUN_API_KEY &&
-    process.env.MAILGUN_DOMAIN
-  );
+  return Boolean(process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN);
 }
 
-const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || "";
-const FROM_EMAIL = process.env.MAILGUN_FROM_EMAIL || "noreply@modules.lol";
-const FROM_NAME = process.env.MAILGUN_FROM_NAME || "Modules";
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
+const FROM_EMAIL = process.env.MAILGUN_FROM_EMAIL || 'noreply@modules.lol';
+const FROM_NAME = process.env.MAILGUN_FROM_NAME || 'Modules';
 
 interface SendEmailOptions {
   to: string;
@@ -52,7 +49,7 @@ interface SendEmailOptions {
  */
 export async function sendEmail(options: SendEmailOptions) {
   if (!isEmailConfigured()) {
-    const message = "Email service not configured. Missing MAILGUN_API_KEY or MAILGUN_DOMAIN";
+    const message = 'Email service not configured. Missing MAILGUN_API_KEY or MAILGUN_DOMAIN';
     console.error(message);
     throw new Error(message);
   }
@@ -65,14 +62,14 @@ export async function sendEmail(options: SendEmailOptions) {
       subject: options.subject,
       ...(options.text && { text: options.text }),
       ...(options.html && { html: options.html }),
-      ...(options.replyTo && { "h:Reply-To": options.replyTo }),
+      ...(options.replyTo && { 'h:Reply-To': options.replyTo }),
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await client.messages.create(MAILGUN_DOMAIN, messageData as any);
     return result;
   } catch (error) {
-    console.error("Failed to send email:", error);
+    console.error('Failed to send email:', error);
     throw error;
   }
 }
@@ -147,7 +144,7 @@ The Modules Team
 
   await sendEmail({
     to: email,
-    subject: "Reset Your Password - Modules",
+    subject: 'Reset Your Password - Modules',
     text,
     html,
   });
@@ -219,7 +216,7 @@ The Modules Team
 
   await sendEmail({
     to: email,
-    subject: "Verify Your Email - Modules",
+    subject: 'Verify Your Email - Modules',
     text,
     html,
   });
@@ -298,7 +295,7 @@ Modules - Admin Tools
 
   return await sendEmail({
     to: recipientEmail,
-    subject: "Test Email - Modules",
+    subject: 'Test Email - Modules',
     text,
     html,
   });

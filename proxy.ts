@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Security headers middleware
@@ -8,21 +8,18 @@ import { NextRequest, NextResponse } from 'next/server'
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function proxy(_request: NextRequest) {
-  const response = NextResponse.next()
+  const response = NextResponse.next();
 
-  const isDevelopment = process.env.NODE_ENV === 'development'
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
   if (!isDevelopment) {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains'
-    )
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
 
   response.headers.set(
@@ -34,16 +31,16 @@ export function proxy(_request: NextRequest) {
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
       "connect-src 'self' https://challenges.cloudflare.com https://api.github.com",
-      "frame-src https://challenges.cloudflare.com",
+      'frame-src https://challenges.cloudflare.com',
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
-      "upgrade-insecure-requests"
-    ].join('; ')
-  )
+      'upgrade-insecure-requests',
+    ].join('; '),
+  );
 
-  return response
+  return response;
 }
 
 export const config = {
@@ -57,4 +54,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
 
 export interface SEOData {
-  title: string
-  description: string
-  keywords?: string[]
-  canonical?: string
-  noindex?: boolean
-  nofollow?: boolean
-  ogImage?: string
-  twitterImage?: string
+  title: string;
+  description: string;
+  keywords?: string[];
+  canonical?: string;
+  noindex?: boolean;
+  nofollow?: boolean;
+  ogImage?: string;
+  twitterImage?: string;
 }
 
 export function generateMetadata({
@@ -21,16 +21,18 @@ export function generateMetadata({
   ogImage = '/og-image.png',
   twitterImage,
 }: SEOData): Metadata {
-  const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000'
-  const canonicalUrl = canonical ? `${baseUrl}${canonical}` : undefined
+  const baseUrl = process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000';
+  const canonicalUrl = canonical ? `${baseUrl}${canonical}` : undefined;
 
   return {
     title,
     description,
     keywords: keywords.length > 0 ? keywords : undefined,
-    alternates: canonicalUrl ? {
-      canonical: canonicalUrl,
-    } : undefined,
+    alternates: canonicalUrl
+      ? {
+          canonical: canonicalUrl,
+        }
+      : undefined,
     robots: {
       index: !noindex,
       follow: !nofollow,
@@ -46,14 +48,16 @@ export function generateMetadata({
       siteName: 'modules',
       locale: 'en_US',
       type: 'website',
-      images: ogImage ? [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        }
-      ] : undefined,
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: 'summary_large_image',
@@ -61,23 +65,23 @@ export function generateMetadata({
       description,
       images: twitterImage ? [twitterImage] : ogImage ? [ogImage] : undefined,
     },
-  }
+  };
 }
 
 export function truncateDescription(text: string, maxLength: number = 155): string {
-  if (text.length <= maxLength) return text
+  if (text.length <= maxLength) return text;
 
-  return text.slice(0, maxLength - 3).trim() + '...'
+  return text.slice(0, maxLength - 3).trim() + '...';
 }
 
 export function generateModuleKeywords(module: {
-  name: string
-  author: string
-  category: string
-  features: string[]
+  name: string;
+  author: string;
+  category: string;
+  features: string[];
   compatibility: {
-    rootMethods: string[]
-  }
+    rootMethods: string[];
+  };
 }): string[] {
   return [
     module.name,
@@ -88,6 +92,6 @@ export function generateModuleKeywords(module: {
     'android customization',
     module.category,
     ...module.features.slice(0, 3),
-    ...module.compatibility.rootMethods.map(method => method.toLowerCase()),
-  ].filter(Boolean)
+    ...module.compatibility.rootMethods.map((method) => method.toLowerCase()),
+  ].filter(Boolean);
 }

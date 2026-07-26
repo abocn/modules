@@ -1,90 +1,106 @@
-"use client"
+'use client';
 
-import { useState, useEffect, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Filters, FilterField, FilterValues } from "@/components/features/admin/filters"
-import { MessageSquare, Star, Trash2, TrendingUp, Heart } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
+import { MessageSquare, Star, Trash2, TrendingUp, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Review {
-  id: number
-  rating: number
-  comment: string | null
-  helpful: number
-  createdAt: Date
-  updatedAt: Date
-  userId: string
-  moduleId: string
-  userName: string | null
-  moduleName: string | null
+  id: number;
+  rating: number;
+  comment: string | null;
+  helpful: number;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  moduleId: string;
+  userName: string | null;
+  moduleName: string | null;
 }
 
 export function AdminReviews() {
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
     averageRating: 0,
     helpfulReviews: 0,
-    recentReviews: 0
-  })
+    recentReviews: 0,
+  });
   const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
-    query: "",
-    rating: "all",
+    query: '',
+    rating: 'all',
     dateFrom: undefined,
     dateTo: undefined,
     minHelpful: 0,
-    module: "all"
-  })
+    module: 'all',
+  });
 
-  const fetchReviews = useCallback(async (filters?: FilterValues) => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams()
-      const currentFilters = filters || advancedFilters
+  const fetchReviews = useCallback(
+    async (filters?: FilterValues) => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        const currentFilters = filters || advancedFilters;
 
-      if (currentFilters.query) params.append('query', currentFilters.query as string)
-      if (currentFilters.rating !== 'all') params.append('rating', currentFilters.rating as string)
-      if (currentFilters.dateFrom) params.append('dateFrom', currentFilters.dateFrom as string)
-      if (currentFilters.dateTo) params.append('dateTo', currentFilters.dateTo as string)
-      if (currentFilters.minHelpful && typeof currentFilters.minHelpful === 'number' && currentFilters.minHelpful > 0) {
-        params.append('minHelpful', currentFilters.minHelpful.toString())
+        if (currentFilters.query) params.append('query', currentFilters.query as string);
+        if (currentFilters.rating !== 'all')
+          params.append('rating', currentFilters.rating as string);
+        if (currentFilters.dateFrom) params.append('dateFrom', currentFilters.dateFrom as string);
+        if (currentFilters.dateTo) params.append('dateTo', currentFilters.dateTo as string);
+        if (
+          currentFilters.minHelpful &&
+          typeof currentFilters.minHelpful === 'number' &&
+          currentFilters.minHelpful > 0
+        ) {
+          params.append('minHelpful', currentFilters.minHelpful.toString());
+        }
+        if (currentFilters.module !== 'all')
+          params.append('module', currentFilters.module as string);
+
+        const response = await fetch(`/api/admin/reviews?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch reviews');
+        const data = await response.json();
+        setReviews(data.reviews);
+        setStats(data.stats);
+      } catch (error) {
+        console.error('[!] Error fetching reviews:', error);
+      } finally {
+        setLoading(false);
       }
-      if (currentFilters.module !== 'all') params.append('module', currentFilters.module as string)
-
-      const response = await fetch(`/api/admin/reviews?${params.toString()}`)
-      if (!response.ok) throw new Error('Failed to fetch reviews')
-      const data = await response.json()
-      setReviews(data.reviews)
-      setStats(data.stats)
-    } catch (error) {
-      console.error('[!] Error fetching reviews:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [advancedFilters])
+    },
+    [advancedFilters],
+  );
 
   useEffect(() => {
-    fetchReviews()
-  }, [fetchReviews])
+    fetchReviews();
+  }, [fetchReviews]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      fetchReviews()
-    }, 300)
+      fetchReviews();
+    }, 300);
 
-    return () => clearTimeout(debounceTimer)
-  }, [fetchReviews])
+    return () => clearTimeout(debounceTimer);
+  }, [fetchReviews]);
 
   const filterFields: FilterField[] = [
     {
       type: 'text',
       key: 'query',
       label: 'Search Reviews',
-      placeholder: 'Search by author, module, or comment...'
+      placeholder: 'Search by author, module, or comment...',
     },
     {
       type: 'select',
@@ -95,54 +111,54 @@ export function AdminReviews() {
         { value: '4', label: '4 Stars' },
         { value: '3', label: '3 Stars' },
         { value: '2', label: '2 Stars' },
-        { value: '1', label: '1 Star' }
-      ]
+        { value: '1', label: '1 Star' },
+      ],
     },
     {
       type: 'date',
       key: 'dateFrom',
-      label: 'Date From'
+      label: 'Date From',
     },
     {
       type: 'date',
       key: 'dateTo',
-      label: 'Date To'
+      label: 'Date To',
     },
     {
       type: 'number',
       key: 'minHelpful',
       label: 'Minimum Helpful Votes',
       placeholder: '0',
-      min: 0
-    }
-  ]
+      min: 0,
+    },
+  ];
 
   const resetAdvancedFilters = () => {
     const resetFilters = {
-      query: "",
-      rating: "all",
+      query: '',
+      rating: 'all',
       dateFrom: undefined,
       dateTo: undefined,
       minHelpful: 0,
-      module: "all"
-    }
-    setAdvancedFilters(resetFilters)
-  }
+      module: 'all',
+    };
+    setAdvancedFilters(resetFilters);
+  };
 
   const handleDeleteReview = async (id: number) => {
     try {
       const response = await fetch(`/api/admin/reviews/${id}`, {
         method: 'DELETE',
-      })
-      if (!response.ok) throw new Error('Failed to delete review')
+      });
+      if (!response.ok) throw new Error('Failed to delete review');
 
-      toast.success("Review deleted successfully")
-      fetchReviews()
+      toast.success('Review deleted successfully');
+      fetchReviews();
     } catch (error) {
-      console.error('[!] Error deleting review:', error)
-      toast.error("Failed to delete review")
+      console.error('[!] Error deleting review:', error);
+      toast.error('Failed to delete review');
     }
-  }
+  };
 
   const renderStars = (rating: number) => {
     return (
@@ -150,12 +166,12 @@ export function AdminReviews() {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-3 h-3 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
+            className={`w-3 h-3 ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
           />
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className="h-[calc(100vh-3.5rem)] overflow-auto">
@@ -195,7 +211,9 @@ export function AdminReviews() {
               <Heart className="w-4 h-4 text-red-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{loading ? '...' : stats.helpfulReviews}</div>
+              <div className="text-xl sm:text-2xl font-bold">
+                {loading ? '...' : stats.helpfulReviews}
+              </div>
               <p className="text-xs text-muted-foreground hidden sm:block">5+ helpful votes</p>
             </CardContent>
           </Card>
@@ -206,7 +224,9 @@ export function AdminReviews() {
               <TrendingUp className="w-4 h-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{loading ? '...' : stats.recentReviews}</div>
+              <div className="text-xl sm:text-2xl font-bold">
+                {loading ? '...' : stats.recentReviews}
+              </div>
               <p className="text-xs text-muted-foreground hidden sm:block">Last 30 days</p>
             </CardContent>
           </Card>
@@ -261,7 +281,9 @@ export function AdminReviews() {
                               {(review.userName || 'U').substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-sm">{review.userName || 'Unknown User'}</span>
+                          <span className="font-medium text-sm">
+                            {review.userName || 'Unknown User'}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -285,7 +307,11 @@ export function AdminReviews() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleDeleteReview(review.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteReview(review.id)}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -299,5 +325,5 @@ export function AdminReviews() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

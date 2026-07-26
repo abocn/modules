@@ -1,182 +1,232 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LicenseCombobox } from "@/components/ui/license-combobox"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-import { CharacterCounter } from "@/components/ui/character-counter"
-import { Info, Plus, X, AlertTriangle, ExternalLink, Check } from "lucide-react"
-import { MarkdownEditor } from "@/components/shared/markdown-editor"
-import { MODULE_CATEGORIES } from "@/lib/constants/categories"
-import { CATEGORIES, ANDROID_VERSIONS } from "@/lib/validations/module"
-import { toast } from "sonner"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { LicenseCombobox } from '@/components/ui/license-combobox';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { CharacterCounter } from '@/components/ui/character-counter';
+import { Info, Plus, X, AlertTriangle, ExternalLink, Check } from 'lucide-react';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
+import { MODULE_CATEGORIES } from '@/lib/constants/categories';
+import { CATEGORIES, ANDROID_VERSIONS } from '@/lib/validations/module';
+import { toast } from 'sonner';
 
 /**
  * @constant formSchema
  * @description Zod schema for module creation form validation
  * @type {z.ZodObject}
  */
-const formSchema = z.object({
-  name: z.string().min(3, "Module name must be at least 3 characters").max(80, "Module name must be less than 80 characters"),
-  shortDescription: z.string().min(10, "Short description must be at least 10 characters").max(140, "Short description must be less than 140 characters"),
-  description: z.string().min(30, "Description must be at least 30 characters").max(8000, "Description must be less than 8000 characters"),
-  author: z.string().min(2, "Author name must be at least 2 characters").max(60, "Author name must be less than 60 characters"),
-  category: z.enum(CATEGORIES),
-  iconUrl: z.string()
-    .max(300, "Icon URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^(\/|https?:\/\/).+/.test(val),
-      { message: "Please enter a valid icon URL or path" }
-    )
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  license: z.string().optional(),
-  customLicense: z.string().optional(),
-  isOpenSource: z.boolean().default(false),
-  sourceUrl: z.string().optional(),
-  communityUrl: z.string()
-    .max(300, "URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^https?:\/\/.+/.test(val),
-      { message: "Please enter a valid URL" }
-    )
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  githubRepo: z.string()
-    .max(300, "GitHub repository must be at most 300 characters")
-    .refine(
-      (val) => !val || /^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\.git)?(?:\/.*)?$/.test(val) || /^[^\/]+\/[^\/]+$/.test(val),
-      { message: "Please enter a valid GitHub repository URL or owner/repo format" }
-    )
-    .optional()
-    .or(z.literal('').transform(() => undefined)),
-  features: z.array(z.string().min(1, "Feature cannot be empty").max(150, "Feature must be at most 150 characters")).min(1, "Add at least one feature").max(25, "Maximum 25 features allowed"),
-  androidVersions: z.array(z.string()).min(1, "Select at least one Android version"),
-  rootMethods: z.array(z.enum(["Magisk", "KernelSU", "KernelSU-Next"])).min(1, "Select at least one root method"),
-  images: z.array(z.string().refine(
-    (val) => /^https?:\/\/.+/.test(val),
-    { message: "Must be a valid URL" }
-  )).max(10, "Maximum 10 images allowed").optional(),
-  manualReleaseVersion: z.string()
-    .transform(val => val?.trim())
-    .refine(
-      (val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val),
-      { message: "Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)" }
-    )
-    .optional(),
-  manualReleaseUrl: z.string()
-    .max(300, "Download URL must be at most 300 characters")
-    .refine(
-      (val) => !val || /^https?:\/\/.+/.test(val),
-      { message: "Please enter a valid download URL" }
-    )
-    .optional(),
-  manualReleaseChangelog: z.string()
-    .max(5000, "Changelog must be at most 5000 characters")
-    .optional(),
-  isFeatured: z.boolean().default(false),
-  isRecommended: z.boolean().default(false),
-}).refine(
-  (data) => {
-    if (data.isOpenSource) {
-      return data.license && data.license.length > 0
-    }
-    return true
-  },
-  {
-    message: "License is required for open source modules",
-    path: ["license"],
-  }
-).refine(
-  (data) => {
-    if (data.isOpenSource) {
-      return data.sourceUrl && data.sourceUrl.length > 0
-    }
-    return true
-  },
-  {
-    message: "Source URL is required for open source modules",
-    path: ["sourceUrl"],
-  }
-).refine(
-  (data) => {
-    if (!data.isOpenSource) {
-      return data.manualReleaseVersion && data.manualReleaseVersion.length > 0
-    }
-    return true
-  },
-  {
-    message: "Version is required for non-open source modules",
-    path: ["manualReleaseVersion"],
-  }
-).refine(
-  (data) => {
-    if (!data.isOpenSource) {
-      return data.manualReleaseUrl && data.manualReleaseUrl.length > 0
-    }
-    return true
-  },
-  {
-    message: "Download URL is required for non-open source modules",
-    path: ["manualReleaseUrl"],
-  }
-).refine(
-  (data) => {
-    if (data.license === "Custom") {
-      return data.customLicense && data.customLicense.trim().length > 0
-    }
-    return true
-  },
-  {
-    message: "Custom license name is required when Custom license is selected",
-    path: ["customLicense"],
-  }
-).refine(
-  (data) => {
-    if (data.isOpenSource && data.sourceUrl) {
-      return /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/.test(data.sourceUrl)
-    }
-    return true
-  },
-  {
-    message: "Source URL must be a valid GitHub repository URL",
-    path: ["sourceUrl"],
-  }
-).refine(
-  (data) => {
-    if (!data.isOpenSource && data.manualReleaseUrl) {
-      try {
-        new URL(data.manualReleaseUrl)
-        return true
-      } catch {
-        return false
+const formSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, 'Module name must be at least 3 characters')
+      .max(80, 'Module name must be less than 80 characters'),
+    shortDescription: z
+      .string()
+      .min(10, 'Short description must be at least 10 characters')
+      .max(140, 'Short description must be less than 140 characters'),
+    description: z
+      .string()
+      .min(30, 'Description must be at least 30 characters')
+      .max(8000, 'Description must be less than 8000 characters'),
+    author: z
+      .string()
+      .min(2, 'Author name must be at least 2 characters')
+      .max(60, 'Author name must be less than 60 characters'),
+    category: z.enum(CATEGORIES),
+    iconUrl: z
+      .string()
+      .max(300, 'Icon URL must be at most 300 characters')
+      .refine((val) => !val || /^(\/|https?:\/\/).+/.test(val), {
+        message: 'Please enter a valid icon URL or path',
+      })
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    license: z.string().optional(),
+    customLicense: z.string().optional(),
+    isOpenSource: z.boolean().default(false),
+    sourceUrl: z.string().optional(),
+    communityUrl: z
+      .string()
+      .max(300, 'URL must be at most 300 characters')
+      .refine((val) => !val || /^https?:\/\/.+/.test(val), { message: 'Please enter a valid URL' })
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    githubRepo: z
+      .string()
+      .max(300, 'GitHub repository must be at most 300 characters')
+      .refine(
+        (val) =>
+          !val ||
+          /^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\.git)?(?:\/.*)?$/.test(val) ||
+          /^[^\/]+\/[^\/]+$/.test(val),
+        { message: 'Please enter a valid GitHub repository URL or owner/repo format' },
+      )
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    features: z
+      .array(
+        z
+          .string()
+          .min(1, 'Feature cannot be empty')
+          .max(150, 'Feature must be at most 150 characters'),
+      )
+      .min(1, 'Add at least one feature')
+      .max(25, 'Maximum 25 features allowed'),
+    androidVersions: z.array(z.string()).min(1, 'Select at least one Android version'),
+    rootMethods: z
+      .array(z.enum(['Magisk', 'KernelSU', 'KernelSU-Next']))
+      .min(1, 'Select at least one root method'),
+    images: z
+      .array(
+        z.string().refine((val) => /^https?:\/\/.+/.test(val), { message: 'Must be a valid URL' }),
+      )
+      .max(10, 'Maximum 10 images allowed')
+      .optional(),
+    manualReleaseVersion: z
+      .string()
+      .transform((val) => val?.trim())
+      .refine((val) => !val || /^v?\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/.test(val), {
+        message:
+          'Version must follow semantic versioning (e.g., 1.0.0, v2.1.3, 2.0.0-beta, v3.1.0+build.123)',
+      })
+      .optional(),
+    manualReleaseUrl: z
+      .string()
+      .max(300, 'Download URL must be at most 300 characters')
+      .refine((val) => !val || /^https?:\/\/.+/.test(val), {
+        message: 'Please enter a valid download URL',
+      })
+      .optional(),
+    manualReleaseChangelog: z
+      .string()
+      .max(5000, 'Changelog must be at most 5000 characters')
+      .optional(),
+    isFeatured: z.boolean().default(false),
+    isRecommended: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (data.isOpenSource) {
+        return data.license && data.license.length > 0;
       }
-    }
-    return true
-  },
-  {
-    message: "Download URL must be a valid URL",
-    path: ["manualReleaseUrl"],
-  }
-)
+      return true;
+    },
+    {
+      message: 'License is required for open source modules',
+      path: ['license'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.isOpenSource) {
+        return data.sourceUrl && data.sourceUrl.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Source URL is required for open source modules',
+      path: ['sourceUrl'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (!data.isOpenSource) {
+        return data.manualReleaseVersion && data.manualReleaseVersion.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Version is required for non-open source modules',
+      path: ['manualReleaseVersion'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (!data.isOpenSource) {
+        return data.manualReleaseUrl && data.manualReleaseUrl.length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Download URL is required for non-open source modules',
+      path: ['manualReleaseUrl'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.license === 'Custom') {
+        return data.customLicense && data.customLicense.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Custom license name is required when Custom license is selected',
+      path: ['customLicense'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.isOpenSource && data.sourceUrl) {
+        return /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\/?$/.test(data.sourceUrl);
+      }
+      return true;
+    },
+    {
+      message: 'Source URL must be a valid GitHub repository URL',
+      path: ['sourceUrl'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (!data.isOpenSource && data.manualReleaseUrl) {
+        try {
+          new URL(data.manualReleaseUrl);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      return true;
+    },
+    {
+      message: 'Download URL must be a valid URL',
+      path: ['manualReleaseUrl'],
+    },
+  );
 
 /**
  * @typedef {z.infer<typeof formSchema>} FormData
  * @description Type definition for the module creation form data
  */
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 /**
  * @component CreateModuleForm
@@ -203,144 +253,146 @@ type FormData = z.infer<typeof formSchema>
  * - githubRepo: Optional GitHub repository for automatic release syncing (supports owner/repo or full URL format)
  */
 export function CreateModuleForm() {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [newFeature, setNewFeature] = useState("")
-  const [newImage, setNewImage] = useState("")
-  const [fetchingReleases, setFetchingReleases] = useState(false)
-  const [githubReleases, setGithubReleases] = useState<{
-    id: number
-    tag: string
-    name: string
-    body: string
-    downloadUrl: string
-    size: string
-    assets: {
-      name: string
-      downloadUrl: string
-      size: string
-      contentType?: string
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [newFeature, setNewFeature] = useState('');
+  const [newImage, setNewImage] = useState('');
+  const [fetchingReleases, setFetchingReleases] = useState(false);
+  const [githubReleases, setGithubReleases] = useState<
+    {
+      id: number;
+      tag: string;
+      name: string;
+      body: string;
+      downloadUrl: string;
+      size: string;
+      assets: {
+        name: string;
+        downloadUrl: string;
+        size: string;
+        contentType?: string;
+      }[];
+      createdAt: string;
+      isLatest: boolean;
     }[]
-    createdAt: string
-    isLatest: boolean
-  }[]>([])
+  >([]);
   const [selectedRelease, setSelectedRelease] = useState<{
-    id: number
-    tag: string
-    name: string
-    body: string
-    downloadUrl: string
-    size: string
+    id: number;
+    tag: string;
+    name: string;
+    body: string;
+    downloadUrl: string;
+    size: string;
     assets: {
-      name: string
-      downloadUrl: string
-      size: string
-      contentType?: string
-    }[]
-    createdAt: string
-    isLatest: boolean
-  } | null>(null)
+      name: string;
+      downloadUrl: string;
+      size: string;
+      contentType?: string;
+    }[];
+    createdAt: string;
+    isLatest: boolean;
+  } | null>(null);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      shortDescription: "",
-      description: "",
-      author: "",
-      category: "system" as const,
-      iconUrl: "",
-      license: "GPL-3.0",
-      customLicense: "",
+      name: '',
+      shortDescription: '',
+      description: '',
+      author: '',
+      category: 'system' as const,
+      iconUrl: '',
+      license: 'GPL-3.0',
+      customLicense: '',
       isOpenSource: false,
-      sourceUrl: "",
-      communityUrl: "",
-      githubRepo: "",
+      sourceUrl: '',
+      communityUrl: '',
+      githubRepo: '',
       features: [],
       androidVersions: [],
       rootMethods: [],
       images: [],
-      manualReleaseVersion: "",
-      manualReleaseUrl: "",
-      manualReleaseChangelog: "",
+      manualReleaseVersion: '',
+      manualReleaseUrl: '',
+      manualReleaseChangelog: '',
     },
-  })
+  });
 
-  const androidVersionOptions = ANDROID_VERSIONS
+  const androidVersionOptions = ANDROID_VERSIONS;
 
   const rootMethodOptions = [
-    { value: "Magisk", label: "Magisk" },
-    { value: "KernelSU", label: "KernelSU" },
-    { value: "KernelSU-Next", label: "KernelSU-Next" },
-  ]
+    { value: 'Magisk', label: 'Magisk' },
+    { value: 'KernelSU', label: 'KernelSU' },
+    { value: 'KernelSU-Next', label: 'KernelSU-Next' },
+  ];
 
-  const categoryOptions = MODULE_CATEGORIES.map(cat => ({
+  const categoryOptions = MODULE_CATEGORIES.map((cat) => ({
     value: cat.id,
     label: cat.shortLabel,
-  }))
-
+  }));
 
   const fetchGithubReleases = async () => {
-    const sourceUrl = form.getValues("sourceUrl")
+    const sourceUrl = form.getValues('sourceUrl');
     if (!sourceUrl) {
-      setSubmitError("Please enter a GitHub repository URL")
-      return
+      setSubmitError('Please enter a GitHub repository URL');
+      return;
     }
 
-    const githubRegex = /github\.com\/([^\/]+)\/([^\/]+)/
-    const match = sourceUrl.match(githubRegex)
+    const githubRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
+    const match = sourceUrl.match(githubRegex);
 
     if (!match) {
-      setSubmitError("Please enter a valid GitHub repository URL")
-      return
+      setSubmitError('Please enter a valid GitHub repository URL');
+      return;
     }
 
-    const [, owner, repo] = match
-    const cleanRepo = repo.replace(/\.git$/, "")
+    const [, owner, repo] = match;
+    const cleanRepo = repo.replace(/\.git$/, '');
 
-    setFetchingReleases(true)
-    setSubmitError(null)
+    setFetchingReleases(true);
+    setSubmitError(null);
 
     try {
-      const response = await fetch(`https://api.github.com/repos/${owner}/${cleanRepo}/releases`)
+      const response = await fetch(`https://api.github.com/repos/${owner}/${cleanRepo}/releases`);
 
       if (!response.ok) {
-        throw new Error("Failed to fetch releases from GitHub")
+        throw new Error('Failed to fetch releases from GitHub');
       }
 
-      const releases = await response.json()
+      const releases = await response.json();
 
       if (!Array.isArray(releases) || releases.length === 0) {
-        throw new Error("No releases found for this repository")
+        throw new Error('No releases found for this repository');
       }
 
       interface GitHubAsset {
-        name: string
-        browser_download_url: string
-        size: number
-        content_type: string
+        name: string;
+        browser_download_url: string;
+        size: number;
+        content_type: string;
       }
 
       interface GitHubRelease {
-        id: number
-        tag_name: string
-        name: string | null
-        body: string
-        assets: GitHubAsset[]
-        created_at: string
-        zipball_url: string
+        id: number;
+        tag_name: string;
+        name: string | null;
+        body: string;
+        assets: GitHubAsset[];
+        created_at: string;
+        zipball_url: string;
       }
 
       const processedReleases = releases.slice(0, 5).map((release: GitHubRelease) => {
-        const assets = release.assets?.map((asset) => ({
-          name: asset.name,
-          downloadUrl: asset.browser_download_url,
-          size: `${(asset.size / 1024 / 1024).toFixed(2)} MB`,
-          contentType: asset.content_type
-        })) || []
-        const totalSize = release.assets?.reduce((sum, asset) => sum + asset.size, 0) || 0
-        const primaryDownloadUrl = assets[0]?.downloadUrl || release.zipball_url
+        const assets =
+          release.assets?.map((asset) => ({
+            name: asset.name,
+            downloadUrl: asset.browser_download_url,
+            size: `${(asset.size / 1024 / 1024).toFixed(2)} MB`,
+            contentType: asset.content_type,
+          })) || [];
+        const totalSize = release.assets?.reduce((sum, asset) => sum + asset.size, 0) || 0;
+        const primaryDownloadUrl = assets[0]?.downloadUrl || release.zipball_url;
 
         return {
           id: release.id,
@@ -348,25 +400,25 @@ export function CreateModuleForm() {
           name: release.name || release.tag_name,
           body: release.body,
           downloadUrl: primaryDownloadUrl,
-          size: totalSize > 0 ? `${(totalSize / 1024 / 1024).toFixed(2)} MB` : "Unknown",
+          size: totalSize > 0 ? `${(totalSize / 1024 / 1024).toFixed(2)} MB` : 'Unknown',
           assets: assets,
           createdAt: new Date(release.created_at).toLocaleDateString(),
           isLatest: release.tag_name === releases[0].tag_name,
-        }
-      })
+        };
+      });
 
-      setGithubReleases(processedReleases)
+      setGithubReleases(processedReleases);
       if (processedReleases.length > 0) {
-        setSelectedRelease(processedReleases[0])
+        setSelectedRelease(processedReleases[0]);
       }
     } catch (error) {
-      console.error("Error fetching releases:", error)
-      setSubmitError(error instanceof Error ? error.message : "Failed to fetch GitHub releases")
-      setGithubReleases([])
+      console.error('Error fetching releases:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to fetch GitHub releases');
+      setGithubReleases([]);
     } finally {
-      setFetchingReleases(false)
+      setFetchingReleases(false);
     }
-  }
+  };
 
   /**
    * @function onSubmit
@@ -375,15 +427,16 @@ export function CreateModuleForm() {
    * @returns {Promise<void>}
    */
   const onSubmit = async (data: FormData) => {
-    setIsSubmitting(true)
-    setSubmitError(null)
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      const { androidVersions, rootMethods, iconUrl, customLicense, ...restData } = data
+      const { androidVersions, rootMethods, iconUrl, customLicense, ...restData } = data;
 
-      const processedLicense = data.license === "Custom" && customLicense 
-        ? `Custom: ${customLicense.trim()}`
-        : data.license
+      const processedLicense =
+        data.license === 'Custom' && customLicense
+          ? `Custom: ${customLicense.trim()}`
+          : data.license;
 
       const moduleData = {
         ...restData,
@@ -394,70 +447,76 @@ export function CreateModuleForm() {
           rootMethods,
         },
         isPublished: false,
-        status: "pending",
+        status: 'pending',
         isFeatured: data.isFeatured || false,
         isRecommended: data.isRecommended || false,
-      }
+      };
 
-      const response = await fetch("/api/admin/modules", {
-        method: "POST",
+      const response = await fetch('/api/admin/modules', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(moduleData),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to create module")
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create module');
       }
 
-      await response.json()
-      toast.success(`Module "${data.name}" created successfully`)
-      router.push("/admin/modules")
+      await response.json();
+      toast.success(`Module "${data.name}" created successfully`);
+      router.push('/admin/modules');
     } catch (error) {
-      console.error("Create error:", error)
-      setSubmitError(error instanceof Error ? error.message : "Failed to create module")
+      console.error('Create error:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Failed to create module');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const addFeature = () => {
     if (newFeature.trim()) {
-      const currentFeatures = form.getValues("features")
-      form.setValue("features", [...currentFeatures, newFeature.trim()])
-      setNewFeature("")
+      const currentFeatures = form.getValues('features');
+      form.setValue('features', [...currentFeatures, newFeature.trim()]);
+      setNewFeature('');
     }
-  }
+  };
 
   const removeFeature = (index: number) => {
-    const currentFeatures = form.getValues("features")
-    form.setValue("features", currentFeatures.filter((_, i) => i !== index))
-  }
+    const currentFeatures = form.getValues('features');
+    form.setValue(
+      'features',
+      currentFeatures.filter((_, i) => i !== index),
+    );
+  };
 
   const addImage = () => {
-    const trimmedImage = newImage.trim()
+    const trimmedImage = newImage.trim();
     if (trimmedImage) {
       if (!/^https?:\/\/.+/.test(trimmedImage)) {
-        form.setError("images", { message: "Please enter a valid URL" })
-        return
+        form.setError('images', { message: 'Please enter a valid URL' });
+        return;
       }
-      const currentImages = form.getValues("images") || []
+      const currentImages = form.getValues('images') || [];
       if (currentImages.length >= 10) {
-        form.setError("images", { message: "Maximum 10 screenshots allowed" })
-        return
+        form.setError('images', { message: 'Maximum 10 screenshots allowed' });
+        return;
       }
-      form.setValue("images", [...currentImages, trimmedImage])
-      setNewImage("")
-      form.clearErrors("images")
+      form.setValue('images', [...currentImages, trimmedImage]);
+      setNewImage('');
+      form.clearErrors('images');
     }
-  }
+  };
 
   const removeImage = (index: number) => {
-    const currentImages = form.getValues("images") || []
-    form.setValue("images", currentImages.filter((_, i) => i !== index))
-  }
+    const currentImages = form.getValues('images') || [];
+    form.setValue(
+      'images',
+      currentImages.filter((_, i) => i !== index),
+    );
+  };
 
   return (
     <Card>
@@ -517,7 +576,7 @@ export function CreateModuleForm() {
                       <div className="space-y-2">
                         <MarkdownEditor
                           value={field.value}
-                          onChange={(value) => field.onChange(value || "")}
+                          onChange={(value) => field.onChange(value || '')}
                           placeholder="Detailed description of your module, features, installation instructions, etc."
                           height={400}
                         />
@@ -526,7 +585,10 @@ export function CreateModuleForm() {
                         </div>
                       </div>
                     </FormControl>
-                    <FormDescription>Use the editor to format your description with Markdown. You can switch between write and preview modes.</FormDescription>
+                    <FormDescription>
+                      Use the editor to format your description with Markdown. You can switch
+                      between write and preview modes.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -629,9 +691,9 @@ export function CreateModuleForm() {
                     value={newImage}
                     onChange={(e) => setNewImage(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        addImage()
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addImage();
                       }
                     }}
                   />
@@ -640,7 +702,7 @@ export function CreateModuleForm() {
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                  {form.watch("images")?.map((image, index) => (
+                  {form.watch('images')?.map((image, index) => (
                     <div key={index} className="relative group border rounded-lg overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -681,10 +743,8 @@ export function CreateModuleForm() {
                     </div>
                   ))}
                 </div>
-                {form.watch("images")?.length === 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    Add up to 10 screenshots.
-                  </div>
+                {form.watch('images')?.length === 0 && (
+                  <div className="text-sm text-muted-foreground">Add up to 10 screenshots.</div>
                 )}
                 {form.formState.errors.images && (
                   <p className="text-sm text-red-500">{form.formState.errors.images.message}</p>
@@ -702,24 +762,17 @@ export function CreateModuleForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Open Source
-                      </FormLabel>
-                      <FormDescription>
-                        Is your module open source?
-                      </FormDescription>
+                      <FormLabel>Open Source</FormLabel>
+                      <FormDescription>Is your module open source?</FormDescription>
                     </div>
                   </FormItem>
                 )}
               />
 
-              {form.watch("isOpenSource") && (
+              {form.watch('isOpenSource') && (
                 <>
                   <FormField
                     control={form.control}
@@ -731,8 +784,8 @@ export function CreateModuleForm() {
                           <LicenseCombobox
                             value={field.value}
                             onValueChange={(license) => field.onChange(license)}
-                            customValue={form.watch("customLicense")}
-                            onCustomValueChange={(value) => form.setValue("customLicense", value)}
+                            customValue={form.watch('customLicense')}
+                            onCustomValueChange={(value) => form.setValue('customLicense', value)}
                             required
                           />
                         </FormControl>
@@ -753,7 +806,7 @@ export function CreateModuleForm() {
                 </>
               )}
 
-              {form.watch("isOpenSource") && (
+              {form.watch('isOpenSource') && (
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
@@ -770,10 +823,12 @@ export function CreateModuleForm() {
                             onClick={fetchGithubReleases}
                             disabled={fetchingReleases || !field.value}
                           >
-                            {fetchingReleases ? "Fetching..." : "Fetch Releases"}
+                            {fetchingReleases ? 'Fetching...' : 'Fetch Releases'}
                           </Button>
                         </div>
-                        <FormDescription>We&apos;ll automatically fetch releases from your GitHub repository</FormDescription>
+                        <FormDescription>
+                          We&apos;ll automatically fetch releases from your GitHub repository
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -787,7 +842,9 @@ export function CreateModuleForm() {
                           <div
                             key={release.id}
                             className={`p-3 border rounded cursor-pointer transition-colors ${
-                              selectedRelease?.id === release.id ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                              selectedRelease?.id === release.id
+                                ? 'bg-primary/10 border-primary'
+                                : 'hover:bg-muted'
                             }`}
                             onClick={() => setSelectedRelease(release)}
                           >
@@ -799,13 +856,13 @@ export function CreateModuleForm() {
                                 </div>
                                 {release.assets.length > 0 && (
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    {release.assets.length} file{release.assets.length > 1 ? 's' : ''}: {release.assets.map(a => a.name).join(', ')}
+                                    {release.assets.length} file
+                                    {release.assets.length > 1 ? 's' : ''}:{' '}
+                                    {release.assets.map((a) => a.name).join(', ')}
                                   </div>
                                 )}
                               </div>
-                              {release.isLatest && (
-                                <Badge variant="secondary">Latest</Badge>
-                              )}
+                              {release.isLatest && <Badge variant="secondary">Latest</Badge>}
                             </div>
                           </div>
                         ))}
@@ -814,7 +871,10 @@ export function CreateModuleForm() {
                         <Alert>
                           <Check className="h-4 w-4" />
                           <AlertDescription>
-                            <div>Selected release: <strong>{selectedRelease.name}</strong> ({selectedRelease.tag})</div>
+                            <div>
+                              Selected release: <strong>{selectedRelease.name}</strong> (
+                              {selectedRelease.tag})
+                            </div>
                             {selectedRelease.assets.length > 0 && (
                               <div className="mt-2">
                                 <div className="text-sm font-medium">Files included:</div>
@@ -862,7 +922,7 @@ export function CreateModuleForm() {
                       <Input placeholder="owner/repo or https://github.com/owner/repo" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Enable automatic release syncing by providing your GitHub repository. 
+                      Enable automatic release syncing by providing your GitHub repository.
                       We&apos;ll automatically fetch new releases when you publish them on GitHub.
                     </FormDescription>
                     <FormMessage />
@@ -889,8 +949,8 @@ export function CreateModuleForm() {
                             onCheckedChange={(checked) => {
                               const updatedVersions = checked
                                 ? [...(field.value || []), version]
-                                : field.value?.filter((v: string) => v !== version) || []
-                              field.onChange(updatedVersions)
+                                : field.value?.filter((v: string) => v !== version) || [];
+                              field.onChange(updatedVersions);
                             }}
                           />
                           <label className="text-sm">{version}</label>
@@ -912,12 +972,17 @@ export function CreateModuleForm() {
                       {rootMethodOptions.map((method) => (
                         <div key={method.value} className="flex items-center space-x-2">
                           <Checkbox
-                            checked={field.value?.includes(method.value as "Magisk" | "KernelSU" | "KernelSU-Next")}
+                            checked={field.value?.includes(
+                              method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next',
+                            )}
                             onCheckedChange={(checked) => {
                               const updatedMethods = checked
-                                ? [...(field.value || []), method.value as "Magisk" | "KernelSU" | "KernelSU-Next"]
-                                : field.value?.filter((m: string) => m !== method.value) || []
-                              field.onChange(updatedMethods)
+                                ? [
+                                    ...(field.value || []),
+                                    method.value as 'Magisk' | 'KernelSU' | 'KernelSU-Next',
+                                  ]
+                                : field.value?.filter((m: string) => m !== method.value) || [];
+                              field.onChange(updatedMethods);
                             }}
                           />
                           <label className="text-sm">{method.label}</label>
@@ -942,9 +1007,9 @@ export function CreateModuleForm() {
                     value={newFeature}
                     onChange={(e) => setNewFeature(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        addFeature()
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addFeature();
                       }
                     }}
                   />
@@ -953,7 +1018,7 @@ export function CreateModuleForm() {
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {form.watch("features").map((feature, index) => (
+                  {form.watch('features').map((feature, index) => (
                     <Badge key={index} variant="secondary">
                       {feature}
                       <Button
@@ -974,7 +1039,7 @@ export function CreateModuleForm() {
               </div>
             </div>
 
-            {!form.watch("isOpenSource") && (
+            {!form.watch('isOpenSource') && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Release Information</h3>
                 <Separator />
@@ -1003,7 +1068,9 @@ export function CreateModuleForm() {
                       <FormControl>
                         <Input placeholder="https://example.com/module.zip" {...field} />
                       </FormControl>
-                      <FormDescription>Direct download link to your module file (max 100MB)</FormDescription>
+                      <FormDescription>
+                        Direct download link to your module file (max 100MB)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1018,8 +1085,8 @@ export function CreateModuleForm() {
                       <FormControl>
                         <div className="space-y-2">
                           <MarkdownEditor
-                            value={field.value || ""}
-                            onChange={(value) => field.onChange(value || "")}
+                            value={field.value || ''}
+                            onChange={(value) => field.onChange(value || '')}
                             placeholder="What's new in this version..."
                             height={200}
                           />
@@ -1028,7 +1095,9 @@ export function CreateModuleForm() {
                           </div>
                         </div>
                       </FormControl>
-                      <FormDescription>Describe what&apos;s new in this release using Markdown formatting</FormDescription>
+                      <FormDescription>
+                        Describe what&apos;s new in this release using Markdown formatting
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1037,7 +1106,8 @@ export function CreateModuleForm() {
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    File size will be automatically determined from your download URL. Maximum file size is 100MB.
+                    File size will be automatically determined from your download URL. Maximum file
+                    size is 100MB.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -1054,10 +1124,7 @@ export function CreateModuleForm() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>Featured</FormLabel>
@@ -1072,10 +1139,7 @@ export function CreateModuleForm() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>Recommended</FormLabel>
@@ -1102,13 +1166,13 @@ export function CreateModuleForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/admin/modules")}
+                  onClick={() => router.push('/admin/modules')}
                   disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Module"}
+                  {isSubmitting ? 'Creating...' : 'Create Module'}
                 </Button>
               </div>
             </div>
@@ -1116,5 +1180,5 @@ export function CreateModuleForm() {
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }

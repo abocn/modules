@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
+import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 /**
  * CSRF token validation result
  * @interface CSRFValidationResult
  */
 interface CSRFValidationResult {
-  valid: boolean
-  error?: string
+  valid: boolean;
+  error?: string;
 }
 
-const CSRF_HEADER = 'x-csrf-token'
-const CSRF_COOKIE = 'csrf-token'
-const TOKEN_LENGTH = 32
+const CSRF_HEADER = 'x-csrf-token';
+const CSRF_COOKIE = 'csrf-token';
+const TOKEN_LENGTH = 32;
 
 /**
  * Generate a cryptographically secure CSRF token
@@ -20,7 +20,7 @@ const TOKEN_LENGTH = 32
  * @returns A random, URL-safe token string
  */
 export function generateCSRFToken(): string {
-  return crypto.randomBytes(TOKEN_LENGTH).toString('base64url')
+  return crypto.randomBytes(TOKEN_LENGTH).toString('base64url');
 }
 
 /**
@@ -33,49 +33,46 @@ export function generateCSRFToken(): string {
  * @returns Validation result with error details if invalid
  */
 export function validateCSRFToken(request: NextRequest): CSRFValidationResult {
-  const method = request.method.toUpperCase()
+  const method = request.method.toUpperCase();
 
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    return { valid: true }
+    return { valid: true };
   }
 
-  const headerToken = request.headers.get(CSRF_HEADER)
-  const cookieToken = request.cookies.get(CSRF_COOKIE)?.value
+  const headerToken = request.headers.get(CSRF_HEADER);
+  const cookieToken = request.cookies.get(CSRF_COOKIE)?.value;
 
   if (!headerToken) {
     return {
       valid: false,
-      error: 'CSRF token missing from request header'
-    }
+      error: 'CSRF token missing from request header',
+    };
   }
 
   if (!cookieToken) {
     return {
       valid: false,
-      error: 'CSRF token missing from cookie'
-    }
+      error: 'CSRF token missing from cookie',
+    };
   }
 
   if (headerToken.length !== cookieToken.length) {
     return {
       valid: false,
-      error: 'CSRF token mismatch'
-    }
+      error: 'CSRF token mismatch',
+    };
   }
 
-  const tokensMatch = crypto.timingSafeEqual(
-    Buffer.from(headerToken),
-    Buffer.from(cookieToken)
-  )
+  const tokensMatch = crypto.timingSafeEqual(Buffer.from(headerToken), Buffer.from(cookieToken));
 
   if (!tokensMatch) {
     return {
       valid: false,
-      error: 'CSRF token validation failed'
-    }
+      error: 'CSRF token validation failed',
+    };
   }
 
-  return { valid: true }
+  return { valid: true };
 }
 
 /**
@@ -90,53 +87,53 @@ export function validateCSRFToken(request: NextRequest): CSRFValidationResult {
  */
 export function csrfMiddleware(
   request: NextRequest,
-  exemptPaths: string[] = []
+  exemptPaths: string[] = [],
 ): NextResponse | null {
-  const pathname = new URL(request.url).pathname
+  const pathname = new URL(request.url).pathname;
 
-  if (exemptPaths.some(path => pathname.startsWith(path))) {
-    return null
+  if (exemptPaths.some((path) => pathname.startsWith(path))) {
+    return null;
   }
 
-  const method = request.method.toUpperCase()
+  const method = request.method.toUpperCase();
 
   if (method === 'GET' || method === 'HEAD') {
-    const existingToken = request.cookies.get(CSRF_COOKIE)?.value
+    const existingToken = request.cookies.get(CSRF_COOKIE)?.value;
 
     if (!existingToken) {
-      const response = NextResponse.next()
-      const newToken = generateCSRFToken()
+      const response = NextResponse.next();
+      const newToken = generateCSRFToken();
 
       response.cookies.set(CSRF_COOKIE, newToken, {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge: 86400
-      })
+        maxAge: 86400,
+      });
 
-      response.headers.set('X-CSRF-Token', newToken)
-      return response
+      response.headers.set('X-CSRF-Token', newToken);
+      return response;
     }
 
-    const response = NextResponse.next()
-    response.headers.set('X-CSRF-Token', existingToken)
-    return response
+    const response = NextResponse.next();
+    response.headers.set('X-CSRF-Token', existingToken);
+    return response;
   }
 
-  const validation = validateCSRFToken(request)
+  const validation = validateCSRFToken(request);
 
   if (!validation.valid) {
     return NextResponse.json(
       {
         error: 'CSRF validation failed',
-        message: validation.error
+        message: validation.error,
       },
-      { status: 403 }
-    )
+      { status: 403 },
+    );
   }
 
-  return null
+  return null;
 }
 
 /**
@@ -160,28 +157,28 @@ export function csrfMiddleware(
  */
 export function withCSRFProtection<T extends unknown[]>(
   handler: (...args: T) => Promise<NextResponse>,
-  options: { exempt?: boolean } = {}
+  options: { exempt?: boolean } = {},
 ) {
   return async (...args: T): Promise<NextResponse> => {
     if (options.exempt) {
-      return handler(...args)
+      return handler(...args);
     }
 
-    const request = args[0] as NextRequest
-    const validation = validateCSRFToken(request)
+    const request = args[0] as NextRequest;
+    const validation = validateCSRFToken(request);
 
     if (!validation.valid) {
       return NextResponse.json(
         {
           error: 'CSRF validation failed',
-          message: validation.error
+          message: validation.error,
         },
-        { status: 403 }
-      )
+        { status: 403 },
+      );
     }
 
-    return handler(...args)
-  }
+    return handler(...args);
+  };
 }
 
 /**
@@ -196,19 +193,19 @@ export function withCSRFProtection<T extends unknown[]>(
  */
 export function getCSRFToken(
   request: NextRequest,
-  source: 'header' | 'cookie' | 'both' = 'both'
+  source: 'header' | 'cookie' | 'both' = 'both',
 ): string | null {
   if (source === 'header' || source === 'both') {
-    const headerToken = request.headers.get(CSRF_HEADER)
-    if (headerToken) return headerToken
+    const headerToken = request.headers.get(CSRF_HEADER);
+    if (headerToken) return headerToken;
   }
 
   if (source === 'cookie' || source === 'both') {
-    const cookieToken = request.cookies.get(CSRF_COOKIE)?.value
-    if (cookieToken) return cookieToken
+    const cookieToken = request.cookies.get(CSRF_COOKIE)?.value;
+    if (cookieToken) return cookieToken;
   }
 
-  return null
+  return null;
 }
 
 /**
@@ -221,21 +218,18 @@ export function getCSRFToken(
  * @param token - The token to set (generates new if not provided)
  * @returns The modified response
  */
-export function setCSRFToken(
-  response: NextResponse,
-  token?: string
-): NextResponse {
-  const csrfToken = token || generateCSRFToken()
+export function setCSRFToken(response: NextResponse, token?: string): NextResponse {
+  const csrfToken = token || generateCSRFToken();
 
   response.cookies.set(CSRF_COOKIE, csrfToken, {
     httpOnly: true,
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: 86400
-  })
+    maxAge: 86400,
+  });
 
-  response.headers.set('X-CSRF-Token', csrfToken)
+  response.headers.set('X-CSRF-Token', csrfToken);
 
-  return response
+  return response;
 }

@@ -1,13 +1,13 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { MainContent } from "@/components/features/modules/main-content"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { MainContent } from '@/components/features/modules/main-content';
+import { useModuleNavigation } from '@/lib/navigation';
 
 export function RecommendedPageClient() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation();
 
   return (
     <SharedLayout
@@ -23,5 +23,5 @@ export function RecommendedPageClient() {
         onModuleSelect={handleModuleSelect}
       />
     </SharedLayout>
-  )
+  );
 }

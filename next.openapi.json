@@ -47,20 +47,9 @@
   },
   "defaultResponseSet": "common",
   "responseSets": {
-    "common": [
-      "400",
-      "500"
-    ],
-    "auth": [
-      "400",
-      "401",
-      "403",
-      "500"
-    ],
-    "public": [
-      "400",
-      "500"
-    ]
+    "common": ["400", "500"],
+    "auth": ["400", "401", "403", "500"],
+    "public": ["400", "500"]
   },
   "errorConfig": {
     "template": {

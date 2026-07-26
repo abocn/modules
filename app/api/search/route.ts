@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { searchModules } from '@/lib/db-utils'
-import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth'
-import { applyRateLimit } from '@/lib/rate-limit-enhanced'
-import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware'
+import { NextRequest, NextResponse } from 'next/server';
+import { searchModules } from '@/lib/db-utils';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
 
 /**
  * Advanced module search
@@ -45,76 +45,72 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware
  * @openapi
  */
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
-  const { user, error } = await getAuthenticatedUser(request)
+  const { user, error } = await getAuthenticatedUser(request);
 
   if (error && request.headers.get('authorization')) {
-    return NextResponse.json({ error }, { status: 401 })
+    return NextResponse.json({ error }, { status: 401 });
   }
 
-  if (user?.authMethod === "api-key") {
+  if (user?.authMethod === 'api-key') {
     try {
-      requireScope(user, "read")
+      requireScope(user, 'read');
     } catch (err) {
       return NextResponse.json(
-        { error: err instanceof Error ? err.message : "Insufficient permissions" },
-        { status: 403 }
-      )
+        { error: err instanceof Error ? err.message : 'Insufficient permissions' },
+        { status: 403 },
+      );
     }
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const query = searchParams.get('q') || searchParams.get('query')
-    const category = searchParams.get('category')
-    const author = searchParams.get('author')
-    const license = searchParams.get('license')
-    const sort = searchParams.get('sort') || 'relevance' // relevance, name, downloads, rating, updated
-    const order = searchParams.get('order') || 'desc' // asc, desc
-    const minRating = searchParams.get('minRating')
-    const isOpenSource = searchParams.get('isOpenSource')
-    const rootMethod = searchParams.get('rootMethod')
-    const androidVersion = searchParams.get('androidVersion')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || searchParams.get('query');
+    const category = searchParams.get('category');
+    const author = searchParams.get('author');
+    const license = searchParams.get('license');
+    const sort = searchParams.get('sort') || 'relevance'; // relevance, name, downloads, rating, updated
+    const order = searchParams.get('order') || 'desc'; // asc, desc
+    const minRating = searchParams.get('minRating');
+    const isOpenSource = searchParams.get('isOpenSource');
+    const rootMethod = searchParams.get('rootMethod');
+    const androidVersion = searchParams.get('androidVersion');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     if (!query || query.trim().length === 0) {
-      return createErrorResponse('Query parameter is required', 400)
+      return createErrorResponse('Query parameter is required', 400);
     }
 
     if (query.length > 200) {
-      return createErrorResponse('Query too long (max 200 characters)', 400)
+      return createErrorResponse('Query too long (max 200 characters)', 400);
     }
 
-    const validSorts = ['relevance', 'name', 'downloads', 'rating', 'updated']
+    const validSorts = ['relevance', 'name', 'downloads', 'rating', 'updated'];
     if (!validSorts.includes(sort)) {
-      return createErrorResponse('Invalid sort parameter', 400)
+      return createErrorResponse('Invalid sort parameter', 400);
     }
 
-    const validOrders = ['asc', 'desc']
+    const validOrders = ['asc', 'desc'];
     if (!validOrders.includes(order)) {
-      return createErrorResponse('Invalid order parameter', 400)
+      return createErrorResponse('Invalid order parameter', 400);
     }
 
     if (minRating && (isNaN(Number(minRating)) || Number(minRating) < 1 || Number(minRating) > 5)) {
-      return createErrorResponse('minRating must be between 1 and 5', 400)
+      return createErrorResponse('minRating must be between 1 and 5', 400);
     }
 
     if (isOpenSource && !['true', 'false'].includes(isOpenSource)) {
-      return createErrorResponse('isOpenSource must be true or false', 400)
+      return createErrorResponse('isOpenSource must be true or false', 400);
     }
 
     const searchOptions = {
@@ -130,9 +126,9 @@ export async function GET(request: NextRequest) {
       androidVersion: androidVersion || undefined,
       limit,
       offset,
-    }
+    };
 
-    const results = await searchModules(searchOptions.query)
+    const results = await searchModules(searchOptions.query);
 
     return createSuccessResponse({
       query: searchOptions.query,
@@ -141,12 +137,11 @@ export async function GET(request: NextRequest) {
       offset: searchOptions.offset,
       limit: searchOptions.limit,
       hasMore: results.length === searchOptions.limit,
-      searchOptions: searchOptions
-    })
-
+      searchOptions: searchOptions,
+    });
   } catch (error) {
-    console.error('[! /api/search] Error searching modules:', error)
-    return createErrorResponse('Failed to search modules', 500)
+    console.error('[! /api/search] Error searching modules:', error);
+    return createErrorResponse('Failed to search modules', 500);
   }
 }
 
@@ -178,50 +173,46 @@ export async function GET(request: NextRequest) {
  * @openapi
  */
 export async function POST(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
   try {
-    const body = await request.json()
-    const { query, type = 'all' } = body
+    const body = await request.json();
+    const { query, type = 'all' } = body;
 
     if (!query || typeof query !== 'string' || query.trim().length < 2) {
-      return createErrorResponse('Query must be at least 2 characters', 400)
+      return createErrorResponse('Query must be at least 2 characters', 400);
     }
 
     if (query.length > 100) {
-      return createErrorResponse('Query too long (max 100 characters)', 400)
+      return createErrorResponse('Query too long (max 100 characters)', 400);
     }
 
-    const validTypes = ['all', 'modules', 'authors', 'categories']
+    const validTypes = ['all', 'modules', 'authors', 'categories'];
     if (!validTypes.includes(type)) {
-      return createErrorResponse('Invalid type parameter', 400)
+      return createErrorResponse('Invalid type parameter', 400);
     }
 
     const suggestions = {
       modules: [],
       authors: [],
       categories: [],
-      query: query.trim()
-    }
+      query: query.trim(),
+    };
 
-    return createSuccessResponse(suggestions)
+    return createSuccessResponse(suggestions);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      return createErrorResponse('Invalid JSON body', 400)
+      return createErrorResponse('Invalid JSON body', 400);
     }
-    console.error('[! /api/search] Error getting suggestions:', error)
-    return createErrorResponse('Failed to get suggestions', 500)
+    console.error('[! /api/search] Error getting suggestions:', error);
+    return createErrorResponse('Failed to get suggestions', 500);
   }
 }

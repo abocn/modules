@@ -1,82 +1,84 @@
-"use client"
+'use client';
 
-import type { Module } from "@/types/module"
-import { ModuleCard } from "@/components/features/modules/module-card"
-import { ModulesCarousel } from "@/components/features/modules/modules-carousel"
-import { ClockCard } from "@/components/features/stats/clock-card"
-import { TelegramCard } from "@/components/features/stats/telegram-card"
-import { RandomStatCard } from "@/components/features/stats/random-stat-card"
-import { useModules } from "@/hooks/use-modules"
-import { useStats } from "@/hooks/use-stats"
-import { useCachedAuth } from "@/hooks/use-cached-auth"
-import { HomePageSkeleton } from "@/components/features/modules/skeletons/home-page-skeleton"
-import { CategoryPageSkeleton } from "@/components/features/modules/skeletons/category-page-skeleton"
-import { CarouselSkeleton } from "@/components/features/modules/skeletons/carousel-skeleton"
+import type { Module } from '@/types/module';
+import { ModuleCard } from '@/components/features/modules/module-card';
+import { ModulesCarousel } from '@/components/features/modules/modules-carousel';
+import { ClockCard } from '@/components/features/stats/clock-card';
+import { TelegramCard } from '@/components/features/stats/telegram-card';
+import { RandomStatCard } from '@/components/features/stats/random-stat-card';
+import { useModules } from '@/hooks/use-modules';
+import { useStats } from '@/hooks/use-stats';
+import { useCachedAuth } from '@/hooks/use-cached-auth';
+import { HomePageSkeleton } from '@/components/features/modules/skeletons/home-page-skeleton';
+import { CategoryPageSkeleton } from '@/components/features/modules/skeletons/category-page-skeleton';
+import { CarouselSkeleton } from '@/components/features/modules/skeletons/carousel-skeleton';
 
 interface MainContentProps {
-  selectedCategory: string
-  searchQuery: string
-  onModuleSelect: (module: Module) => void
+  selectedCategory: string;
+  searchQuery: string;
+  onModuleSelect: (module: Module) => void;
 }
 
 export function MainContent({ selectedCategory, searchQuery, onModuleSelect }: MainContentProps) {
-  const { user } = useCachedAuth()
-  const { stats, loading: statsLoading } = useStats()
+  const { user } = useCachedAuth();
+  const { stats, loading: statsLoading } = useStats();
 
   const getApiParams = () => {
     switch (selectedCategory) {
-      case "featured":
-        return { filter: 'featured' as const, search: searchQuery }
-      case "recent":
-        return { filter: 'recent' as const, search: searchQuery }
-      case "recommended":
-        return { filter: 'recommended' as const, search: searchQuery }
-      case "home":
-        return { search: searchQuery }
+      case 'featured':
+        return { filter: 'featured' as const, search: searchQuery };
+      case 'recent':
+        return { filter: 'recent' as const, search: searchQuery };
+      case 'recommended':
+        return { filter: 'recommended' as const, search: searchQuery };
+      case 'home':
+        return { search: searchQuery };
       default:
-        return { category: selectedCategory, search: searchQuery }
+        return { category: selectedCategory, search: searchQuery };
     }
-  }
+  };
 
-  const { modules, loading, error } = useModules(getApiParams())
-  const { modules: featuredModules, loading: featuredLoading } = useModules({ filter: 'featured' })
-  const { modules: recentModules, loading: recentLoading } = useModules({ filter: 'recent' })
-  const { modules: recommendedModules, loading: recommendedLoading } = useModules({ filter: 'recommended' })
+  const { modules, loading, error } = useModules(getApiParams());
+  const { modules: featuredModules, loading: featuredLoading } = useModules({ filter: 'featured' });
+  const { modules: recentModules, loading: recentLoading } = useModules({ filter: 'recent' });
+  const { modules: recommendedModules, loading: recommendedLoading } = useModules({
+    filter: 'recommended',
+  });
 
   const getCategoryTitle = () => {
     switch (selectedCategory) {
-      case "home":
-        return "Discover Modules"
-      case "featured":
-        return "Featured Modules"
-      case "recent":
-        return "Recently Updated"
-      case "recommended":
-        return "Recommended Modules"
-      case "security":
-        return "Security & Privacy"
-      case "performance":
-        return "Performance"
-      case "ui":
-        return "UI & Theming"
-      case "system":
-        return "System Tweaks"
-      case "media":
-        return "Media & Audio"
-      case "development":
-        return "Development"
-      case "gaming":
-        return "Gaming"
+      case 'home':
+        return 'Discover Modules';
+      case 'featured':
+        return 'Featured Modules';
+      case 'recent':
+        return 'Recently Updated';
+      case 'recommended':
+        return 'Recommended Modules';
+      case 'security':
+        return 'Security & Privacy';
+      case 'performance':
+        return 'Performance';
+      case 'ui':
+        return 'UI & Theming';
+      case 'system':
+        return 'System Tweaks';
+      case 'media':
+        return 'Media & Audio';
+      case 'development':
+        return 'Development';
+      case 'gaming':
+        return 'Gaming';
       default:
-        return "Modules"
+        return 'Modules';
     }
-  }
+  };
 
   if (loading) {
-    if (selectedCategory === "home" && !searchQuery) {
-      return <HomePageSkeleton />
+    if (selectedCategory === 'home' && !searchQuery) {
+      return <HomePageSkeleton />;
     }
-    return <CategoryPageSkeleton title={getCategoryTitle()} />
+    return <CategoryPageSkeleton title={getCategoryTitle()} />;
   }
 
   if (error) {
@@ -88,16 +90,16 @@ export function MainContent({ selectedCategory, searchQuery, onModuleSelect }: M
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  if (selectedCategory === "home" && !searchQuery) {
+  if (selectedCategory === 'home' && !searchQuery) {
     return (
       <div className="h-[calc(100vh-3.5rem)] overflow-auto">
         <div className="p-6 pr-0 sm:pr-6 space-y-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">
-              Welcome to Modules{user?.name ? `, ${user.name}` : ""}
+              Welcome to Modules{user?.name ? `, ${user.name}` : ''}
             </h1>
           </div>
 
@@ -141,7 +143,7 @@ export function MainContent({ selectedCategory, searchQuery, onModuleSelect }: M
           </section>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -150,7 +152,7 @@ export function MainContent({ selectedCategory, searchQuery, onModuleSelect }: M
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">{getCategoryTitle()}</h1>
           <p className="text-muted-foreground">
-            {modules.length} module{modules.length !== 1 ? "s" : ""} found
+            {modules.length} module{modules.length !== 1 ? 's' : ''} found
           </p>
         </div>
 
@@ -167,5 +169,5 @@ export function MainContent({ selectedCategory, searchQuery, onModuleSelect }: M
         )}
       </div>
     </div>
-  )
+  );
 }

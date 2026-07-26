@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server"
+import { NextRequest } from 'next/server';
 import {
   getTotalModulesCount,
   getModulesUpdatedThisWeek,
@@ -6,10 +6,10 @@ import {
   getRecommendedModulesCount,
   getTotalDownloads,
   getModulesByCategoryCount,
-  getNewModulesThisMonth
-} from "@/lib/db-utils"
-import { createSuccessResponse, createErrorResponse } from "@/lib/api-middleware"
-import { applyRateLimit } from "@/lib/rate-limit-enhanced"
+  getNewModulesThisMonth,
+} from '@/lib/db-utils';
+import { createSuccessResponse, createErrorResponse } from '@/lib/api-middleware';
+import { applyRateLimit } from '@/lib/rate-limit-enhanced';
 
 /**
  * Get platform statistics
@@ -38,18 +38,14 @@ import { applyRateLimit } from "@/lib/rate-limit-enhanced"
  * @openapi
  */
 export async function GET(request: NextRequest) {
-  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ')
+  const rateLimitResult = await applyRateLimit(request, 'PUBLIC_READ');
 
   if (!rateLimitResult.success) {
-    return createErrorResponse(
-      'Rate limit exceeded',
-      429,
-      {
-        "X-RateLimit-Limit": "100",
-        "X-RateLimit-Remaining": "0",
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "60",
-      }
-    )
+    return createErrorResponse('Rate limit exceeded', 429, {
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+      'Retry-After': rateLimitResult.retryAfter?.toString() || '60',
+    });
   }
 
   try {
@@ -61,7 +57,7 @@ export async function GET(request: NextRequest) {
       totalDownloads,
       securityModules,
       performanceModules,
-      newThisMonth
+      newThisMonth,
     ] = await Promise.all([
       getTotalModulesCount(),
       getModulesUpdatedThisWeek(),
@@ -70,8 +66,8 @@ export async function GET(request: NextRequest) {
       getTotalDownloads(),
       getModulesByCategoryCount('security'),
       getModulesByCategoryCount('performance'),
-      getNewModulesThisMonth()
-    ])
+      getNewModulesThisMonth(),
+    ]);
 
     return createSuccessResponse({
       totalModules,
@@ -82,10 +78,10 @@ export async function GET(request: NextRequest) {
       securityModules,
       performanceModules,
       newThisMonth,
-      currentTime: new Date().toLocaleString()
-    })
+      currentTime: new Date().toLocaleString(),
+    });
   } catch (error) {
-    console.error('Stats API error:', error)
-    return createErrorResponse('Failed to fetch stats', 500)
+    console.error('Stats API error:', error);
+    return createErrorResponse('Failed to fetch stats', 500);
   }
 }

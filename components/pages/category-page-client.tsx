@@ -1,18 +1,18 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { SharedLayout } from "@/components/layout/shared-layout"
-import { MainContent } from "@/components/features/modules/main-content"
-import { useModuleNavigation } from "@/lib/navigation"
+import { useState } from 'react';
+import { SharedLayout } from '@/components/layout/shared-layout';
+import { MainContent } from '@/components/features/modules/main-content';
+import { useModuleNavigation } from '@/lib/navigation';
 
 interface CategoryPageClientProps {
-  category: string
-  categoryTitle: string
+  category: string;
+  categoryTitle: string;
 }
 
 export function CategoryPageClient({ category, categoryTitle }: CategoryPageClientProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation()
+  const [searchQuery, setSearchQuery] = useState('');
+  const { handleModuleSelect, handleCategorySelect } = useModuleNavigation();
 
   return (
     <SharedLayout
@@ -28,5 +28,5 @@ export function CategoryPageClient({ category, categoryTitle }: CategoryPageClie
         onModuleSelect={handleModuleSelect}
       />
     </SharedLayout>
-  )
+  );
 }

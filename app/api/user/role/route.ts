@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getAuthenticatedUser, requireScope } from "@/lib/unified-auth"
-import { getUserRole } from "@/lib/admin-utils"
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUser, requireScope } from '@/lib/unified-auth';
+import { getUserRole } from '@/lib/admin-utils';
 
 /**
  * Get user role
@@ -13,19 +13,19 @@ import { getUserRole } from "@/lib/admin-utils"
  */
 export async function GET(request: NextRequest) {
   try {
-    const { user, error } = await getAuthenticatedUser(request)
-    
+    const { user, error } = await getAuthenticatedUser(request);
+
     if (error || !user) {
-      return NextResponse.json({ error: error || "Authentication required" }, { status: 401 })
+      return NextResponse.json({ error: error || 'Authentication required' }, { status: 401 });
     }
-    
-    requireScope(user, "read")
 
-    const role = await getUserRole(user.id)
+    requireScope(user, 'read');
 
-    return NextResponse.json({ role })
+    const role = await getUserRole(user.id);
+
+    return NextResponse.json({ role });
   } catch (error) {
-    console.error("Error fetching user role:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error('Error fetching user role:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -1,135 +1,152 @@
-"use client"
+'use client';
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Turnstile, TurnstileRef } from "@/components/shared/turnstile"
-import { Star, MessageSquare, Info, ChevronDown, ChevronUp, CheckCircle, PenTool, Eye, MessageSquareOff, Loader2, TriangleAlert } from "lucide-react"
-import { Module, Reply } from "@/types/module"
-import { useModuleRatings } from "@/hooks/use-modules"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { toast } from "sonner"
-import { useSession } from "@/lib/auth-client"
-import { SigninDialog } from "@/components/shared/signin-dialog"
-import { MarkdownEditor } from "@/components/shared/markdown-editor"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import rehypeRaw from "rehype-raw"
-import rehypeSanitize from "rehype-sanitize"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Turnstile, TurnstileRef } from '@/components/shared/turnstile';
+import {
+  Star,
+  MessageSquare,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
+  PenTool,
+  Eye,
+  MessageSquareOff,
+  Loader2,
+  TriangleAlert,
+} from 'lucide-react';
+import { Module, Reply } from '@/types/module';
+import { useModuleRatings } from '@/hooks/use-modules';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
+import { useSession } from '@/lib/auth-client';
+import { SigninDialog } from '@/components/shared/signin-dialog';
+import { MarkdownEditor } from '@/components/shared/markdown-editor';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ReviewSectionProps {
-  module: Module
+  module: Module;
 }
 
 export function ReviewSection({ module }: ReviewSectionProps) {
-  const [newReview, setNewReview] = useState({ rating: 0, comment: "" })
-  const [hoverRating, setHoverRating] = useState(0)
-  const [showReviewForm, setShowReviewForm] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const [helpfulLoading, setHelpfulLoading] = useState<Record<number, boolean>>({})
-  const [replyHelpfulLoading, setReplyHelpfulLoading] = useState<Record<number, boolean>>({})
-  const [showReplies, setShowReplies] = useState<Record<number, boolean>>({})
-  const [replies, setReplies] = useState<Record<number, Reply[]>>({})
-  const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({})
-  const [showReplyForm, setShowReplyForm] = useState<Record<number, boolean>>({})
-  const [replyText, setReplyText] = useState<Record<number, string>>({})
-  const [replySubmitting, setReplySubmitting] = useState<Record<number, boolean>>({})
-  const [replyTurnstileToken, setReplyTurnstileToken] = useState<Record<number, string | null>>({})
-  const [replySubmitError, setReplySubmitError] = useState<Record<number, string | null>>({})
-  const [userHelpfulVotes, setUserHelpfulVotes] = useState<{ratings: Set<number>, replies: Set<number>}>({
+  const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
+  const [hoverRating, setHoverRating] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [helpfulLoading, setHelpfulLoading] = useState<Record<number, boolean>>({});
+  const [replyHelpfulLoading, setReplyHelpfulLoading] = useState<Record<number, boolean>>({});
+  const [showReplies, setShowReplies] = useState<Record<number, boolean>>({});
+  const [replies, setReplies] = useState<Record<number, Reply[]>>({});
+  const [loadingReplies, setLoadingReplies] = useState<Record<number, boolean>>({});
+  const [showReplyForm, setShowReplyForm] = useState<Record<number, boolean>>({});
+  const [replyText, setReplyText] = useState<Record<number, string>>({});
+  const [replySubmitting, setReplySubmitting] = useState<Record<number, boolean>>({});
+  const [replyTurnstileToken, setReplyTurnstileToken] = useState<Record<number, string | null>>({});
+  const [replySubmitError, setReplySubmitError] = useState<Record<number, string | null>>({});
+  const [userHelpfulVotes, setUserHelpfulVotes] = useState<{
+    ratings: Set<number>;
+    replies: Set<number>;
+  }>({
     ratings: new Set(),
-    replies: new Set()
-  })
-  const [showSigninDialog, setShowSigninDialog] = useState(false)
-  const turnstileRef = useRef<TurnstileRef>(null)
-  const replyTurnstileRefs = useRef<Record<number, TurnstileRef | null>>({})
+    replies: new Set(),
+  });
+  const [showSigninDialog, setShowSigninDialog] = useState(false);
+  const turnstileRef = useRef<TurnstileRef>(null);
+  const replyTurnstileRefs = useRef<Record<number, TurnstileRef | null>>({});
 
-  const { ratings, userRating, loading, error, submitRating, refreshRatings } = useModuleRatings(module.id)
-  const { data: session } = useSession()
+  const { ratings, userRating, loading, error, submitRating, refreshRatings } = useModuleRatings(
+    module.id,
+  );
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (ratings.length > 0) {
-      ratings.forEach(rating => {
+      ratings.forEach((rating) => {
         if (!replies[rating.id] && !loadingReplies[rating.id]) {
-          setShowReplies(prev => ({ ...prev, [rating.id]: true }))
-          loadReplies(rating.id)
+          setShowReplies((prev) => ({ ...prev, [rating.id]: true }));
+          loadReplies(rating.id);
         }
-      })
+      });
     }
-  }, [ratings, replies, loadingReplies])
+  }, [ratings, replies, loadingReplies]);
 
   useEffect(() => {
     const loadHelpfulVotes = async () => {
       try {
-        const response = await fetch(`/api/modules/${module.id}/helpful-votes`)
+        const response = await fetch(`/api/modules/${module.id}/helpful-votes`);
         if (response.ok) {
-          const votes = await response.json()
+          const votes = await response.json();
           setUserHelpfulVotes({
             ratings: new Set(votes.ratings),
-            replies: new Set(votes.replies)
-          })
+            replies: new Set(votes.replies),
+          });
         }
       } catch (error) {
-        console.error('Error loading helpful votes:', error)
+        console.error('Error loading helpful votes:', error);
       }
-    }
+    };
 
-    loadHelpfulVotes()
-  }, [module.id])
+    loadHelpfulVotes();
+  }, [module.id]);
 
   const handleSubmitReview = async () => {
     if (!newReview.comment.trim()) {
-      toast.error("Please write a review comment")
-      return
+      toast.error('Please write a review comment');
+      return;
     }
 
     if (newReview.rating === 0) {
-      toast.error("Please select a rating")
-      return
+      toast.error('Please select a rating');
+      return;
     }
 
     if (!turnstileToken) {
-      setSubmitError("Please complete the captcha verification")
-      return
+      setSubmitError('Please complete the captcha verification');
+      return;
     }
 
-    setIsSubmitting(true)
-    setSubmitError(null)
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      await submitRating(newReview.rating, newReview.comment, turnstileToken)
-      setNewReview({ rating: 0, comment: "" })
-      setTurnstileToken(null)
-      turnstileRef.current?.reset()
-      setShowReviewForm(false)
-      toast.success("Review submitted successfully!")
+      await submitRating(newReview.rating, newReview.comment, turnstileToken);
+      setNewReview({ rating: 0, comment: '' });
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
+      setShowReviewForm(false);
+      toast.success('Review submitted successfully!');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit review'
-      setSubmitError(errorMessage)
-      toast.error(errorMessage)
-      setTurnstileToken(null)
-      turnstileRef.current?.reset()
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit review';
+      setSubmitError(errorMessage);
+      toast.error(errorMessage);
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleHelpfulClick = async (ratingId: number) => {
     if (!session?.user) {
-      setShowSigninDialog(true)
-      return
+      setShowSigninDialog(true);
+      return;
     }
 
     if (userHelpfulVotes.ratings.has(ratingId)) {
-      toast.error('You have already marked this review as helpful')
-      return
+      toast.error('You have already marked this review as helpful');
+      return;
     }
 
-    setHelpfulLoading(prev => ({ ...prev, [ratingId]: true }))
+    setHelpfulLoading((prev) => ({ ...prev, [ratingId]: true }));
 
     try {
       const response = await fetch(`/api/ratings/${ratingId}/helpful`, {
@@ -137,39 +154,39 @@ export function ReviewSection({ module }: ReviewSectionProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to mark as helpful')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to mark as helpful');
       }
 
-      toast.success('Marked as helpful!')
-      setUserHelpfulVotes(prev => ({
+      toast.success('Marked as helpful!');
+      setUserHelpfulVotes((prev) => ({
         ...prev,
-        ratings: new Set([...prev.ratings, ratingId])
-      }))
-      refreshRatings()
+        ratings: new Set([...prev.ratings, ratingId]),
+      }));
+      refreshRatings();
     } catch (error) {
-      console.error('Error marking as helpful:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to mark as helpful')
+      console.error('Error marking as helpful:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to mark as helpful');
     } finally {
-      setHelpfulLoading(prev => ({ ...prev, [ratingId]: false }))
+      setHelpfulLoading((prev) => ({ ...prev, [ratingId]: false }));
     }
-  }
+  };
 
   const handleReplyHelpfulClick = async (replyId: number) => {
     if (!session?.user) {
-      setShowSigninDialog(true)
-      return
+      setShowSigninDialog(true);
+      return;
     }
 
     if (userHelpfulVotes.replies.has(replyId)) {
-      toast.error('You have already marked this reply as helpful')
-      return
+      toast.error('You have already marked this reply as helpful');
+      return;
     }
 
-    setReplyHelpfulLoading(prev => ({ ...prev, [replyId]: true }))
+    setReplyHelpfulLoading((prev) => ({ ...prev, [replyId]: true }));
 
     try {
       const response = await fetch(`/api/replies/${replyId}/helpful`, {
@@ -177,81 +194,84 @@ export function ReviewSection({ module }: ReviewSectionProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to mark as helpful')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to mark as helpful');
       }
 
-      toast.success('Marked as helpful!')
-      setUserHelpfulVotes(prev => ({
+      toast.success('Marked as helpful!');
+      setUserHelpfulVotes((prev) => ({
         ...prev,
-        replies: new Set([...prev.replies, replyId])
-      }))
-      Object.keys(replies).forEach(ratingId => {
-        const ratingIdNum = parseInt(ratingId, 10)
-        if (replies[ratingIdNum]?.some(r => r.id === replyId)) {
-          loadReplies(ratingIdNum)
+        replies: new Set([...prev.replies, replyId]),
+      }));
+      Object.keys(replies).forEach((ratingId) => {
+        const ratingIdNum = parseInt(ratingId, 10);
+        if (replies[ratingIdNum]?.some((r) => r.id === replyId)) {
+          loadReplies(ratingIdNum);
         }
-      })
+      });
     } catch (error) {
-      console.error('Error marking reply as helpful:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to mark as helpful')
+      console.error('Error marking reply as helpful:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to mark as helpful');
     } finally {
-      setReplyHelpfulLoading(prev => ({ ...prev, [replyId]: false }))
+      setReplyHelpfulLoading((prev) => ({ ...prev, [replyId]: false }));
     }
-  }
+  };
 
   const loadReplies = async (ratingId: number) => {
-    setLoadingReplies(prev => ({ ...prev, [ratingId]: true }))
+    setLoadingReplies((prev) => ({ ...prev, [ratingId]: true }));
 
     try {
-      const response = await fetch(`/api/ratings/${ratingId}/replies`)
+      const response = await fetch(`/api/ratings/${ratingId}/replies`);
       if (!response.ok) {
-        throw new Error('Failed to load replies')
+        throw new Error('Failed to load replies');
       }
 
-      const data = await response.json()
-      setReplies(prev => ({ ...prev, [ratingId]: data.replies }))
+      const data = await response.json();
+      setReplies((prev) => ({ ...prev, [ratingId]: data.replies }));
     } catch (error) {
-      console.error('Error loading replies:', error)
-      toast.error('Failed to load replies')
+      console.error('Error loading replies:', error);
+      toast.error('Failed to load replies');
     } finally {
-      setLoadingReplies(prev => ({ ...prev, [ratingId]: false }))
+      setLoadingReplies((prev) => ({ ...prev, [ratingId]: false }));
     }
-  }
+  };
 
   const handleToggleReplies = async (ratingId: number) => {
-    const isCurrentlyShown = showReplies[ratingId]
-    setShowReplies(prev => ({ ...prev, [ratingId]: !isCurrentlyShown }))
+    const isCurrentlyShown = showReplies[ratingId];
+    setShowReplies((prev) => ({ ...prev, [ratingId]: !isCurrentlyShown }));
 
     if (!isCurrentlyShown && !replies[ratingId]) {
-      await loadReplies(ratingId)
+      await loadReplies(ratingId);
     }
-  }
+  };
 
   const handleSubmitReply = async (ratingId: number) => {
     if (!session?.user) {
-      setShowSigninDialog(true)
-      return
+      setShowSigninDialog(true);
+      return;
     }
 
-    const text = replyText[ratingId]?.trim()
-    const token = replyTurnstileToken[ratingId]
+    const text = replyText[ratingId]?.trim();
+    const token = replyTurnstileToken[ratingId];
 
     if (!text) {
-      toast.error("Please write a reply")
-      return
+      toast.error('Please write a reply');
+      return;
     }
 
     if (!token) {
-      setReplySubmitError(prev => ({ ...prev, [ratingId]: "Please complete the captcha verification" }))
-      return
+      setReplySubmitError((prev) => ({
+        ...prev,
+        [ratingId]: 'Please complete the captcha verification',
+      }));
+      return;
     }
 
-    setReplySubmitting(prev => ({ ...prev, [ratingId]: true }))
-    setReplySubmitError(prev => ({ ...prev, [ratingId]: null }))
+    setReplySubmitting((prev) => ({ ...prev, [ratingId]: true }));
+    setReplySubmitError((prev) => ({ ...prev, [ratingId]: null }));
 
     try {
       const response = await fetch(`/api/ratings/${ratingId}/replies`, {
@@ -263,37 +283,42 @@ export function ReviewSection({ module }: ReviewSectionProps) {
           comment: text,
           turnstileToken: token,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit reply')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit reply');
       }
 
-      toast.success('Reply submitted successfully!')
-      setReplyText(prev => ({ ...prev, [ratingId]: '' }))
-      setReplyTurnstileToken(prev => ({ ...prev, [ratingId]: null }))
-      setShowReplyForm(prev => ({ ...prev, [ratingId]: false }))
-      replyTurnstileRefs.current[ratingId]?.reset()
+      toast.success('Reply submitted successfully!');
+      setReplyText((prev) => ({ ...prev, [ratingId]: '' }));
+      setReplyTurnstileToken((prev) => ({ ...prev, [ratingId]: null }));
+      setShowReplyForm((prev) => ({ ...prev, [ratingId]: false }));
+      replyTurnstileRefs.current[ratingId]?.reset();
 
-      await loadReplies(ratingId)
+      await loadReplies(ratingId);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to submit reply'
-      setReplySubmitError(prev => ({ ...prev, [ratingId]: errorMessage }))
-      toast.error(errorMessage)
-      setReplyTurnstileToken(prev => ({ ...prev, [ratingId]: null }))
-      replyTurnstileRefs.current[ratingId]?.reset()
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit reply';
+      setReplySubmitError((prev) => ({ ...prev, [ratingId]: errorMessage }));
+      toast.error(errorMessage);
+      setReplyTurnstileToken((prev) => ({ ...prev, [ratingId]: null }));
+      replyTurnstileRefs.current[ratingId]?.reset();
     } finally {
-      setReplySubmitting(prev => ({ ...prev, [ratingId]: false }))
+      setReplySubmitting((prev) => ({ ...prev, [ratingId]: false }));
     }
-  }
+  };
 
-  const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void, size: 'sm' | 'md' | 'lg' = 'md') => {
+  const renderStars = (
+    rating: number,
+    interactive = false,
+    onRatingChange?: (rating: number) => void,
+    size: 'sm' | 'md' | 'lg' = 'md',
+  ) => {
     const sizeClasses = {
       sm: 'w-4 h-4',
       md: 'w-5 h-5',
-      lg: 'w-6 h-6 sm:w-7 sm:h-7'
-    }
+      lg: 'w-6 h-6 sm:w-7 sm:h-7',
+    };
 
     const displayRating = interactive && hoverRating > 0 ? hoverRating : rating;
 
@@ -307,30 +332,27 @@ export function ReviewSection({ module }: ReviewSectionProps) {
             <Star
               key={star}
               className={`${sizeClasses[size]} transition-all duration-200 ${
-                isActive
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300 dark:text-gray-600"
+                isActive ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 dark:text-gray-600'
               } ${
                 interactive
-                  ? "cursor-pointer hover:scale-110 hover:fill-yellow-300 hover:text-yellow-300" 
-                  : ""
-              } ${
-                isHovered ? "scale-110" : ""
-              }`}
+                  ? 'cursor-pointer hover:scale-110 hover:fill-yellow-300 hover:text-yellow-300'
+                  : ''
+              } ${isHovered ? 'scale-110' : ''}`}
               onClick={() => interactive && onRatingChange?.(star)}
               onMouseEnter={() => interactive && setHoverRating(star)}
               onMouseLeave={() => interactive && setHoverRating(0)}
             />
-          )
+          );
         })}
         {interactive && (displayRating > 0 || hoverRating > 0) && (
           <span className="ml-2 text-sm text-muted-foreground font-medium">
-            {hoverRating > 0 ? hoverRating : rating} star{(hoverRating > 0 ? hoverRating : rating) !== 1 ? 's' : ''}
+            {hoverRating > 0 ? hoverRating : rating} star
+            {(hoverRating > 0 ? hoverRating : rating) !== 1 ? 's' : ''}
           </span>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <Card className="w-full gap-0">
@@ -339,7 +361,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <MessageSquare className="w-5 h-5" />
             <span>Reviews</span>
-            <span className="text-muted-foreground font-normal">({loading ? '...' : ratings.length})</span>
+            <span className="text-muted-foreground font-normal">
+              ({loading ? '...' : ratings.length})
+            </span>
           </CardTitle>
           {!userRating && (
             <Button
@@ -347,9 +371,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
               size="sm"
               onClick={() => {
                 if (!session?.user) {
-                  setShowSigninDialog(true)
+                  setShowSigninDialog(true);
                 } else {
-                  setShowReviewForm(!showReviewForm)
+                  setShowReviewForm(!showReviewForm);
                 }
               }}
               className="w-full sm:w-auto"
@@ -376,7 +400,12 @@ export function ReviewSection({ module }: ReviewSectionProps) {
             <CardContent className="space-y-4 -mt-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Your Rating</label>
-                {renderStars(newReview.rating, true, (rating) => setNewReview((prev) => ({ ...prev, rating })), 'lg')}
+                {renderStars(
+                  newReview.rating,
+                  true,
+                  (rating) => setNewReview((prev) => ({ ...prev, rating })),
+                  'lg',
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -397,7 +426,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                   <TabsContent value="write" className="mt-2">
                     <MarkdownEditor
                       value={newReview.comment}
-                      onChange={(value) => setNewReview((prev) => ({ ...prev, comment: value || "" }))}
+                      onChange={(value) =>
+                        setNewReview((prev) => ({ ...prev, comment: value || '' }))
+                      }
                       placeholder="Share your experience with this module... You can use Markdown formatting!"
                       height={200}
                     />
@@ -406,7 +437,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                     <div className="min-h-[200px] p-3 border rounded-md bg-background">
                       {newReview.comment ? (
                         <div className="text-sm [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                          <ReactMarkdown 
+                          <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw, rehypeSanitize]}
                           >
@@ -414,7 +445,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                           </ReactMarkdown>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground italic text-sm">Nothing to preview yet...</p>
+                        <p className="text-muted-foreground italic text-sm">
+                          Nothing to preview yet...
+                        </p>
                       )}
                     </div>
                   </TabsContent>
@@ -431,21 +464,23 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                       ref={turnstileRef}
                       siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
                       onSuccess={(token) => {
-                        setTurnstileToken(token)
-                        setSubmitError(null)
+                        setTurnstileToken(token);
+                        setSubmitError(null);
                       }}
                       onError={(error) => {
-                        console.warn("Turnstile error:", error)
-                        setTurnstileToken(null)
-                        if (error?.message?.includes("600010")) {
-                          setSubmitError("Captcha loading issue. Please refresh the page and try again.")
+                        console.warn('Turnstile error:', error);
+                        setTurnstileToken(null);
+                        if (error?.message?.includes('600010')) {
+                          setSubmitError(
+                            'Captcha loading issue. Please refresh the page and try again.',
+                          );
                         } else {
-                          setSubmitError("Captcha verification failed. Please try again.")
+                          setSubmitError('Captcha verification failed. Please try again.');
                         }
                       }}
                       onExpire={() => {
-                        setTurnstileToken(null)
-                        setSubmitError("Captcha has expired. Please verify again.")
+                        setTurnstileToken(null);
+                        setSubmitError('Captcha has expired. Please verify again.');
                       }}
                       theme="auto"
                       size="normal"
@@ -463,16 +498,19 @@ export function ReviewSection({ module }: ReviewSectionProps) {
 
               {submitError && (
                 <Alert variant="destructive">
-                  <AlertDescription className="text-sm">
-                    {submitError}
-                  </AlertDescription>
+                  <AlertDescription className="text-sm">{submitError}</AlertDescription>
                 </Alert>
               )}
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={handleSubmitReview}
-                  disabled={!newReview.comment.trim() || newReview.rating === 0 || isSubmitting || !turnstileToken}
+                  disabled={
+                    !newReview.comment.trim() ||
+                    newReview.rating === 0 ||
+                    isSubmitting ||
+                    !turnstileToken
+                  }
                   className="w-full sm:w-auto"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Review'}
@@ -480,9 +518,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowReviewForm(false)
-                    setNewReview({ rating: 0, comment: "" })
-                    setSubmitError(null)
+                    setShowReviewForm(false);
+                    setNewReview({ rating: 0, comment: '' });
+                    setSubmitError(null);
                   }}
                   className="w-full sm:w-auto"
                 >
@@ -506,14 +544,18 @@ export function ReviewSection({ module }: ReviewSectionProps) {
           ) : ratings.length === 0 ? (
             <div className="flex flex-col text-center py-8 space-y-6 items-center justify-center">
               <MessageSquareOff size={32} className="text-muted-foreground" />
-              <p className="text-muted-foreground">No reviews yet. Be the first to review this module!</p>
+              <p className="text-muted-foreground">
+                No reviews yet. Be the first to review this module!
+              </p>
             </div>
           ) : (
             ratings.map((rating) => (
               <div key={rating.id} className="border-b border-border pb-4 last:border-b-0">
                 <div className="flex items-start gap-3">
                   <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
-                    {rating.userImage && <AvatarImage src={rating.userImage} alt={rating.userName || 'User'} />}
+                    {rating.userImage && (
+                      <AvatarImage src={rating.userImage} alt={rating.userName || 'User'} />
+                    )}
                     <AvatarFallback className="bg-muted text-xs">
                       {rating.userId.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -532,7 +574,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                     </div>
                     {rating.comment && (
                       <div className="text-sm sm:text-base text-muted-foreground mb-3 break-words [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-4 [&_blockquote]:border-muted [&_blockquote]:pl-4 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                        <ReactMarkdown 
+                        <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           rehypePlugins={[rehypeRaw, rehypeSanitize]}
                         >
@@ -543,7 +585,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                       <button
                         onClick={() => handleHelpfulClick(rating.id)}
-                        disabled={helpfulLoading[rating.id] || userHelpfulVotes.ratings.has(rating.id)}
+                        disabled={
+                          helpfulLoading[rating.id] || userHelpfulVotes.ratings.has(rating.id)
+                        }
                         className={`px-2 py-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                           userHelpfulVotes.ratings.has(rating.id)
                             ? 'bg-primary/10 text-primary'
@@ -555,9 +599,12 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                       <button
                         onClick={() => {
                           if (!session?.user) {
-                            setShowSigninDialog(true)
+                            setShowSigninDialog(true);
                           } else {
-                            setShowReplyForm(prev => ({ ...prev, [rating.id]: !prev[rating.id] }))
+                            setShowReplyForm((prev) => ({
+                              ...prev,
+                              [rating.id]: !prev[rating.id],
+                            }));
                           }
                         }}
                         className="px-2 py-1 rounded-md hover:bg-muted transition-colors"
@@ -570,9 +617,16 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                           className="px-2 py-1 rounded-md hover:bg-muted transition-colors flex items-center gap-1"
                         >
                           {replies[rating.id]?.length > 0 && (
-                            <span>{replies[rating.id].length} {replies[rating.id].length === 1 ? 'reply' : 'replies'}</span>
+                            <span>
+                              {replies[rating.id].length}{' '}
+                              {replies[rating.id].length === 1 ? 'reply' : 'replies'}
+                            </span>
                           )}
-                          {showReplies[rating.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          {showReplies[rating.id] ? (
+                            <ChevronUp className="w-3 h-3" />
+                          ) : (
+                            <ChevronDown className="w-3 h-3" />
+                          )}
                         </button>
                       )}
                     </div>
@@ -587,11 +641,17 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                             </label>
                             <Tabs defaultValue="write" className="w-full">
                               <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="write" className="flex items-center gap-2 text-xs">
+                                <TabsTrigger
+                                  value="write"
+                                  className="flex items-center gap-2 text-xs"
+                                >
                                   <PenTool className="w-3 h-3" />
                                   Write
                                 </TabsTrigger>
-                                <TabsTrigger value="preview" className="flex items-center gap-2 text-xs">
+                                <TabsTrigger
+                                  value="preview"
+                                  className="flex items-center gap-2 text-xs"
+                                >
                                   <Eye className="w-3 h-3" />
                                   Preview
                                 </TabsTrigger>
@@ -599,7 +659,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                               <TabsContent value="write" className="mt-2">
                                 <MarkdownEditor
                                   value={replyText[rating.id] || ''}
-                                  onChange={(value) => setReplyText(prev => ({ ...prev, [rating.id]: value || '' }))}
+                                  onChange={(value) =>
+                                    setReplyText((prev) => ({ ...prev, [rating.id]: value || '' }))
+                                  }
                                   placeholder="Write a helpful reply... Markdown formatting supported!"
                                   height={120}
                                 />
@@ -608,7 +670,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                 <div className="min-h-[120px] p-3 border rounded-md bg-background">
                                   {replyText[rating.id] ? (
                                     <div className="text-sm [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1 [&_h2]:mt-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-1 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:ml-4 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:ml-4 [&_ol]:mb-2 [&_li]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:border-muted [&_blockquote]:pl-2 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                                      <ReactMarkdown 
+                                      <ReactMarkdown
                                         remarkPlugins={[remarkGfm]}
                                         rehypePlugins={[rehypeRaw, rehypeSanitize]}
                                       >
@@ -616,7 +678,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                       </ReactMarkdown>
                                     </div>
                                   ) : (
-                                    <p className="text-muted-foreground italic text-sm">Nothing to preview yet...</p>
+                                    <p className="text-muted-foreground italic text-sm">
+                                      Nothing to preview yet...
+                                    </p>
                                   )}
                                 </div>
                               </TabsContent>
@@ -631,24 +695,45 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                             <div className="w-full overflow-x-auto">
                               {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
                                 <Turnstile
-                                  ref={(ref) => { replyTurnstileRefs.current[rating.id] = ref }}
+                                  ref={(ref) => {
+                                    replyTurnstileRefs.current[rating.id] = ref;
+                                  }}
                                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
                                   onSuccess={(token) => {
-                                    setReplyTurnstileToken(prev => ({ ...prev, [rating.id]: token }))
-                                    setReplySubmitError(prev => ({ ...prev, [rating.id]: null }))
+                                    setReplyTurnstileToken((prev) => ({
+                                      ...prev,
+                                      [rating.id]: token,
+                                    }));
+                                    setReplySubmitError((prev) => ({ ...prev, [rating.id]: null }));
                                   }}
                                   onError={(error) => {
-                                    console.warn("Reply Turnstile error:", error)
-                                    setReplyTurnstileToken(prev => ({ ...prev, [rating.id]: null }))
-                                    if (error?.message?.includes("600010")) {
-                                      setReplySubmitError(prev => ({ ...prev, [rating.id]: "Captcha loading issue. Please refresh and try again." }))
+                                    console.warn('Reply Turnstile error:', error);
+                                    setReplyTurnstileToken((prev) => ({
+                                      ...prev,
+                                      [rating.id]: null,
+                                    }));
+                                    if (error?.message?.includes('600010')) {
+                                      setReplySubmitError((prev) => ({
+                                        ...prev,
+                                        [rating.id]:
+                                          'Captcha loading issue. Please refresh and try again.',
+                                      }));
                                     } else {
-                                      setReplySubmitError(prev => ({ ...prev, [rating.id]: "Captcha verification failed." }))
+                                      setReplySubmitError((prev) => ({
+                                        ...prev,
+                                        [rating.id]: 'Captcha verification failed.',
+                                      }));
                                     }
                                   }}
                                   onExpire={() => {
-                                    setReplyTurnstileToken(prev => ({ ...prev, [rating.id]: null }))
-                                    setReplySubmitError(prev => ({ ...prev, [rating.id]: "Captcha expired." }))
+                                    setReplyTurnstileToken((prev) => ({
+                                      ...prev,
+                                      [rating.id]: null,
+                                    }));
+                                    setReplySubmitError((prev) => ({
+                                      ...prev,
+                                      [rating.id]: 'Captcha expired.',
+                                    }));
                                   }}
                                   theme="auto"
                                   size="normal"
@@ -676,7 +761,11 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                             <Button
                               size="sm"
                               onClick={() => handleSubmitReply(rating.id)}
-                              disabled={!replyText[rating.id]?.trim() || replySubmitting[rating.id] || !replyTurnstileToken[rating.id]}
+                              disabled={
+                                !replyText[rating.id]?.trim() ||
+                                replySubmitting[rating.id] ||
+                                !replyTurnstileToken[rating.id]
+                              }
                               className="w-full sm:w-auto"
                             >
                               {replySubmitting[rating.id] ? 'Submitting...' : 'Submit Reply'}
@@ -685,9 +774,9 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                setShowReplyForm(prev => ({ ...prev, [rating.id]: false }))
-                                setReplyText(prev => ({ ...prev, [rating.id]: '' }))
-                                setReplySubmitError(prev => ({ ...prev, [rating.id]: null }))
+                                setShowReplyForm((prev) => ({ ...prev, [rating.id]: false }));
+                                setReplyText((prev) => ({ ...prev, [rating.id]: '' }));
+                                setReplySubmitError((prev) => ({ ...prev, [rating.id]: null }));
                               }}
                               className="w-full sm:w-auto"
                             >
@@ -708,7 +797,12 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                           replies[rating.id]?.map((reply) => (
                             <div key={reply.id} className="flex items-start gap-2">
                               <Avatar className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0">
-                                {reply.userImage && <AvatarImage src={reply.userImage} alt={reply.userName || 'User'} />}
+                                {reply.userImage && (
+                                  <AvatarImage
+                                    src={reply.userImage}
+                                    alt={reply.userName || 'User'}
+                                  />
+                                )}
                                 <AvatarFallback className="bg-muted text-xs">
                                   {reply.userId.substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
@@ -723,7 +817,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                   </span>
                                 </div>
                                 <div className="text-xs sm:text-sm text-muted-foreground mb-2 break-words [&_h1]:text-sm [&_h1]:font-bold [&_h1]:mb-1 [&_h1]:mt-2 [&_h2]:text-xs [&_h2]:font-semibold [&_h2]:mb-1 [&_h2]:mt-1 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-1 [&_p]:mb-1 [&_ul]:list-disc [&_ul]:ml-3 [&_ul]:mb-1 [&_ol]:list-decimal [&_ol]:ml-3 [&_ol]:mb-1 [&_li]:mb-0.5 [&_blockquote]:border-l-2 [&_blockquote]:border-muted [&_blockquote]:pl-2 [&_blockquote]:italic [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:text-xs [&_a]:text-primary [&_a]:underline [&_strong]:font-semibold [&_em]:italic">
-                                  <ReactMarkdown 
+                                  <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     rehypePlugins={[rehypeRaw, rehypeSanitize]}
                                   >
@@ -732,14 +826,18 @@ export function ReviewSection({ module }: ReviewSectionProps) {
                                 </div>
                                 <button
                                   onClick={() => handleReplyHelpfulClick(reply.id)}
-                                  disabled={replyHelpfulLoading[reply.id] || userHelpfulVotes.replies.has(reply.id)}
+                                  disabled={
+                                    replyHelpfulLoading[reply.id] ||
+                                    userHelpfulVotes.replies.has(reply.id)
+                                  }
                                   className={`px-1.5 py-0.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs ${
                                     userHelpfulVotes.replies.has(reply.id)
                                       ? 'bg-primary/10 text-primary'
                                       : 'hover:bg-muted'
                                   }`}
                                 >
-                                  {replyHelpfulLoading[reply.id] ? '...' : '👍'} Helpful ({reply.helpful})
+                                  {replyHelpfulLoading[reply.id] ? '...' : '👍'} Helpful (
+                                  {reply.helpful})
                                 </button>
                               </div>
                             </div>
@@ -754,10 +852,7 @@ export function ReviewSection({ module }: ReviewSectionProps) {
           )}
         </div>
       </CardContent>
-      <SigninDialog
-        open={showSigninDialog}
-        onOpenChange={setShowSigninDialog}
-      />
+      <SigninDialog open={showSigninDialog} onOpenChange={setShowSigninDialog} />
     </Card>
-  )
+  );
 }
