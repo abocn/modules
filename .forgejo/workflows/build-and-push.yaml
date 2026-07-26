@@ -1,0 +1,29 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Forgejo Container Registry
+        run: |
+          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login git-registry.p0ntus.com -u "${{ github.actor }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          IMAGE_NAME="git-registry.p0ntus.com/aidan/modules"
+          docker build -t "${IMAGE_NAME}:latest" -t "${IMAGE_NAME}:${{ github.sha }}" .
+
+      - name: Push Docker image
+        run: |
+          IMAGE_NAME="git-registry.p0ntus.com/aidan/modules"
+          docker push "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:${{ github.sha }}"
