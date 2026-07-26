@@ -4,6 +4,9 @@ const getBaseURL = () => {
   if (process.env.NODE_ENV === 'test') {
     return 'http://localhost:3000';
   }
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
   return process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000';
 };
 

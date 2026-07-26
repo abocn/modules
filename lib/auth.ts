@@ -6,6 +6,11 @@ import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || 'https://modules.aidan.so',
+    'https://modules.aidan.so',
+    'http://localhost:3000',
+  ],
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,

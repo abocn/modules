@@ -138,8 +138,12 @@ export function SigninDialog({ open, onOpenChange, trigger }: SigninDialogProps)
         onOpenChange(false);
         window.location.reload();
       }
-    } catch {
-      const errorMessage = 'An error occurred. Please try again.';
+    } catch (err) {
+      console.error('Sign in error:', err);
+      const errorMessage =
+        err instanceof Error && err.message
+          ? err.message
+          : 'An error occurred. Please try again.';
       signInForm.setError('root', {
         message: errorMessage,
       });
@@ -169,8 +173,12 @@ export function SigninDialog({ open, onOpenChange, trigger }: SigninDialogProps)
         onOpenChange(false);
         window.location.reload();
       }
-    } catch {
-      const errorMessage = 'An error occurred. Please try again.';
+    } catch (err) {
+      console.error('Sign up error:', err);
+      const errorMessage =
+        err instanceof Error && err.message
+          ? err.message
+          : 'An error occurred. Please try again.';
       signUpForm.setError('root', {
         message: errorMessage,
       });
