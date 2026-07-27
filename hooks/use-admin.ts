@@ -259,7 +259,7 @@ export function useAdminStats(): UseAdminStatsReturn {
   };
 
   useEffect(() => {
-    fetchStats();
+    queueMicrotask(() => fetchStats());
   }, []);
 
   return {
@@ -295,7 +295,7 @@ export function usePendingModules(limit: number = 4): UsePendingModulesReturn {
   }, [limit]);
 
   useEffect(() => {
-    fetchPendingModules();
+    queueMicrotask(() => fetchPendingModules());
   }, [limit, fetchPendingModules]);
 
   return {
@@ -333,7 +333,7 @@ export function useRecentActions(limit: number = 5): UseRecentActionsReturn {
   }, [limit]);
 
   useEffect(() => {
-    fetchRecentActions();
+    queueMicrotask(() => fetchRecentActions());
   }, [limit, fetchRecentActions]);
 
   return {
@@ -384,7 +384,7 @@ export function useAdminModulesList(
   }, [search, limit, offset]);
 
   useEffect(() => {
-    fetchModules();
+    queueMicrotask(() => fetchModules());
   }, [search, limit, offset, fetchModules]);
 
   return {

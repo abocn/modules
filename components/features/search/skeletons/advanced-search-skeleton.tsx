@@ -7,6 +7,90 @@ import { Separator } from '@/components/ui/separator';
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { ModuleCardSkeleton } from '@/components/features/modules/skeletons/module-card-skeleton';
 
+interface FilterSectionSkeletonProps {
+  section: string;
+  expandedSections: Record<string, boolean>;
+  toggleSection: (section: string) => void;
+  itemCount?: number;
+}
+
+function FilterSectionSkeleton({
+  section,
+  expandedSections,
+  toggleSection,
+  itemCount = 4,
+}: FilterSectionSkeletonProps) {
+  const isExpanded = expandedSections[section];
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => toggleSection(section)}
+        className="flex items-center justify-between w-full text-left"
+        type="button"
+      >
+        <Skeleton className="h-4 w-24" />
+        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {isExpanded && (
+        <div className="space-y-2">
+          {[...Array(itemCount)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-2 min-h-[2.5rem] px-2">
+              <Skeleton className="h-4 w-4 rounded" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface FilterSectionWithSliderSkeletonProps {
+  section: string;
+  expandedSections: Record<string, boolean>;
+  toggleSection: (section: string) => void;
+}
+
+function FilterSectionWithSliderSkeleton({
+  section,
+  expandedSections,
+  toggleSection,
+}: FilterSectionWithSliderSkeletonProps) {
+  const isExpanded = expandedSections[section];
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => toggleSection(section)}
+        className="flex items-center justify-between w-full text-left"
+        type="button"
+      >
+        <Skeleton className="h-4 w-24" />
+        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {isExpanded && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-9 w-full rounded" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-2 w-full rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-2 w-full rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-9 w-full rounded" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AdvancedSearchSkeleton() {
   const [showFilters, setShowFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -31,74 +115,6 @@ export function AdvancedSearchSkeleton() {
       ...prev,
       [section]: !prev[section],
     }));
-  };
-
-  const FilterSectionSkeleton = ({
-    section,
-    itemCount = 4,
-  }: {
-    section: string;
-    itemCount?: number;
-  }) => {
-    const isExpanded = expandedSections[section];
-    return (
-      <div className="space-y-3">
-        <button
-          onClick={() => toggleSection(section)}
-          className="flex items-center justify-between w-full text-left"
-          type="button"
-        >
-          <Skeleton className="h-4 w-24" />
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-        {isExpanded && (
-          <div className="space-y-2">
-            {[...Array(itemCount)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-2 min-h-[2.5rem] px-2">
-                <Skeleton className="h-4 w-4 rounded" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const FilterSectionWithSliderSkeleton = ({ section }: { section: string }) => {
-    const isExpanded = expandedSections[section];
-    return (
-      <div className="space-y-3">
-        <button
-          onClick={() => toggleSection(section)}
-          className="flex items-center justify-between w-full text-left"
-          type="button"
-        >
-          <Skeleton className="h-4 w-24" />
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-        {isExpanded && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-20" />
-              <Skeleton className="h-9 w-full rounded" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-32" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-28" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-9 w-full rounded" />
-            </div>
-          </div>
-        )}
-      </div>
-    );
   };
 
   return (
@@ -144,9 +160,19 @@ export function AdvancedSearchSkeleton() {
               </div>
             )}
 
-            <FilterSectionSkeleton section="categories" itemCount={7} />
+            <FilterSectionSkeleton
+              section="categories"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+              itemCount={7}
+            />
             <Separator />
-            <FilterSectionSkeleton section="rootMethods" itemCount={3} />
+            <FilterSectionSkeleton
+              section="rootMethods"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+              itemCount={3}
+            />
             <Separator />
 
             <div className="space-y-3">
@@ -175,7 +201,11 @@ export function AdvancedSearchSkeleton() {
             </div>
 
             <Separator />
-            <FilterSectionWithSliderSkeleton section="preferences" />
+            <FilterSectionWithSliderSkeleton
+              section="preferences"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            />
             <Separator />
 
             <div className="space-y-3">
@@ -214,7 +244,12 @@ export function AdvancedSearchSkeleton() {
             </div>
 
             <Separator />
-            <FilterSectionSkeleton section="additional" itemCount={2} />
+            <FilterSectionSkeleton
+              section="additional"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+              itemCount={2}
+            />
 
             <div className="pt-4 space-y-2">
               <Skeleton className="h-3 w-16" />

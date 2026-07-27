@@ -104,14 +104,6 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
     hasReviewNotes: 'all',
   });
 
-  useEffect(() => {
-    if (userId) {
-      fetchSubmissions();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
-
   const fetchSubmissions = async () => {
     try {
       const response = await fetch('/api/modules/my-submissions');
@@ -127,6 +119,14 @@ export function MySubmissions({ userId }: MySubmissionsProps) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (userId) {
+      queueMicrotask(() => fetchSubmissions());
+    } else {
+      queueMicrotask(() => setLoading(false));
+    }
+  }, [userId]);
 
   const handleEdit = (submission: Submission) => {
     setEditingSubmission(submission);

@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from 'next/server';
  * Adds security headers to all responses to protect
  * against common web vulnerabilities.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function proxy(_request: NextRequest) {
   const response = NextResponse.next();
 

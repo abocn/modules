@@ -6,16 +6,18 @@ import { Clock } from 'lucide-react';
 
 export function ClockCard() {
   const [time, setTime] = useState<Date | null>(null);
-  const [is24Hour, setIs24Hour] = useState(false);
+  const [is24Hour, setIs24Hour] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    return (
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('clockFormat='))
+        ?.split('=')[1] === '24h'
+    );
+  });
 
   useEffect(() => {
-    const saved = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('clockFormat='))
-      ?.split('=')[1];
-
-    setIs24Hour(saved === '24h');
-    setTime(new Date());
+    queueMicrotask(() => setTime(new Date()));
 
     const timer = setInterval(() => {
       setTime(new Date());

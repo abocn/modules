@@ -25,6 +25,7 @@ export const LICENSE_LABELS: Record<string, string> = {
   Proprietary: 'Proprietary License',
   Custom: 'Custom License',
   Other: 'Other License',
+  'No License': 'No License',
 };
 
 /**

@@ -48,6 +48,37 @@ interface SearchFilters {
   sortOrder: 'asc' | 'desc';
 }
 
+interface FilterSectionProps {
+  title: string;
+  section: string;
+  expandedSections: Record<string, boolean>;
+  toggleSection: (section: string) => void;
+  children: React.ReactNode;
+}
+
+function FilterSection({
+  title,
+  section,
+  expandedSections,
+  toggleSection,
+  children,
+}: FilterSectionProps) {
+  const isExpanded = expandedSections[section];
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => toggleSection(section)}
+        className="flex items-center justify-between w-full text-left"
+        type="button"
+      >
+        <Label className="font-medium">{title}</Label>
+        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      {isExpanded && children}
+    </div>
+  );
+}
+
 export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
   const [filters, setFilters] = useState<SearchFilters>({
     query: '',
@@ -117,20 +148,20 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
   const { modules: allModules, loading, error } = useModules();
 
   useEffect(() => {
-    const checkIsMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setShowFilters(false);
+      }
+    };
     checkIsMobile();
     window.addEventListener('resize', checkIsMobile);
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
   useEffect(() => {
-    if (isMobile) {
-      setShowFilters(false);
-    }
-  }, [isMobile]);
-
-  useEffect(() => {
-    setLocalQuery(filters.query);
+    queueMicrotask(() => setLocalQuery(filters.query));
   }, [filters.query]);
 
   useEffect(() => {
@@ -336,31 +367,6 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
     }));
   }, []);
 
-  const FilterSection = ({
-    title,
-    section,
-    children,
-  }: {
-    title: string;
-    section: string;
-    children: React.ReactNode;
-  }) => {
-    const isExpanded = expandedSections[section];
-    return (
-      <div className="space-y-3">
-        <button
-          onClick={() => toggleSection(section)}
-          className="flex items-center justify-between w-full text-left"
-          type="button"
-        >
-          <Label className="font-medium">{title}</Label>
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
-        {isExpanded && children}
-      </div>
-    );
-  };
-
   const filteredModules = useMemo(() => getFilteredModules(), [getFilteredModules]);
   const paginatedModules = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -371,7 +377,7 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
   const totalPages = Math.ceil(filteredModules.length / pageSize);
 
   useEffect(() => {
-    setCurrentPage(1);
+    queueMicrotask(() => setCurrentPage(1));
   }, [filters, pageSize]);
   const activeFiltersCount =
     (filters.categories.length > 0 ? 1 : 0) +
@@ -442,7 +448,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
               </div>
             )}
 
-            <FilterSection title="Categories" section="categories">
+            <FilterSection
+              title="Categories"
+              section="categories"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
                 {categories.map((category) => (
                   <div
@@ -476,7 +487,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
 
             <Separator />
 
-            <FilterSection title="Root Methods" section="rootMethods">
+            <FilterSection
+              title="Root Methods"
+              section="rootMethods"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="space-y-2">
                 {rootMethods.map((method) => (
                   <div
@@ -510,7 +526,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
 
             <Separator />
 
-            <FilterSection title="Android Versions" section="androidVersions">
+            <FilterSection
+              title="Android Versions"
+              section="androidVersions"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
                 {androidVersions.map((version) => (
                   <div
@@ -544,7 +565,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
 
             <Separator />
 
-            <FilterSection title="Preferences" section="preferences">
+            <FilterSection
+              title="Preferences"
+              section="preferences"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm">Source Code</Label>
@@ -620,7 +646,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
 
             <Separator />
 
-            <FilterSection title="Module Status" section="status">
+            <FilterSection
+              title="Module Status"
+              section="status"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 min-h-[2.5rem] px-2 rounded hover:bg-muted/50">
@@ -716,7 +747,12 @@ export function AdvancedSearch({ onModuleSelect }: AdvancedSearchProps) {
 
             <Separator />
 
-            <FilterSection title="Additional Features" section="additional">
+            <FilterSection
+              title="Additional Features"
+              section="additional"
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+            >
               <div className="space-y-2">
                 <div className="flex items-center space-x-2 min-h-[2.5rem] px-2 rounded hover:bg-muted/50">
                   <Checkbox

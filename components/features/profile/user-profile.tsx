@@ -104,12 +104,7 @@ export function UserProfile() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(false);
-  }, [session]);
-
-  useEffect(() => {
     if (session?.user?.id) {
-      setIsLoading(true);
       fetch(`/api/user/profile/${session.user.id}`, {
         credentials: 'include',
       })
@@ -133,7 +128,6 @@ export function UserProfile() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      setApiKeysInfo((prev) => ({ ...prev, isLoading: true }));
       fetch('/api/user/api-keys', {
         credentials: 'include',
       })
@@ -154,7 +148,6 @@ export function UserProfile() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      setGitHubInfo((prev) => ({ ...prev, isLoading: true }));
       fetch('/api/settings/github-pat', {
         credentials: 'include',
       })

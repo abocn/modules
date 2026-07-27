@@ -53,7 +53,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { fetchReadmeContent, parseFeaturesFromReadme } from '@/lib/github-utils';
-import { normalizeVersion, CATEGORIES } from '@/lib/validations/module';
+import { normalizeVersion, CATEGORIES, MAX_DESCRIPTION } from '@/lib/validations/module';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
 import { LoadingState } from '@/components/shared/loading-state';
@@ -72,7 +72,7 @@ const formSchema = z
     description: z
       .string()
       .min(50, 'Description must be at least 50 characters')
-      .max(5000, 'Description must be less than 5000 characters'),
+      .max(MAX_DESCRIPTION, `Description must be less than ${MAX_DESCRIPTION} characters`),
     author: z
       .string()
       .min(2, 'Author name must be at least 2 characters')
@@ -313,9 +313,9 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
       }
 
       let content = rawContent;
-      if (content.length > 8000) {
-        content = content.slice(0, 8000);
-        toast.warning('README truncated to maximum length (8000 characters)');
+      if (content.length > MAX_DESCRIPTION) {
+        content = content.slice(0, MAX_DESCRIPTION);
+        toast.warning(`README truncated to maximum length (${MAX_DESCRIPTION} characters)`);
       }
       form.setValue('description', content, { shouldValidate: true, shouldDirty: true });
 
@@ -812,7 +812,7 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
       <Card>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={(e) => form.handleSubmit(onSubmit)(e)} className="space-y-8">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Basic Information</h3>
                 <Separator />
@@ -888,7 +888,7 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                               switch between write and preview modes.
                             </FormDescription>
                             <div className="text-sm text-muted-foreground text-right">
-                              {field.value?.length || 0} / 8000 characters
+                              {field.value?.length || 0} / {MAX_DESCRIPTION} characters
                             </div>
                           </div>
                         </div>
@@ -1451,7 +1451,7 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                             Describe what&apos;s new in this release using Markdown formatting
                           </FormDescription>
                           <div className="text-sm text-muted-foreground text-right">
-                            {field.value?.length || 0} / 8000 characters
+                            {field.value?.length || 0} / 5000 characters
                           </div>
                         </div>
                         <FormMessage />

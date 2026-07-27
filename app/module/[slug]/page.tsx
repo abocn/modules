@@ -278,9 +278,6 @@ export default async function ModulePage({ params, searchParams }: ModulePagePro
 
               <div className="md:hidden w-full">
                 <Card className="shadow-md gap-0">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
-                  </CardHeader>
                   <CardContent className="space-y-3">
                     <DownloadButton module={displayModuleData} />
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -341,7 +338,7 @@ export default async function ModulePage({ params, searchParams }: ModulePagePro
                 </Card>
               )}
 
-              <Card className="w-full max-w-full shadow-md">
+              <Card className="w-full max-w-full shadow-md -gap-4">
                 <CardHeader>
                   <CardTitle>About this module</CardTitle>
                 </CardHeader>

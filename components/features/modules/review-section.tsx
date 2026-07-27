@@ -68,6 +68,25 @@ export function ReviewSection({ module }: ReviewSectionProps) {
   );
   const { data: session } = useSession();
 
+  const loadReplies = async (ratingId: number) => {
+    setLoadingReplies((prev) => ({ ...prev, [ratingId]: true }));
+
+    try {
+      const response = await fetch(`/api/ratings/${ratingId}/replies`);
+      if (!response.ok) {
+        throw new Error('Failed to load replies');
+      }
+
+      const data = await response.json();
+      setReplies((prev) => ({ ...prev, [ratingId]: data.replies }));
+    } catch (error) {
+      console.error('Error loading replies:', error);
+      toast.error('Failed to load replies');
+    } finally {
+      setLoadingReplies((prev) => ({ ...prev, [ratingId]: false }));
+    }
+  };
+
   useEffect(() => {
     if (ratings.length > 0) {
       ratings.forEach((rating) => {
@@ -217,25 +236,6 @@ export function ReviewSection({ module }: ReviewSectionProps) {
       toast.error(error instanceof Error ? error.message : 'Failed to mark as helpful');
     } finally {
       setReplyHelpfulLoading((prev) => ({ ...prev, [replyId]: false }));
-    }
-  };
-
-  const loadReplies = async (ratingId: number) => {
-    setLoadingReplies((prev) => ({ ...prev, [ratingId]: true }));
-
-    try {
-      const response = await fetch(`/api/ratings/${ratingId}/replies`);
-      if (!response.ok) {
-        throw new Error('Failed to load replies');
-      }
-
-      const data = await response.json();
-      setReplies((prev) => ({ ...prev, [ratingId]: data.replies }));
-    } catch (error) {
-      console.error('Error loading replies:', error);
-      toast.error('Failed to load replies');
-    } finally {
-      setLoadingReplies((prev) => ({ ...prev, [ratingId]: false }));
     }
   };
 

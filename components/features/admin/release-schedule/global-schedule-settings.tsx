@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +48,7 @@ export function GlobalScheduleSettings({ schedule, onUpdate }: GlobalScheduleSet
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
+    control,
   } = useForm<ScheduleSettingsForm>({
     resolver: zodResolver(scheduleSettingsSchema),
     values: schedule
@@ -64,7 +64,7 @@ export function GlobalScheduleSettings({ schedule, onUpdate }: GlobalScheduleSet
         },
   });
 
-  const enabled = watch('enabled');
+  const enabled = useWatch({ control, name: 'enabled' });
 
   const onSubmit = async (data: ScheduleSettingsForm) => {
     setIsLoading(true);

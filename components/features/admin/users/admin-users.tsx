@@ -134,7 +134,7 @@ export function AdminUsers() {
   };
 
   useEffect(() => {
-    fetchStats();
+    queueMicrotask(() => fetchStats());
   }, []);
 
   return (

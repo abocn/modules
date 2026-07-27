@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -71,7 +71,6 @@ interface AdminApiKeysProps {
 
 export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
   const [keys, setKeys] = useState<ApiKeyWithUser[]>([]);
-  const [filteredKeys, setFilteredKeys] = useState<ApiKeyWithUser[]>([]);
   const [stats, setStats] = useState<ApiKeyStats>({
     totalKeys: 0,
     activeKeys: 0,
@@ -200,11 +199,13 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
   };
 
   useEffect(() => {
-    fetchApiKeys();
-    fetchUsers();
+    queueMicrotask(() => {
+      fetchApiKeys();
+      fetchUsers();
+    });
   }, [fetchApiKeys, fetchUsers]);
 
-  useEffect(() => {
+  const filteredKeys = useMemo(() => {
     const query = (
       searchQuery ||
       (typeof advancedFilters.query === 'string' ? advancedFilters.query : '') ||
@@ -258,7 +259,7 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
         if (advancedFilters.expirationStatus === 'expiring-soon') {
           if (!key.expiresAt) return false;
           const daysUntilExpiry = Math.ceil(
-            (new Date(key.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+            (new Date(key.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
           );
           return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
         }
@@ -294,7 +295,7 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
       );
     }
 
-    setFilteredKeys(filtered);
+    return filtered;
   }, [searchQuery, keys, advancedFilters]);
 
   const revokeApiKey = async (key: ApiKeyWithUser) => {

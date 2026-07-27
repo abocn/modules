@@ -90,7 +90,7 @@ export function UserManagement({
   useNavbarRefresh(fetchUsers, loading);
 
   useEffect(() => {
-    fetchUsers();
+    queueMicrotask(() => fetchUsers());
   }, [fetchUsers, refreshTrigger]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {

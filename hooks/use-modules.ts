@@ -38,7 +38,7 @@ export function useModules(options: UseModulesOptions = {}) {
   }, [options.category, options.search, options.filter]);
 
   useEffect(() => {
-    fetchModules();
+    queueMicrotask(() => fetchModules());
   }, [options.category, options.search, options.filter, refetchTrigger, fetchModules]);
 
   const refetch = () => {
@@ -114,7 +114,7 @@ export function useModuleRatings(moduleId: string) {
 
   useEffect(() => {
     if (moduleId) {
-      fetchRatings();
+      queueMicrotask(() => fetchRatings());
     }
   }, [moduleId, refetchTrigger, fetchRatings]);
 

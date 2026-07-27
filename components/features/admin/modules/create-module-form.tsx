@@ -44,7 +44,7 @@ import {
 import { fetchReadmeContent, parseFeaturesFromReadme } from '@/lib/github-utils';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
-import { CATEGORIES, ANDROID_VERSIONS } from '@/lib/validations/module';
+import { CATEGORIES, ANDROID_VERSIONS, MAX_DESCRIPTION } from '@/lib/validations/module';
 import { toast } from 'sonner';
 
 /**
@@ -65,7 +65,7 @@ const formSchema = z
     description: z
       .string()
       .min(30, 'Description must be at least 30 characters')
-      .max(8000, 'Description must be less than 8000 characters'),
+      .max(MAX_DESCRIPTION, `Description must be less than ${MAX_DESCRIPTION} characters`),
     author: z
       .string()
       .min(2, 'Author name must be at least 2 characters')
@@ -299,9 +299,9 @@ export function CreateModuleForm() {
       }
 
       let content = rawContent;
-      if (content.length > 8000) {
-        content = content.slice(0, 8000);
-        toast.warning('README truncated to maximum length (8000 characters)');
+      if (content.length > MAX_DESCRIPTION) {
+        content = content.slice(0, MAX_DESCRIPTION);
+        toast.warning(`README truncated to maximum length (${MAX_DESCRIPTION} characters)`);
       }
       form.setValue('description', content, { shouldValidate: true, shouldDirty: true });
 
@@ -668,7 +668,7 @@ export function CreateModuleForm() {
                             between write and preview modes.
                           </FormDescription>
                           <div className="text-sm text-muted-foreground text-right">
-                            {field.value?.length || 0} / 8000 characters
+                            {field.value?.length || 0} / {MAX_DESCRIPTION} characters
                           </div>
                         </div>
                       </div>
@@ -1190,7 +1190,7 @@ export function CreateModuleForm() {
                               Describe what&apos;s new in this release using Markdown formatting
                             </FormDescription>
                             <div className="text-sm text-muted-foreground text-right">
-                              {field.value?.length || 0} / 8000 characters
+                              {field.value?.length || 0} / 5000 characters
                             </div>
                           </div>
                         </div>

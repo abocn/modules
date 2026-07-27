@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { StatCard } from './stat-card';
 import { Star, Download, Package, Shield, Zap, Award, TrendingUp } from 'lucide-react';
 
@@ -82,12 +82,9 @@ const statOptions = [
 ];
 
 export function RandomStatCard({ stats, loading }: RandomStatCardProps) {
-  const [selectedStat, setSelectedStat] = useState(statOptions[0]);
-
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * statOptions.length);
-    setSelectedStat(statOptions[randomIndex]);
-  }, []);
+  const [selectedStat] = useState(
+    () => statOptions[Math.floor(Math.random() * statOptions.length)],
+  );
 
   return (
     <StatCard

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ import { toast } from 'sonner';
 import type { DbModule } from '@/types/module';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
-import { CATEGORIES, ANDROID_VERSIONS } from '@/lib/validations/module';
+import { CATEGORIES, ANDROID_VERSIONS, MAX_DESCRIPTION } from '@/lib/validations/module';
 import { WarningsManager, type Warning } from './warnings-manager';
 
 /**
@@ -57,7 +57,7 @@ const formSchema = z
     description: z
       .string()
       .min(30, 'Description must be at least 30 characters')
-      .max(8000, 'Description must be less than 8000 characters'),
+      .max(MAX_DESCRIPTION, `Description must be less than ${MAX_DESCRIPTION} characters`),
     author: z
       .string()
       .min(2, 'Author name must be at least 2 characters')
@@ -253,6 +253,10 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
       warnings: (module.warnings as Warning[]) || [],
     },
   });
+  const customLicense = useWatch({ control: form.control, name: 'customLicense' });
+  const images = useWatch({ control: form.control, name: 'images' });
+  const isOpenSource = useWatch({ control: form.control, name: 'isOpenSource' });
+  const features = useWatch({ control: form.control, name: 'features' });
 
   const androidVersionOptions = ANDROID_VERSIONS;
   const rootMethodOptions = [
@@ -490,7 +494,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                               switch between write and preview modes.
                             </FormDescription>
                             <div className="text-sm text-muted-foreground text-right">
-                              {field.value?.length || 0} / 8000 characters
+                              {field.value?.length || 0} / {MAX_DESCRIPTION} characters
                             </div>
                           </div>
                         </div>
@@ -616,7 +620,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     </Button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-                    {form.watch('images')?.map((image, index) => (
+                    {images?.map((image, index) => (
                       <div key={index} className="relative group border rounded-lg overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -657,7 +661,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                       </div>
                     ))}
                   </div>
-                  {form.watch('images')?.length === 0 && (
+                  {images?.length === 0 && (
                     <div className="text-sm text-muted-foreground">Add up to 10 screenshots.</div>
                   )}
                   {form.formState.errors.images && (
@@ -689,7 +693,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                   )}
                 />
 
-                {form.watch('isOpenSource') && (
+                {isOpenSource && (
                   <>
                     <FormField
                       control={form.control}
@@ -701,7 +705,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                             <LicenseCombobox
                               value={field.value as string}
                               onValueChange={(license) => field.onChange(license)}
-                              customValue={form.watch('customLicense')}
+                              customValue={customLicense}
                               onCustomValueChange={(value) => form.setValue('customLicense', value)}
                               required
                             />
@@ -723,7 +727,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                   </>
                 )}
 
-                {form.watch('isOpenSource') && (
+                {isOpenSource && (
                   <FormField
                     control={form.control}
                     name="sourceUrl"
@@ -766,7 +770,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                 />
               </div>
 
-              {!form.watch('isOpenSource') && (
+              {!isOpenSource && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Release Information</h3>
                   <Separator />
@@ -828,7 +832,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                             Describe what&apos;s new in this release using Markdown formatting
                           </FormDescription>
                           <div className="text-sm text-muted-foreground text-right">
-                            {field.value?.length || 0} / 8000 characters
+                            {field.value?.length || 0} / 5000 characters
                           </div>
                         </div>
                         <FormMessage />
@@ -939,7 +943,7 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {form.watch('features').map((feature, index) => (
+                    {features?.map((feature, index) => (
                       <Badge key={index} variant="secondary">
                         {feature}
                         <Button

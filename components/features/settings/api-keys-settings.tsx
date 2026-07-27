@@ -80,7 +80,7 @@ export function ApiKeysSettings() {
   }, []);
 
   useEffect(() => {
-    fetchApiKeys();
+    queueMicrotask(() => fetchApiKeys());
   }, [fetchApiKeys]);
 
   const createApiKey = async () => {

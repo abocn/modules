@@ -13,7 +13,7 @@ export function MySubmissionsPageClient() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    setIsHydrated(true);
+    queueMicrotask(() => setIsHydrated(true));
   }, []);
 
   if (!isHydrated) {

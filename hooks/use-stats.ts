@@ -40,9 +40,7 @@ export function useStats() {
     fetchStats();
 
     const interval = setInterval(() => {
-      if (stats) {
-        setStats((prev) => (prev ? { ...prev, currentTime: new Date().toLocaleString() } : prev));
-      }
+      setStats((prev) => (prev ? { ...prev, currentTime: new Date().toLocaleString() } : prev));
     }, 60000);
 
     return () => clearInterval(interval);

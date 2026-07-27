@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 
 interface CharacterCounterProps {
   value: string | undefined;
@@ -10,11 +10,7 @@ interface CharacterCounterProps {
 }
 
 export function CharacterCounter({ value, maxLength, className, children }: CharacterCounterProps) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    setCount(value?.length || 0);
-  }, [value]);
+  const count = value?.length || 0;
 
   const isOverLimit = count > maxLength;
 

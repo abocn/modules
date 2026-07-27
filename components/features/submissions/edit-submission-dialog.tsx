@@ -30,6 +30,7 @@ import { CharacterCounter } from '@/components/ui/character-counter';
 import { Plus, X, AlertTriangle } from 'lucide-react';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
+import { MAX_DESCRIPTION } from '@/lib/validations/module';
 
 /**
  * @interface Submission
@@ -299,7 +300,7 @@ export function EditSubmissionDialog({
                   height={300}
                 />
                 <div className="text-sm text-muted-foreground text-right">
-                  {formData.description.length} / 5000 characters
+                  {formData.description.length} / {MAX_DESCRIPTION} characters
                 </div>
               </div>
 

@@ -39,6 +39,35 @@ interface RecentAction {
 
 const ITEMS_PER_PAGE = 20;
 
+function LoadingSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TableRow key={i}>
+          <TableCell>
+            <Skeleton className="h-4 w-4" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-32" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-48" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-6 w-20" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-16" />
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+}
+
 export function AuditLog() {
   const [actions, setActions] = useState<RecentAction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,8 +98,8 @@ export function AuditLog() {
   }, []);
 
   useEffect(() => {
-    fetchActions(1, true);
-  }, []);
+    queueMicrotask(() => fetchActions(1, true));
+  }, [fetchActions]);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -189,34 +218,6 @@ export function AuditLog() {
     setCurrentPage(nextPage);
     fetchActions(nextPage, false);
   };
-
-  const LoadingSkeleton = () => (
-    <>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <TableRow key={i}>
-          <TableCell>
-            <Skeleton className="h-4 w-4" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-32" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-48" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-6 w-20" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-24" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="h-4 w-16" />
-          </TableCell>
-        </TableRow>
-      ))}
-    </>
-  );
-
   return (
     <div className="h-[calc(100vh-3.5rem)] overflow-auto">
       <div className="p-6 space-y-6">
@@ -226,22 +227,23 @@ export function AuditLog() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Administrative Actions
-            </CardTitle>
+            <CardTitle>System Activity & Audit Log</CardTitle>
           </CardHeader>
           <CardContent>
             {error ? (
-              <div className="flex items-center justify-center py-8 text-destructive">
+              <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-lg flex items-center justify-between">
                 <p>{error}</p>
+                <Button variant="outline" size="sm" onClick={() => fetchActions(1, true)}>
+                  Retry
+                </Button>
               </div>
             ) : (
               <>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead>Type</TableHead>
+
                       <TableHead>Action</TableHead>
                       <TableHead>Details</TableHead>
                       <TableHead>Status</TableHead>

@@ -86,10 +86,6 @@ export function AdminReviews() {
   useNavbarRefresh(fetchReviews, loading);
 
   useEffect(() => {
-    fetchReviews();
-  }, [fetchReviews]);
-
-  useEffect(() => {
     const debounceTimer = setTimeout(() => {
       fetchReviews();
     }, 300);

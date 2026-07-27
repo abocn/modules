@@ -28,17 +28,12 @@ export function UserSettings() {
 
   useEffect(() => {
     if (session?.user?.name && !isEditingName) {
-      setNameValue(session.user.name);
+      queueMicrotask(() => setNameValue(session.user.name));
     }
   }, [session?.user?.name, isEditingName]);
 
   useEffect(() => {
-    setIsLoading(false);
-  }, [session]);
-
-  useEffect(() => {
     if (session?.user?.id) {
-      setUserRole({ role: null, isLoading: true });
       fetch(`/api/user/role`)
         .then((res) => res.json())
         .then((data) => setUserRole({ role: data.role, isLoading: false }))

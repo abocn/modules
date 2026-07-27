@@ -4,7 +4,7 @@ export const MAX_NAME = 80;
 export const MAX_SHORT = 140;
 export const MAX_FEATURE = 150;
 export const MAX_FEATURES = 25;
-export const MAX_DESCRIPTION = 8000;
+export const MAX_DESCRIPTION = 30000;
 export const MAX_IMAGES = 10;
 export const MAX_AUTHOR = 60;
 export const MAX_LICENSE = 40;
@@ -43,6 +43,7 @@ export const LICENSES = [
   'Proprietary',
   'Custom',
   'Other',
+  'No License',
 ] as const;
 
 export const ROOT_METHODS = ['Magisk', 'KernelSU', 'KernelSU-Next'] as const;
