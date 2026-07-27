@@ -15,12 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Eye, EyeOff, ChevronDown, ChevronRight, Shield, Trash2, Check } from 'lucide-react';
 import { SiGithub as Github } from 'react-icons/si';
+import { GITHUB_PAT_REGEX } from '@/lib/github-utils';
 
 const githubPATSchema = z.object({
   token: z
     .string()
+    .trim()
     .min(1, 'GitHub PAT is required')
-    .regex(/^gh[pso]_[a-zA-Z0-9]{36,251}$/, 'Please enter a valid GitHub Personal Access Token'),
+    .regex(GITHUB_PAT_REGEX, 'Please enter a valid GitHub Personal Access Token'),
 });
 
 type GitHubPATForm = z.infer<typeof githubPATSchema>;
@@ -201,14 +203,11 @@ export function GitHubPATSettings() {
                         GitHub Settings → Developer settings → Personal access tokens
                       </a>
                     </li>
-                    <li>
-                      Click &quot;Generate new token&quot; → &quot;Generate new token
-                      (classic)&quot;
-                    </li>
+                    <li>Click &quot;Generate new token&quot; (Fine-grained or Classic)</li>
                     <li>Give it a descriptive name (e.g., &quot;Modules Release Sync&quot;)</li>
                     <li>
-                      <strong>Important:</strong> For public repositories, you don&apos;t need to
-                      select any scopes/permissions
+                      <strong className="mr-1">Important:</strong> For public repositories, you
+                      don&apos;t need to select any scopes/permissions
                     </li>
                     <li>
                       For private repositories, select only the &quot;repo&quot; scope if needed
@@ -225,7 +224,7 @@ export function GitHubPATSettings() {
                   <Input
                     id="token"
                     type={showToken ? 'text' : 'password'}
-                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    placeholder="ghp_... or github_pat_..."
                     {...register('token')}
                     className="pr-10"
                   />

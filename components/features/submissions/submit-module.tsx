@@ -32,7 +32,27 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { CharacterCounter } from '@/components/ui/character-counter';
 import { Turnstile, TurnstileRef } from '@/components/shared/turnstile';
-import { Info, Plus, X, AlertTriangle, Check, ExternalLink, Settings } from 'lucide-react';
+import {
+  Info,
+  Plus,
+  X,
+  AlertTriangle,
+  Check,
+  ExternalLink,
+  Settings,
+  FileText,
+  Loader2,
+} from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { fetchReadmeContent, parseFeaturesFromReadme } from '@/lib/github-utils';
 import { normalizeVersion, CATEGORIES } from '@/lib/validations/module';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
@@ -262,6 +282,56 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileRef>(null);
   const [newFeature, setNewFeature] = useState('');
+  const [isReadmeDialogOpen, setIsReadmeDialogOpen] = useState(false);
+  const [readmeUrlInput, setReadmeUrlInput] = useState('');
+  const [isFetchingReadme, setIsFetchingReadme] = useState(false);
+  const [readmeError, setReadmeError] = useState<string | null>(null);
+
+  const handleOpenReadmeDialog = () => {
+    const currentGithubRepo = form.getValues('githubRepo') || form.getValues('sourceUrl') || '';
+    if (!readmeUrlInput && currentGithubRepo) {
+      setReadmeUrlInput(currentGithubRepo);
+    }
+    setReadmeError(null);
+    setIsReadmeDialogOpen(true);
+  };
+
+  const handleFetchReadme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!readmeUrlInput.trim()) return;
+
+    setIsFetchingReadme(true);
+    setReadmeError(null);
+
+    try {
+      const rawContent = await fetchReadmeContent(readmeUrlInput);
+
+      // Extract and pre-fill features if a Features section is present in the README
+      const extractedFeatures = parseFeaturesFromReadme(rawContent);
+      if (extractedFeatures.length > 0) {
+        form.setValue('features', extractedFeatures, { shouldValidate: true, shouldDirty: true });
+      }
+
+      let content = rawContent;
+      if (content.length > 8000) {
+        content = content.slice(0, 8000);
+        toast.warning('README truncated to maximum length (8000 characters)');
+      }
+      form.setValue('description', content, { shouldValidate: true, shouldDirty: true });
+
+      if (extractedFeatures.length > 0) {
+        toast.success(`Description and ${extractedFeatures.length} features populated from README`);
+      } else {
+        toast.success('Full description populated from README');
+      }
+      setIsReadmeDialogOpen(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch README content';
+      setReadmeError(message);
+    } finally {
+      setIsFetchingReadme(false);
+    }
+  };
   const [newImage, setNewImage] = useState('');
   const [downloadingImages, setDownloadingImages] = useState(false);
   const [imageDownloadProgress, setImageDownloadProgress] = useState<string | null>(null);
@@ -329,6 +399,14 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
       manualReleaseChangelog: '',
     },
   });
+  const isOpenSource = form.watch('isOpenSource');
+  const sourceUrl = form.watch('sourceUrl');
+
+  useEffect(() => {
+    if (isOpenSource) {
+      form.setValue('githubRepo', sourceUrl || '', { shouldValidate: true });
+    }
+  }, [isOpenSource, sourceUrl, form]);
 
   const androidVersionOptions = [
     '4.1+',
@@ -502,8 +580,11 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
     setSubmitError(null);
 
     try {
+      const finalGithubRepo = data.isOpenSource ? data.sourceUrl : data.githubRepo;
+
       const moduleData = {
         ...data,
+        githubRepo: finalGithubRepo,
         submittedBy: userId,
         icon: data.iconUrl && data.iconUrl.trim() ? data.iconUrl : undefined,
         images: data.images && data.images.length > 0 ? data.images : undefined,
@@ -708,7 +789,7 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
               You can set up your personal access token in <strong>Settings</strong>.
             </p>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3">
               <Button onClick={() => router.push('/settings')} className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Go to Settings
@@ -781,7 +862,18 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Description</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Full Description</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleOpenReadmeDialog}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5" />
+                          Fill from README
+                        </Button>
+                      </div>
                       <FormControl>
                         <div className="space-y-2">
                           <MarkdownEditor
@@ -790,15 +882,17 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                             placeholder="Detailed description of your module, features, installation instructions, etc."
                             height={400}
                           />
-                          <div className="text-sm text-muted-foreground text-right">
-                            {(field.value as string)?.length || 0} / 5000 characters
+                          <div className="flex justify-between">
+                            <FormDescription>
+                              Use the editor to format your description with Markdown. You can
+                              switch between write and preview modes.
+                            </FormDescription>
+                            <div className="text-sm text-muted-foreground text-right">
+                              {field.value?.length || 0} / 8000 characters
+                            </div>
                           </div>
                         </div>
                       </FormControl>
-                      <FormDescription>
-                        Use the editor to format your description with Markdown. You can switch
-                        between write and preview modes.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1144,27 +1238,30 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="githubRepo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>GitHub Repository (Optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="owner/repo or https://github.com/owner/repo"
-                          {...field}
-                          value={field.value as string}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enable automatic release syncing by providing your GitHub repository.
-                        We&apos;ll automatically fetch new releases when you publish them on GitHub.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {!form.watch('isOpenSource') && (
+                  <FormField
+                    control={form.control}
+                    name="githubRepo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GitHub Repository (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="owner/repo or https://github.com/owner/repo"
+                            {...field}
+                            value={field.value as string}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enable automatic release syncing by providing your GitHub repository.
+                          We&apos;ll automatically fetch new releases when you publish them on
+                          GitHub.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               <div className="space-y-4">
@@ -1238,7 +1335,18 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Features</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Features</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenReadmeDialog}
+                  >
+                    <FileText className="h-4 w-4 mr-1.5" />
+                    Fill from README
+                  </Button>
+                </div>
                 <Separator />
 
                 <div className="space-y-2">
@@ -1338,7 +1446,14 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                             value={field.value as string}
                           />
                         </FormControl>
-                        <FormDescription>Describe what&apos;s new in this release</FormDescription>
+                        <div className="flex justify-between">
+                          <FormDescription>
+                            Describe what&apos;s new in this release using Markdown formatting
+                          </FormDescription>
+                          <div className="text-sm text-muted-foreground text-right">
+                            {field.value?.length || 0} / 8000 characters
+                          </div>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1361,42 +1476,34 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                 </Alert>
               )}
 
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Security Verification</h3>
-                <Separator />
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Complete the verification below</label>
-                  {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
-                    <Turnstile
-                      ref={turnstileRef}
-                      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                      onSuccess={(token) => {
-                        setTurnstileToken(token);
-                        setSubmitError(null);
-                      }}
-                      onError={(error) => {
-                        console.error('Turnstile error:', error);
-                        setTurnstileToken(null);
-                        setSubmitError('Captcha verification failed. Please try again.');
-                      }}
-                      onExpire={() => {
-                        setTurnstileToken(null);
-                        setSubmitError('Captcha has expired. Please verify again.');
-                      }}
-                      theme="auto"
-                      size="normal"
-                    />
-                  ) : (
-                    <Alert>
-                      <Info className="h-4 w-4" />
-                      <AlertDescription>
-                        Captcha verification is not configured. Please contact the administrator.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </div>
+              {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    setSubmitError(null);
+                  }}
+                  onError={(error) => {
+                    console.error('Turnstile error:', error);
+                    setTurnstileToken(null);
+                    setSubmitError('Captcha verification failed. Please try again.');
+                  }}
+                  onExpire={() => {
+                    setTurnstileToken(null);
+                    setSubmitError('Captcha has expired. Please verify again.');
+                  }}
+                  theme="auto"
+                  size="normal"
+                />
+              ) : (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Captcha verification is not configured. Please contact the administrator.
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {submitError && (
                 <Alert variant="destructive">
@@ -1419,7 +1526,7 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
                 </Alert>
               )}
 
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Info className="h-4 w-4" />
                   <span>Your module will be reviewed before being published</span>
@@ -1453,6 +1560,55 @@ export function SubmitModule({ userId }: SubmitModuleProps) {
           </Form>
         </CardContent>
       </Card>
+      <Dialog open={isReadmeDialogOpen} onOpenChange={setIsReadmeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Fill Description from README</DialogTitle>
+            <DialogDescription>
+              Enter a GitHub repository URL or a direct link to a README file to auto-fill the full
+              description.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleFetchReadme} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="readme-url-input">GitHub or README URL</Label>
+              <Input
+                id="readme-url-input"
+                placeholder="https://github.com/owner/repo or README URL"
+                value={readmeUrlInput}
+                onChange={(e) => {
+                  setReadmeUrlInput(e.target.value);
+                  if (readmeError) setReadmeError(null);
+                }}
+                disabled={isFetchingReadme}
+              />
+              {readmeError && <p className="text-xs font-medium text-destructive">{readmeError}</p>}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReadmeDialogOpen(false)}
+                disabled={isFetchingReadme}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isFetchingReadme || !readmeUrlInput.trim()}>
+                {isFetchingReadme ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Fetching...
+                  </>
+                ) : (
+                  'Fill Description'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -166,7 +166,7 @@ export function AdminUsers() {
           </Card>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -179,28 +179,30 @@ export function AdminUsers() {
               className="pl-10"
             />
           </div>
-          <Select
-            value={roleFilter}
-            onValueChange={(value) => {
-              setRoleFilter(value);
-              setAdvancedFilters((prev) => ({ ...prev, roleFilter: value }));
-            }}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="user">User</SelectItem>
-            </SelectContent>
-          </Select>
-          <Filters
-            fields={filterFields}
-            values={advancedFilters}
-            onChange={setAdvancedFilters}
-            onReset={resetAdvancedFilters}
-          />
+          <div className="flex items-center gap-4">
+            <Select
+              value={roleFilter}
+              onValueChange={(value) => {
+                setRoleFilter(value);
+                setAdvancedFilters((prev) => ({ ...prev, roleFilter: value }));
+              }}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="user">User</SelectItem>
+              </SelectContent>
+            </Select>
+            <Filters
+              fields={filterFields}
+              values={advancedFilters}
+              onChange={setAdvancedFilters}
+              onReset={resetAdvancedFilters}
+            />
+          </div>
         </div>
 
         <UserManagement advancedFilters={advancedFilters} onUserUpdated={fetchStats} />

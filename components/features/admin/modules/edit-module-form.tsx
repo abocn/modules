@@ -484,15 +484,17 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                             placeholder="Detailed description of your module, features, installation instructions, etc."
                             height={400}
                           />
-                          <div className="text-sm text-muted-foreground text-right">
-                            {(field.value as string)?.length || 0} / 8000 characters
+                          <div className="flex justify-between">
+                            <FormDescription>
+                              Use the editor to format your description with Markdown. You can
+                              switch between write and preview modes.
+                            </FormDescription>
+                            <div className="text-sm text-muted-foreground text-right">
+                              {field.value?.length || 0} / 8000 characters
+                            </div>
                           </div>
                         </div>
                       </FormControl>
-                      <FormDescription>
-                        Use the editor to format your description with Markdown. You can switch
-                        between write and preview modes.
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -821,7 +823,14 @@ export function EditModuleForm({ module }: EditModuleFormProps) {
                             value={field.value as string}
                           />
                         </FormControl>
-                        <FormDescription>Describe what&apos;s new in this release</FormDescription>
+                        <div className="flex justify-between">
+                          <FormDescription>
+                            Describe what&apos;s new in this release using Markdown formatting
+                          </FormDescription>
+                          <div className="text-sm text-muted-foreground text-right">
+                            {field.value?.length || 0} / 8000 characters
+                          </div>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}

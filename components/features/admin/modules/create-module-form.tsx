@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -31,7 +32,16 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { CharacterCounter } from '@/components/ui/character-counter';
-import { Info, Plus, X, AlertTriangle, ExternalLink, Check } from 'lucide-react';
+import { Info, Plus, X, AlertTriangle, ExternalLink, Check, FileText, Loader2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { fetchReadmeContent, parseFeaturesFromReadme } from '@/lib/github-utils';
 import { MarkdownEditor } from '@/components/shared/markdown-editor';
 import { MODULE_CATEGORIES } from '@/lib/constants/categories';
 import { CATEGORIES, ANDROID_VERSIONS } from '@/lib/validations/module';
@@ -258,6 +268,56 @@ export function CreateModuleForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [newFeature, setNewFeature] = useState('');
   const [newImage, setNewImage] = useState('');
+  const [isReadmeDialogOpen, setIsReadmeDialogOpen] = useState(false);
+  const [readmeUrlInput, setReadmeUrlInput] = useState('');
+  const [isFetchingReadme, setIsFetchingReadme] = useState(false);
+  const [readmeError, setReadmeError] = useState<string | null>(null);
+
+  const handleOpenReadmeDialog = () => {
+    const currentGithubRepo = form.getValues('githubRepo') || form.getValues('sourceUrl') || '';
+    if (!readmeUrlInput && currentGithubRepo) {
+      setReadmeUrlInput(currentGithubRepo);
+    }
+    setReadmeError(null);
+    setIsReadmeDialogOpen(true);
+  };
+
+  const handleFetchReadme = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!readmeUrlInput.trim()) return;
+
+    setIsFetchingReadme(true);
+    setReadmeError(null);
+
+    try {
+      const rawContent = await fetchReadmeContent(readmeUrlInput);
+
+      // Extract and pre-fill features if a Features section is present in the README
+      const extractedFeatures = parseFeaturesFromReadme(rawContent);
+      if (extractedFeatures.length > 0) {
+        form.setValue('features', extractedFeatures, { shouldValidate: true, shouldDirty: true });
+      }
+
+      let content = rawContent;
+      if (content.length > 8000) {
+        content = content.slice(0, 8000);
+        toast.warning('README truncated to maximum length (8000 characters)');
+      }
+      form.setValue('description', content, { shouldValidate: true, shouldDirty: true });
+
+      if (extractedFeatures.length > 0) {
+        toast.success(`Description and ${extractedFeatures.length} features populated from README`);
+      } else {
+        toast.success('Full description populated from README');
+      }
+      setIsReadmeDialogOpen(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch README content';
+      setReadmeError(message);
+    } finally {
+      setIsFetchingReadme(false);
+    }
+  };
   const [fetchingReleases, setFetchingReleases] = useState(false);
   const [githubReleases, setGithubReleases] = useState<
     {
@@ -318,6 +378,14 @@ export function CreateModuleForm() {
       manualReleaseChangelog: '',
     },
   });
+  const isOpenSource = form.watch('isOpenSource');
+  const sourceUrl = form.watch('sourceUrl');
+
+  useEffect(() => {
+    if (isOpenSource) {
+      form.setValue('githubRepo', sourceUrl || '', { shouldValidate: true });
+    }
+  }, [isOpenSource, sourceUrl, form]);
 
   const androidVersionOptions = ANDROID_VERSIONS;
 
@@ -438,8 +506,11 @@ export function CreateModuleForm() {
           ? `Custom: ${customLicense.trim()}`
           : data.license;
 
+      const finalGithubRepo = data.isOpenSource ? data.sourceUrl : data.githubRepo;
+
       const moduleData = {
         ...restData,
+        githubRepo: finalGithubRepo,
         license: processedLicense,
         icon: iconUrl || undefined,
         compatibility: {
@@ -571,7 +642,18 @@ export function CreateModuleForm() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Description</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Full Description</FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleOpenReadmeDialog}
+                      >
+                        <FileText className="h-4 w-4 mr-1.5" />
+                        Fill from README
+                      </Button>
+                    </div>
                     <FormControl>
                       <div className="space-y-2">
                         <MarkdownEditor
@@ -580,15 +662,17 @@ export function CreateModuleForm() {
                           placeholder="Detailed description of your module, features, installation instructions, etc."
                           height={400}
                         />
-                        <div className="text-sm text-muted-foreground text-right">
-                          {field.value?.length || 0} / 8000 characters
+                        <div className="flex justify-between">
+                          <FormDescription>
+                            Use the editor to format your description with Markdown. You can switch
+                            between write and preview modes.
+                          </FormDescription>
+                          <div className="text-sm text-muted-foreground text-right">
+                            {field.value?.length || 0} / 8000 characters
+                          </div>
                         </div>
                       </div>
                     </FormControl>
-                    <FormDescription>
-                      Use the editor to format your description with Markdown. You can switch
-                      between write and preview modes.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -912,23 +996,28 @@ export function CreateModuleForm() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="githubRepo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GitHub Repository (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="owner/repo or https://github.com/owner/repo" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Enable automatic release syncing by providing your GitHub repository.
-                      We&apos;ll automatically fetch new releases when you publish them on GitHub.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!form.watch('isOpenSource') && (
+                <FormField
+                  control={form.control}
+                  name="githubRepo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>GitHub Repository (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="owner/repo or https://github.com/owner/repo"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enable automatic release syncing by providing your GitHub repository.
+                        We&apos;ll automatically fetch new releases when you publish them on GitHub.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             <div className="space-y-4">
@@ -996,7 +1085,13 @@ export function CreateModuleForm() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Features</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Features</h3>
+                <Button type="button" variant="outline" size="sm" onClick={handleOpenReadmeDialog}>
+                  <FileText className="h-4 w-4 mr-1.5" />
+                  Fill from README
+                </Button>
+              </div>
               <Separator />
 
               <div className="space-y-2">
@@ -1090,14 +1185,16 @@ export function CreateModuleForm() {
                             placeholder="What's new in this version..."
                             height={200}
                           />
-                          <div className="text-sm text-muted-foreground text-right">
-                            {field.value?.length || 0} / 2000 characters
+                          <div className="flex justify-between">
+                            <FormDescription>
+                              Describe what&apos;s new in this release using Markdown formatting
+                            </FormDescription>
+                            <div className="text-sm text-muted-foreground text-right">
+                              {field.value?.length || 0} / 8000 characters
+                            </div>
                           </div>
                         </div>
                       </FormControl>
-                      <FormDescription>
-                        Describe what&apos;s new in this release using Markdown formatting
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1157,7 +1254,7 @@ export function CreateModuleForm() {
               </Alert>
             )}
 
-            <div className="flex items-center justify-between pt-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
                 <span>Module will be created in pending status</span>
@@ -1179,6 +1276,55 @@ export function CreateModuleForm() {
           </form>
         </Form>
       </CardContent>
+      <Dialog open={isReadmeDialogOpen} onOpenChange={setIsReadmeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Fill Description from README</DialogTitle>
+            <DialogDescription>
+              Enter a GitHub repository URL or a direct link to a README file to auto-fill the full
+              description.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleFetchReadme} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="readme-url-input">GitHub or README URL</Label>
+              <Input
+                id="readme-url-input"
+                placeholder="https://github.com/owner/repo or README URL"
+                value={readmeUrlInput}
+                onChange={(e) => {
+                  setReadmeUrlInput(e.target.value);
+                  if (readmeError) setReadmeError(null);
+                }}
+                disabled={isFetchingReadme}
+              />
+              {readmeError && <p className="text-xs font-medium text-destructive">{readmeError}</p>}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsReadmeDialogOpen(false)}
+                disabled={isFetchingReadme}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isFetchingReadme || !readmeUrlInput.trim()}>
+                {isFetchingReadme ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Fetching...
+                  </>
+                ) : (
+                  'Fill Description'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

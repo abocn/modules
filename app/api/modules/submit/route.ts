@@ -11,6 +11,7 @@ import path, { join } from 'path';
 import { existsSync } from 'fs';
 import { validateURL, safeFetch } from '@/lib/security/ssrf-protection';
 import { generateSlug } from '@/lib/slug-utils';
+import { extractGithubRepo } from '@/lib/github-utils';
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_CONTENT_TYPES = [
@@ -346,6 +347,9 @@ export async function POST(req: NextRequest) {
         warnings: [],
         features: moduleData.features,
         sourceUrl: moduleData.sourceUrl || null,
+        githubRepo:
+          moduleData.githubRepo ||
+          (moduleData.sourceUrl ? extractGithubRepo(moduleData.sourceUrl) : null),
         communityUrl: moduleData.communityUrl || null,
         isFeatured: false,
         isRecommended: false,

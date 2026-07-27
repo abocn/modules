@@ -297,6 +297,9 @@ export async function POST(request: NextRequest) {
         warnings: [],
         features: moduleData.features,
         sourceUrl: moduleData.sourceUrl || null,
+        githubRepo:
+          moduleData.githubRepo ||
+          (moduleData.sourceUrl ? extractGithubRepo(moduleData.sourceUrl) : null),
         communityUrl: moduleData.communityUrl || null,
         isFeatured: body.isFeatured || false,
         isRecommended: body.isRecommended || false,

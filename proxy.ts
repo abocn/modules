@@ -30,7 +30,7 @@ export function proxy(_request: NextRequest) {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
-      "connect-src 'self' https://challenges.cloudflare.com https://api.github.com",
+      "connect-src 'self' https://challenges.cloudflare.com https://api.github.com https://raw.githubusercontent.com",
       'frame-src https://challenges.cloudflare.com',
       "object-src 'none'",
       "base-uri 'self'",

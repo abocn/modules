@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { validateGitHubPAT } from '@/lib/github-utils';
+import { validateGitHubPAT, isValidGitHubPAT } from '@/lib/github-utils';
 
 /**
  * Validate GitHub PAT
@@ -23,13 +23,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { token } = await request.json();
+    let { token } = await request.json();
 
     if (!token || typeof token !== 'string') {
       return NextResponse.json({ error: 'GitHub PAT is required' }, { status: 400 });
     }
 
-    if (!/^gh[pso]_[a-zA-Z0-9]{36,251}$/.test(token)) {
+    token = token.trim();
+
+    if (!isValidGitHubPAT(token)) {
       return NextResponse.json({ error: 'Invalid GitHub PAT format' }, { status: 400 });
     }
 

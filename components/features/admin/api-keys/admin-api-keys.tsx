@@ -361,7 +361,7 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
           <h1 className="text-2xl sm:text-3xl font-bold">API Keys Management</h1>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Create Key
             </Button>
           </div>
