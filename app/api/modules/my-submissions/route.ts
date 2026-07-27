@@ -52,7 +52,6 @@ export async function GET(request: NextRequest) {
       .orderBy(modules.updatedAt);
 
     const submissionsWithStatus = userSubmissions.map((submission) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { reviewNotes: _reviewNotes, ...safeSubmission } = submission;
       return {
         ...safeSubmission,

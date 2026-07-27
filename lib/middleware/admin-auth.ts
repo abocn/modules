@@ -38,7 +38,6 @@ export interface AdminAuthResult {
  * }
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function verifyAdminAuth(_request: NextRequest): Promise<AdminAuthResult> {
   try {
     const session = await auth.api.getSession({

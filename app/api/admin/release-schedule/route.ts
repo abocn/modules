@@ -23,7 +23,6 @@ import { withAuth } from '@/lib/api-wrapper';
  * @throws {500} If there's a database error
  */
 const _wrappedGet = withAuth(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_request, _context) => {
     try {
       const schedule = await getReleaseSchedule();

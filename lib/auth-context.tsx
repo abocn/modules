@@ -52,13 +52,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAdmin: false,
     lastFetch: 0,
   });
+  const [isDataStale, setIsDataStale] = useState(false);
+  const [isDataExpired, setIsDataExpired] = useState(true);
 
-  const isDataStale = useMemo(() => {
-    return Date.now() - cachedState.lastFetch > STALE_TIME;
-  }, [cachedState.lastFetch]);
+  useEffect(() => {
+    if (cachedState.lastFetch === 0) {
+      queueMicrotask(() => {
+        setIsDataStale(false);
+        setIsDataExpired(true);
+      });
+      return;
+    }
 
-  const isDataExpired = useMemo(() => {
-    return Date.now() - cachedState.lastFetch > CACHE_TTL;
+    const now = Date.now();
+    const elapsed = now - cachedState.lastFetch;
+    const staleIn = Math.max(0, STALE_TIME - elapsed);
+    const expiredIn = Math.max(0, CACHE_TTL - elapsed);
+
+    queueMicrotask(() => {
+      setIsDataStale(elapsed > STALE_TIME);
+      setIsDataExpired(elapsed > CACHE_TTL);
+    });
+
+    const staleTimer = setTimeout(() => setIsDataStale(true), staleIn);
+    const expiredTimer = setTimeout(() => setIsDataExpired(true), expiredIn);
+
+    return () => {
+      clearTimeout(staleTimer);
+      clearTimeout(expiredTimer);
+    };
   }, [cachedState.lastFetch]);
 
   const updateCache = useCallback((user: AuthUser | null, loading: boolean, error?: string) => {
@@ -86,7 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!sessionLoading && (isDataExpired || cachedState.lastFetch === 0)) {
       const initialUser = session?.user as AuthUser | undefined;
       if (!initialUser) {
-        updateCache(null, false);
+        queueMicrotask(() => updateCache(null, false));
         return;
       }
 

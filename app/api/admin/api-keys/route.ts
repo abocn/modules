@@ -42,7 +42,6 @@ import { withAuth } from '@/lib/api-wrapper';
  * @openapi
  */
 const _wrappedGet = withAuth(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_request, _context) => {
     try {
       const keysWithUsers = await db

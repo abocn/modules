@@ -65,7 +65,6 @@ export async function sendEmail(options: SendEmailOptions) {
       ...(options.replyTo && { 'h:Reply-To': options.replyTo }),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await client.messages.create(MAILGUN_DOMAIN, messageData as any);
     return result;
   } catch (error) {
