@@ -24,6 +24,7 @@ import { Shield, Trash2 } from 'lucide-react';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { EditUserDialog } from '@/components/features/admin/users/edit-user-dialog';
 import type { UserWithStats, UserAdvancedFilters } from '@/types/admin';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 interface UserManagementProps {
   searchQuery?: string;
@@ -86,6 +87,7 @@ export function UserManagement({
       setLoading(false);
     }
   }, [searchQuery, roleFilter, advancedFilters]);
+  useNavbarRefresh(fetchUsers, loading);
 
   useEffect(() => {
     fetchUsers();

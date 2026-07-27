@@ -52,13 +52,6 @@ export async function verifyAdminAuth(_request: NextRequest): Promise<AdminAuthR
       };
     }
 
-    if (session.user.role !== 'admin') {
-      return {
-        isAdmin: false,
-        error: 'Admin access required',
-      };
-    }
-
     const userRecord = await db
       .select({
         id: user.id,
@@ -79,12 +72,9 @@ export async function verifyAdminAuth(_request: NextRequest): Promise<AdminAuthR
     }
 
     if (userRecord[0].role !== 'admin') {
-      console.warn(
-        `[Admin Auth] Session role mismatch for user ${session.user.id}: session=${session.user.role}, db=${userRecord[0].role}`,
-      );
       return {
         isAdmin: false,
-        error: 'Insufficient privileges',
+        error: 'Admin access required',
       };
     }
 

@@ -4,19 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import {
-  BarChart,
-  CheckCircle,
-  XCircle,
-  Clock,
-  RefreshCw,
-  TrendingUp,
-  Activity,
-} from 'lucide-react';
+import { BarChart, CheckCircle, XCircle, Clock, TrendingUp, Activity } from 'lucide-react';
 import { useSyncStats } from '@/hooks/use-release-schedule';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 export function SyncStatusMonitor() {
   const { stats, isLoading, refetch } = useSyncStats();
+  useNavbarRefresh(refetch, isLoading);
 
   if (isLoading) {
     return (
@@ -166,15 +160,9 @@ export function SyncStatusMonitor() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest sync attempts and their results.</CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+          <CardDescription>Latest sync attempts and their results.</CardDescription>
         </CardHeader>
         <CardContent>
           {stats.recentActivity.length === 0 ? (

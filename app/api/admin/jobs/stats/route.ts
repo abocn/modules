@@ -4,14 +4,14 @@ import { headers } from 'next/headers';
 import { db } from '@/db';
 import { adminJobs } from '@/db/schema';
 import { eq, count } from 'drizzle-orm';
-
+import { isUserAdmin } from '@/lib/admin-utils';
 export async function GET() {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

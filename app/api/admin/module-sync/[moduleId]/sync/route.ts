@@ -6,6 +6,7 @@ import { adminJobs, moduleGithubSync } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { jobExecutionService } from '@/lib/job-execution-service';
 import { logAdminAction } from '@/lib/audit-utils';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * POST /api/admin/module-sync/[moduleId]/sync
@@ -38,7 +39,7 @@ export async function POST(
       headers: await headers(),
     });
 
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

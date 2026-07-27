@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
 import type { AdminModule } from '@/types/module';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 type ReviewAction = 'approve' | 'reject';
 type WarningType = 'malware' | 'closed-source' | 'stolen-code';
@@ -45,6 +46,7 @@ export function AdminModuleSubmissions() {
     error: adminError,
     isLoading: adminLoading,
   } = useAdminModules();
+  useNavbarRefresh(refetch, loading);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedModule, setSelectedModule] = useState<AdminModule | null>(null);

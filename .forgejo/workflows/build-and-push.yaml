@@ -27,3 +27,26 @@ jobs:
           IMAGE_NAME="git-registry.p0ntus.com/aidan/modules"
           docker push "${IMAGE_NAME}:latest"
           docker push "${IMAGE_NAME}:${{ github.sha }}"
+
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          KEY="${SSH_PRIVATE_KEY:-${DEPLOY_KEY:-}}"
+          if [ -z "$KEY" ]; then
+            echo "Error: Neither SSH_PRIVATE_KEY nor DEPLOY_KEY secret is set." >&2
+            exit 1
+          fi
+          HOST="${DEPLOY_HOST:-38.49.214.105}"
+          USER="${DEPLOY_USER:-admin}"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          ssh -i ~/.ssh/id_ed25519 "$USER@$HOST" "sudo systemctl restart modules.service && sudo systemctl is-active modules.service"

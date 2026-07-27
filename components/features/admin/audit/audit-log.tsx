@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -25,6 +25,7 @@ import {
   GitBranch,
   GitPullRequest,
 } from 'lucide-react';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 interface RecentAction {
   id: string;
@@ -45,35 +46,27 @@ export function AuditLog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchActions = async (page: number, reset: boolean = false) => {
+  const fetchActions = useCallback(async (page: number, reset: boolean = false) => {
     try {
       setIsLoading(true);
       setError(null);
-
-      const response = await fetch(
-        `/api/admin/recent-actions?limit=${ITEMS_PER_PAGE}&offset=${(page - 1) * ITEMS_PER_PAGE}`,
-      );
-
+      const response = await fetch(`/api/admin/audit?page=${page}&limit=${ITEMS_PER_PAGE}`);
       if (!response.ok) {
         throw new Error('Failed to fetch audit log');
       }
-
       const data = await response.json();
-      const newActions = data.actions || [];
-
       if (reset) {
-        setActions(newActions);
+        setActions(data.actions);
       } else {
-        setActions((prev) => [...prev, ...newActions]);
+        setActions((prev) => [...prev, ...data.actions]);
       }
-
-      setHasMore(newActions.length === ITEMS_PER_PAGE);
+      setHasMore(data.hasMore);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch audit log');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchActions(1, true);
@@ -183,11 +176,13 @@ export function AuditLog() {
     return <Badge variant="outline">Action</Badge>;
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setCurrentPage(1);
     setActions([]);
     fetchActions(1, true);
-  };
+  }, [fetchActions]);
+
+  useNavbarRefresh(handleRefresh, isLoading);
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
@@ -227,15 +222,6 @@ export function AuditLog() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Audit Log</h1>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
         </div>
 
         <Card>

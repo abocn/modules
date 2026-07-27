@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
 import { MessageSquare, Star, Trash2, TrendingUp, Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 interface Review {
   id: number;
@@ -82,6 +83,7 @@ export function AdminReviews() {
     },
     [advancedFilters],
   );
+  useNavbarRefresh(fetchReviews, loading);
 
   useEffect(() => {
     fetchReviews();

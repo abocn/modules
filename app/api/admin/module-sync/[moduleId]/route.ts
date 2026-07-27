@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { moduleGithubSync } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { logAdminAction } from '@/lib/audit-utils';
-
+import { isUserAdmin } from '@/lib/admin-utils';
 /**
  * PUT /api/admin/module-sync/[moduleId]
  *
@@ -37,7 +37,7 @@ export async function PUT(
       headers: await headers(),
     });
 
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

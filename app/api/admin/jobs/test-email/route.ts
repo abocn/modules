@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { sendTestEmail, isEmailConfigured } from '@/lib/email';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-
+import { isUserAdmin } from '@/lib/admin-utils';
 /**
  * @openapi
  * POST /api/admin/jobs/test-email
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (session.user.role !== 'admin') {
+    if (!(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 });
     }
 

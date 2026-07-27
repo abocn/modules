@@ -6,6 +6,7 @@ import { adminJobs } from '@/db/schema';
 import { desc, eq, and } from 'drizzle-orm';
 import { jobExecutionService } from '@/lib/job-execution-service';
 import { logAdminAction } from '@/lib/audit-utils';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

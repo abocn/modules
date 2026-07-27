@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 import { validateApiKey } from '@/lib/api-auth';
+import { getUserRole } from '@/lib/admin-utils';
 
 export interface UnifiedUser {
   id: string;
@@ -38,12 +39,13 @@ export async function getAuthenticatedUser(
     });
 
     if (session?.user) {
+      const dbRole = await getUserRole(session.user.id);
       return {
         user: {
           id: session.user.id,
           name: session.user.name || '',
           email: session.user.email || '',
-          role: session.user.role || 'user',
+          role: dbRole || session.user.role || 'user',
           authMethod: 'session' as const,
         },
       };

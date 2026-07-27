@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { db } from '@/db';
 import { modules, moduleGithubSync, releaseSchedule } from '@/db/schema';
 import { eq, count, sql } from 'drizzle-orm';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * GET /api/admin/sync-stats
@@ -37,7 +38,7 @@ export async function GET() {
       headers: await headers(),
     });
 
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

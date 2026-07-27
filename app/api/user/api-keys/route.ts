@@ -5,6 +5,7 @@ import { apiKeys, adminActions } from '@/db/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import { randomBytes, createHash } from 'crypto';
 import { z } from 'zod';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 const createApiKeySchema = z.object({
   name: z.string().min(1).max(100),
@@ -99,8 +100,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createApiKeySchema.parse(body);
 
+    const userIsAdmin = await isUserAdmin(session.user.id);
     if (validatedData.scopes?.includes('admin')) {
-      if (session.user.role !== 'admin') {
+      if (!userIsAdmin) {
         return NextResponse.json(
           { error: 'Only admins can create API keys with admin scope' },
           { status: 403 },
@@ -143,7 +145,7 @@ export async function POST(request: Request) {
         createdAt: apiKeys.createdAt,
       });
 
-    if (validatedData.scopes?.includes('admin') && session.user.role === 'admin') {
+    if (validatedData.scopes?.includes('admin') && userIsAdmin) {
       await db.insert(adminActions).values({
         adminId: session.user.id,
         action: 'create_admin_api_key',

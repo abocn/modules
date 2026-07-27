@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 
 export function AdminJobs() {
   const [statusFilter, setStatusFilter] = useState('all');
@@ -44,6 +45,12 @@ export function AdminJobs() {
 
   const { stats, isLoading: statsLoading, refetch: refetchStats } = useJobStats();
   const { startJob } = useJobActions();
+  const handleRefresh = useCallback(() => {
+    refetchStats();
+    jobHistoryRef.current?.refetchJobs();
+  }, [refetchStats]);
+
+  useNavbarRefresh(handleRefresh, statsLoading);
 
   const handleStartJob = useCallback(
     async (type: string, name: string, parameters?: Record<string, unknown>) => {
@@ -153,19 +160,6 @@ export function AdminJobs() {
       <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-2xl md:text-3xl font-bold">Jobs</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              refetchStats();
-              jobHistoryRef.current?.refetchJobs();
-            }}
-            disabled={statsLoading}
-            className="self-start sm:self-auto"
-          >
-            <RefreshCw className={`h-4 w-4 ${statsLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
@@ -229,16 +223,19 @@ export function AdminJobs() {
           <CardContent className="px-4 md:px-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {quickJobs.map((job) => (
-                <Card key={job.id} className="hover:shadow-md transition-shadow group">
-                  <CardHeader className="pb-3 px-4">
-                    <div className="flex items-start gap-2">
-                      <job.icon className="h-4 w-4 md:h-5 md:w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <CardTitle className="text-sm md:text-base leading-tight">
+                <Card
+                  key={job.id}
+                  className="hover:shadow-md transition-shadow group flex flex-col h-full justify-between py-4 gap-3"
+                >
+                  <CardHeader className="p-0 px-4">
+                    <div className="flex items-start gap-2.5">
+                      <job.icon className="h-4 w-4 md:h-5 md:w-5 text-primary mt-0.5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                      <CardTitle className="text-sm md:text-base leading-tight font-semibold">
                         {job.name}
                       </CardTitle>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0 space-y-3 px-4">
+                  <CardContent className="p-0 px-4 flex-1 flex flex-col justify-between gap-3">
                     <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
                       {job.description}
                     </p>
@@ -251,7 +248,7 @@ export function AdminJobs() {
                         }
                       }}
                       disabled={isLoading}
-                      className="w-full text-xs md:text-sm"
+                      className="w-full text-xs md:text-sm mt-auto"
                       size="sm"
                     >
                       <Play className="md:h-4 md:w-4 mr-1.5" />

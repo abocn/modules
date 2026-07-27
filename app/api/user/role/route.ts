@@ -21,9 +21,15 @@ export async function GET(request: NextRequest) {
 
     requireScope(user, 'read');
 
-    const role = await getUserRole(user.id);
+    const role = (await getUserRole(user.id)) || user.role || 'user';
+    const isAdmin = role === 'admin';
 
-    return NextResponse.json({ role });
+    return NextResponse.json({
+      role,
+      isAdmin,
+      userId: user.id,
+      email: user.email,
+    });
   } catch (error) {
     console.error('Error fetching user role:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

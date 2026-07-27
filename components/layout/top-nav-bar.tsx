@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/shared/mode-toggle';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogIn, ArrowLeft, LogOut, User, Settings, Loader2 } from 'lucide-react';
+import { LogIn, ArrowLeft, LogOut, User, Settings, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -18,6 +18,7 @@ import { signOut } from '@/lib/auth-client';
 import { useCachedAuth } from '@/hooks/use-cached-auth';
 import { SigninDialog } from '@/components/shared/signin-dialog';
 import Link from 'next/link';
+import { useNavbar } from '@/lib/navbar-context';
 
 interface TopNavBarProps {
   currentPage?: string;
@@ -31,6 +32,7 @@ export function TopNavBar({
   onBack,
 }: TopNavBarProps) {
   const { user, isLoading, refreshAuth } = useCachedAuth();
+  const { onRefresh, isRefreshing } = useNavbar();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -69,6 +71,19 @@ export function TopNavBar({
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {onRefresh && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRefresh()}
+              disabled={isRefreshing}
+              className="flex items-center gap-2"
+              aria-label="Refresh page data"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          )}
           <ModeToggle />
           {user ? (
             <DropdownMenu>

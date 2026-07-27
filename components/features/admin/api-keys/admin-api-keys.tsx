@@ -28,7 +28,6 @@ import {
   MoreHorizontal,
   Eye,
   Copy,
-  RefreshCw,
   Plus,
 } from 'lucide-react';
 import {
@@ -42,6 +41,7 @@ import {
 import { ApiKeyDetailsDialog } from './api-key-details-dialog';
 import { CreateApiKeyDialog } from './create-api-key-dialog';
 
+import { useNavbarRefresh } from '@/lib/navbar-context';
 interface ApiKeyWithUser {
   id: string;
   name: string;
@@ -80,6 +80,7 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
     recentlyUsed: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [selectedKey, setSelectedKey] = useState<ApiKeyWithUser | null>(null);
@@ -158,6 +159,7 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
   ];
 
   const fetchApiKeys = useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const response = await fetch('/api/admin/api-keys');
       if (!response.ok) {
@@ -173,8 +175,15 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
       toast.error(error instanceof Error ? error.message : 'Failed to load API keys');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
+
+  const handleRefresh = useCallback(async () => {
+    await fetchApiKeys();
+  }, [fetchApiKeys]);
+
+  useNavbarRefresh(handleRefresh, isRefreshing);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -185,6 +194,10 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
       }
     } catch {}
   }, []);
+  const isExpired = (expiresAt: string | null) => {
+    if (!expiresAt) return false;
+    return new Date(expiresAt) < new Date();
+  };
 
   useEffect(() => {
     fetchApiKeys();
@@ -320,11 +333,6 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
     setDetailsOpen(true);
   };
 
-  const isExpired = (expiresAt: string | null) => {
-    if (!expiresAt) return false;
-    return new Date(expiresAt) < new Date();
-  };
-
   const getStatusBadge = (key: ApiKeyWithUser) => {
     if (key.revokedAt) {
       return <Badge variant="destructive">Revoked</Badge>;
@@ -356,13 +364,8 @@ export function AdminApiKeys({ searchQuery }: AdminApiKeysProps) {
               <Plus className="h-4 w-4 mr-2" />
               Create Key
             </Button>
-            <Button variant="outline" size="sm" onClick={() => fetchApiKeys()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
           </div>
         </div>
-
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

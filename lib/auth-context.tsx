@@ -84,13 +84,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     if (!sessionLoading && (isDataExpired || cachedState.lastFetch === 0)) {
-      const user = session?.user as AuthUser | undefined;
-      updateCache(user || null, false);
+      const initialUser = session?.user as AuthUser | undefined;
+      if (!initialUser) {
+        updateCache(null, false);
+        return;
+      }
+
+      let isMounted = true;
+
+      fetch('/api/user/role')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!isMounted) return;
+          const role = data?.role || initialUser.role;
+          updateCache({ ...initialUser, role }, false);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          updateCache(initialUser, false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
     }
   }, [session, sessionLoading, isDataExpired, cachedState.lastFetch, updateCache]);
 
   const contextValue = useMemo((): AuthContextValue => {
-    if (sessionLoading && cachedState.lastFetch === 0) {
+    if ((sessionLoading || cachedState.isLoading) && cachedState.lastFetch === 0) {
       return {
         user: null,
         isLoading: true,

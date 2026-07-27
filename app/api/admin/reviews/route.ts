@@ -6,6 +6,7 @@ import {
   getReviewsWithAdvancedFilters,
   getReviewStats,
 } from '@/lib/db-utils';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 /**
  * Get all reviews (admin)
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

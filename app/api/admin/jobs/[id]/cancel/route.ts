@@ -5,14 +5,14 @@ import { db } from '@/db';
 import { adminJobs } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { logAdminAction } from '@/lib/audit-utils';
-
+import { isUserAdmin } from '@/lib/admin-utils';
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session?.user || !(await isUserAdmin(session.user.id))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

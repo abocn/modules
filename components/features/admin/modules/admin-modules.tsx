@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { ModuleManagement } from '@/components/features/admin/modules/module-management';
 import { Filters, FilterField, FilterValues } from '@/components/features/admin/filters';
 import { useAdminModules, useAdminModulesList } from '@/hooks/use-admin';
+import { useNavbarRefresh } from '@/lib/navbar-context';
 import { Plus, Search, Star, AlertTriangle, Package, Clock } from 'lucide-react';
 
 export function AdminModules() {
@@ -20,6 +21,7 @@ export function AdminModules() {
     updateModuleStatus,
     error: adminError,
   } = useAdminModules();
+  useNavbarRefresh(refetch, isLoading);
   const [advancedFilters, setAdvancedFilters] = useState<FilterValues>({
     query: '',
     category: 'all',
